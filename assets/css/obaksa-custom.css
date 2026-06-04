@@ -42,7 +42,13 @@ a { color: var(--ob-green); }
 .banner .major { color: rgba(255,255,255,0.94); }
 .banner .eyebrow { color: rgba(237, 245, 233, 0.95); background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14); }
 .banner .actions .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   min-height: 56px;
+  line-height: 1.4;
+  white-space: nowrap;
   border: 1px solid rgba(20,83,45,.22);
   box-shadow: 0 12px 28px rgba(20,83,45,.14);
   font-weight: 800;
@@ -53,10 +59,10 @@ a { color: var(--ob-green); }
   transform: translateY(-1px);
   box-shadow: 0 16px 32px rgba(20,83,45,.18);
 }
-.button.primary { background-color: var(--ob-green) !important; box-shadow: 0 16px 32px rgba(20,83,45,.28), inset 0 0 0 1px var(--ob-green) !important; color: #fff !important; border-color: var(--ob-green) !important; }
+.button.primary { background-color: var(--ob-green) !important; box-shadow: 0 16px 32px rgba(20,83,45,.28), inset 0 0 0 1px var(--ob-green) !important; color: #fff !important; border-color: var(--ob-green) !important; display: inline-flex; align-items: center; justify-content: center; }
 .button.primary:hover { background-color: #166534 !important; }
-.button.big.wide { padding-left: 1.15rem; padding-right: 1.15rem; }
-.button { border-radius: 8px; padding: 1rem 1.25rem; box-shadow: 0 14px 30px rgba(10,25,15,.16); }
+.button.big.wide { padding-left: 1.15rem; padding-right: 1.15rem; min-height: 52px; }
+.button { display: inline-flex; align-items: center; justify-content: center; text-align: center; border-radius: 8px; padding: 1rem 1.25rem; min-height: 44px; line-height: 1.4; box-shadow: 0 14px 30px rgba(10,25,15,.16); }
 .items.style1 > * { border-radius: 1.2rem; }
 .icon.style2 { color: var(--ob-green); box-shadow: inset 0 0 0 1px rgba(20,83,45,.2); }
 .ob-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .9rem; margin-top: 2rem; }
@@ -93,7 +99,7 @@ a { color: var(--ob-green); }
   .ob-hero h1 { font-size: 2.7rem; }
   .ob-subhero h1 { font-size: 2.45rem; }
   .banner::before { background: linear-gradient(rgba(6, 12, 24, 0.78), rgba(6, 12, 24, 0.78)); }
-  .banner .actions .button, .button { width: 100%; padding: 1.1rem 1.2rem; }
+  .banner .actions .button, .button { width: 100%; padding: 1.1rem 1.2rem; min-height: 48px; }
   .ob-card-grid, .ob-card-grid.three { grid-template-columns: 1fr; }
   .content, .inner { padding-left: 1.35rem !important; padding-right: 1.35rem !important; }
   p { line-height: 1.95; }

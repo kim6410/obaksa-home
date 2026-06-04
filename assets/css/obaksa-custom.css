@@ -518,103 +518,196 @@ button.button:active,
 
 
 /* =========================================================
-   오박사 찾아오시는 길: 카카오맵 화면 삽입 섹션
+   오박사 찾아오시는 길: 와이드 카카오맵 + 좌측 정보 카드
+   - 제일테크닉스 지도 섹션처럼 지도는 넓게, 정보 카드는 왼쪽에 단단하게 배치
    ========================================================= */
 .ob-directions {
-  background: #f7faf8;
+  background: linear-gradient(180deg, #f7faf8 0%, #ffffff 100%);
+  padding-top: 4.5rem !important;
+  padding-bottom: 4.5rem !important;
+  overflow: hidden;
 }
 
 .ob-directions .inner {
-  max-width: 1180px;
+  max-width: none !important;
+  width: 100% !important;
+  padding-left: clamp(1rem, 3vw, 3rem) !important;
+  padding-right: clamp(1rem, 3vw, 3rem) !important;
+}
+
+.ob-directions .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0.4rem 1.05rem;
+  margin-bottom: 1rem;
+  color: #14532d !important;
+  background: rgba(20, 83, 45, 0.08);
+  border: 1px solid rgba(20, 83, 45, 0.16);
+  border-radius: 999px;
+  font-weight: 850;
+  letter-spacing: -0.02em;
+  text-shadow: none !important;
+}
+
+.ob-directions h2 {
+  margin-bottom: 0.75rem;
+  color: #0f172a;
+  font-weight: 850;
+  letter-spacing: -0.045em;
 }
 
 .ob-directions .major {
-  color: #1f2937;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  color: #1f2937 !important;
+  font-weight: 650;
+  line-height: 1.7;
+  text-shadow: none !important;
 }
 
 .ob-map-panel {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(280px, 0.34fr) minmax(0, 0.66fr);
-  gap: 1.5rem;
+  grid-template-columns: minmax(320px, 400px) minmax(0, 1fr);
+  gap: 0;
   align-items: stretch;
-  margin-top: 2rem;
+  width: min(1780px, calc(100vw - 4rem));
+  min-height: 520px;
+  margin: 2.25rem auto 0;
   text-align: left;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 30px 70px rgba(15, 23, 42, 0.18), 0 10px 28px rgba(15, 23, 42, 0.12);
 }
 
 .ob-map-info,
 .ob-map-frame {
-  border: 1px solid rgba(20, 83, 45, 0.18);
-  border-radius: 16px;
-  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.14);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
   overflow: hidden;
-  background: #ffffff;
 }
 
 .ob-map-info {
-  padding: 2rem;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 520px;
+  padding: clamp(1.6rem, 2.4vw, 2.6rem);
+  background: rgba(255, 255, 255, 0.96);
+  border-right: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 20px 0 44px rgba(15, 23, 42, 0.12);
 }
 
 .ob-map-info h3 {
-  margin-bottom: 1.25rem;
+  margin: 0 0 1.35rem 0;
   color: #0f172a;
+  font-size: clamp(1.25rem, 1.5vw, 1.65rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
 }
 
 .ob-map-info p {
-  margin: 0 0 1.1rem 0;
+  margin: 0 0 1.05rem 0;
   color: #263238;
-  line-height: 1.7;
+  line-height: 1.65;
+  font-weight: 650;
 }
 
 .ob-map-info strong {
+  display: inline-block;
+  margin-bottom: 0.18rem;
   color: #14532d;
-  font-weight: 850;
+  font-weight: 900;
 }
 
 .ob-map-info a:not(.button) {
   color: #0f4f2b;
-  font-weight: 800;
+  font-weight: 850;
   text-decoration: none;
-  border-bottom: 1px solid rgba(20, 83, 45, 0.28);
+  border-bottom: 1px solid rgba(20, 83, 45, 0.3);
+}
+
+.ob-map-info .actions {
+  margin-top: 0.85rem !important;
+}
+
+.ob-map-info .button {
+  width: 100%;
+  min-height: 52px !important;
+  border-radius: 8px !important;
+  font-weight: 850 !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16) !important;
 }
 
 .ob-map-frame {
-  min-height: 420px;
+  position: relative;
+  min-height: 520px;
   background: #eef3ef;
 }
 
 .ob-map-frame .root_daum_roughmap,
 .ob-map-frame .root_daum_roughmap_landing,
-.ob-map-frame .wrap_map {
+.ob-map-frame .wrap_map,
+.ob-map-frame iframe {
   width: 100% !important;
-  height: 420px !important;
+  height: 520px !important;
+  min-height: 520px !important;
   max-width: none !important;
 }
 
-@media screen and (max-width: 980px) {
+@media screen and (max-width: 1180px) {
   .ob-map-panel {
-    grid-template-columns: 1fr;
-  }
-
-  .ob-map-info {
-    text-align: center;
+    width: min(100%, calc(100vw - 2rem));
+    grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
   }
 }
 
-@media screen and (max-width: 760px) {
+@media screen and (max-width: 860px) {
+  .ob-directions {
+    padding-top: 3.2rem !important;
+    padding-bottom: 3.2rem !important;
+  }
+
   .ob-directions .inner {
-    padding-left: 1.15rem;
-    padding-right: 1.15rem;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .ob-map-panel {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 0;
+    border-radius: 14px;
   }
 
   .ob-map-info {
+    order: 2;
+    min-height: auto;
     padding: 1.35rem;
+    text-align: center;
+    border-right: 0;
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: none;
   }
 
-  .ob-map-frame,
+  .ob-map-frame {
+    order: 1;
+    min-height: 360px;
+  }
+
   .ob-map-frame .root_daum_roughmap,
   .ob-map-frame .root_daum_roughmap_landing,
-  .ob-map-frame .wrap_map {
-    min-height: 340px;
-    height: 340px !important;
+  .ob-map-frame .wrap_map,
+  .ob-map-frame iframe {
+    height: 360px !important;
+    min-height: 360px !important;
   }
 }

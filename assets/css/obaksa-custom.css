@@ -711,3 +711,56 @@ button.button:active,
     min-height: 360px !important;
   }
 }
+
+
+/* =========================================================
+   오박사 찾아오시는 길 지도 높이 최종 보정
+   - 카카오맵 실제 렌더 높이와 외부 지도 박스를 520px로 강제 통일
+   - PC에서 지도 하단 빈 공간이 생기지 않도록 내부 요소까지 모두 보정
+========================================================= */
+.ob-directions .ob-map-panel {
+  min-height: 520px !important;
+}
+
+.ob-directions .ob-map-frame,
+.ob-directions .ob-map-frame #daumRoughmapContainer1780592702972,
+.ob-directions .ob-map-frame .root_daum_roughmap,
+.ob-directions .ob-map-frame .root_daum_roughmap_landing,
+.ob-directions .ob-map-frame .root_daum_roughmap .wrap_map,
+.ob-directions .ob-map-frame .root_daum_roughmap_landing .wrap_map,
+.ob-directions .ob-map-frame .wrap_map,
+.ob-directions .ob-map-frame iframe,
+.ob-directions .ob-map-frame .map,
+.ob-directions .ob-map-frame .map_view {
+  width: 100% !important;
+  height: 520px !important;
+  min-height: 520px !important;
+  max-width: none !important;
+  overflow: hidden !important;
+}
+
+.ob-directions .ob-map-frame {
+  background: #eef3ef !important;
+}
+
+/* 카카오맵 하단 부가 영역이 과하게 공간을 차지할 때 숨김 처리 */
+.ob-directions .root_daum_roughmap .wrap_controllers,
+.ob-directions .root_daum_roughmap_landing .wrap_controllers {
+  display: none !important;
+}
+
+@media screen and (max-width: 860px) {
+  .ob-directions .ob-map-frame,
+  .ob-directions .ob-map-frame #daumRoughmapContainer1780592702972,
+  .ob-directions .ob-map-frame .root_daum_roughmap,
+  .ob-directions .ob-map-frame .root_daum_roughmap_landing,
+  .ob-directions .ob-map-frame .root_daum_roughmap .wrap_map,
+  .ob-directions .ob-map-frame .root_daum_roughmap_landing .wrap_map,
+  .ob-directions .ob-map-frame .wrap_map,
+  .ob-directions .ob-map-frame iframe,
+  .ob-directions .ob-map-frame .map,
+  .ob-directions .ob-map-frame .map_view {
+    height: 360px !important;
+    min-height: 360px !important;
+  }
+}

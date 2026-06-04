@@ -1,4 +1,3 @@
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css");
 
 /*
   오박사만능인테리어 다중 페이지 홈페이지 전용 CSS
@@ -293,13 +292,18 @@ a.button:hover,
   }
 }
 
-
 /* =========================================================
-   폰트·버튼·햅틱 최종 보강 패치 v3
-   목적: 한글/숫자/영문 폰트 균일화, 버튼 동적 인터랙션, 모바일 가독성 강화
+   오박사 폰트·버튼·햅틱 보강 패치 v3 - 2026-06-04
+   목적: 한글/숫자/영문 폰트 통일, 버튼 모션 강화, 가독성 고정
    ========================================================= */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
-/* 1) 전체 폰트 통일: 한글·숫자·영문이 울퉁불퉁해 보이지 않도록 정리 */
+:root {
+  --ob-font-main: 'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ob-font-letter: -0.018em;
+  --ob-btn-motion-shadow: 0 18px 38px rgba(15, 23, 42, 0.26), 0 6px 14px rgba(15, 23, 42, 0.16);
+}
+
 html,
 body,
 input,
@@ -307,315 +311,310 @@ select,
 textarea,
 button,
 .button,
-.ob-nav a,
+.ob-site-header,
 .ob-logo,
-.ob-call-mini,
-.ob-floating-call,
-.ob-channel-list li a {
-  font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+.ob-nav,
+.banner,
+.spotlight,
+.wrapper,
+.ob-card-grid,
+.ob-channel-list,
+.ob-floating-call {
+  font-family: var(--ob-font-main) !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1, "kern" 1;
+  font-feature-settings: 'tnum' 1, 'kern' 1;
 }
 
-body {
-  letter-spacing: -0.018em;
+body,
+p,
+li,
+a,
+span,
+strong,
+small,
+dt,
+dd {
+  letter-spacing: var(--ob-font-letter);
+  word-break: keep-all;
 }
 
-h1, h2, h3, h4, h5, h6,
+h1,
+h2,
+h3,
+h4,
+.ob-logo,
 .banner h1,
 .banner h2,
 .banner .major,
-.eyebrow {
-  font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif !important;
-  font-weight: 750 !important;
-  letter-spacing: -0.045em !important;
-  line-height: 1.22;
+.ob-card-grid strong {
+  font-family: var(--ob-font-main) !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.04em;
+  word-break: keep-all;
 }
 
-/* 숫자가 섞인 헤드라인의 시각적 높이 보정 */
-.banner h1,
-.banner h2,
-.ob-hero h2,
-.ob-subhero h1 {
-  font-variant-numeric: tabular-nums;
-  word-spacing: -0.02em;
-}
-
-/* 2) 모든 버튼 공통: 글씨는 선명하게, 움직임은 역동적이되 과하지 않게 */
+/* 모든 버튼 공통: 빠짐없이 선명한 글씨, 정렬, 역동 hover */
 a.button,
-button,
+button.button,
 .button,
-.ob-call-mini,
 .ob-floating-call,
+.ob-call-mini,
 .ob-channel-list li a,
-.ob-nav a {
+.ob-big-links .button,
+.actions .button,
+.banner .actions .button,
+.spotlight .actions .button,
+.ob-contact .button {
+  position: relative;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .45rem;
+  min-height: 48px;
+  font-family: var(--ob-font-main) !important;
   font-weight: 850 !important;
-  letter-spacing: -0.012em !important;
-  transform: translateZ(0);
+  letter-spacing: -0.015em;
+  line-height: 1.15 !important;
+  text-align: center !important;
+  text-decoration: none !important;
+  border-radius: 9px !important;
+  transform: translateY(0) scale(1);
   will-change: transform, box-shadow, filter;
   transition:
-    transform 0.22s cubic-bezier(.2,.8,.2,1),
-    box-shadow 0.22s cubic-bezier(.2,.8,.2,1),
-    filter 0.22s ease,
-    background-color 0.22s ease,
-    border-color 0.22s ease,
-    color 0.22s ease !important;
+    transform .22s cubic-bezier(.2,.8,.2,1),
+    box-shadow .22s cubic-bezier(.2,.8,.2,1),
+    filter .22s ease,
+    background-color .22s ease,
+    border-color .22s ease !important;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
-/* 진한 배경 버튼은 어떤 경우에도 흰 글씨 */
-.button,
-.button *,
-.button.primary,
-.button.primary *,
-.ob-big-links .button,
-.ob-big-links .button *,
-.banner .actions .button,
-.banner .actions .button *,
-.spotlight .actions .button,
-.spotlight .actions .button *,
-.ob-contact .button,
-.ob-contact .button *,
-.ob-floating-call,
-.ob-floating-call *,
-.ob-call-mini,
-.ob-call-mini * {
-  color: #ffffff !important;
-}
-
-/* 모든 주요 버튼 hover/keyboard focus 움직임 */
 a.button:hover,
-a.button:focus-visible,
-button:hover,
-button:focus-visible,
+button.button:hover,
 .button:hover,
-.button:focus-visible,
-.ob-call-mini:hover,
-.ob-call-mini:focus-visible,
 .ob-floating-call:hover,
-.ob-floating-call:focus-visible {
-  transform: translateY(-4px) scale(1.025) !important;
-  filter: brightness(1.08) saturate(1.04);
-  box-shadow: 0 20px 42px rgba(15, 23, 42, 0.28), 0 0 0 1px rgba(255,255,255,0.08) inset !important;
-}
-
-/* 누르는 순간 손맛 */
-a.button:active,
-button:active,
-.button:active,
-.ob-call-mini:active,
-.ob-floating-call:active,
-.ob-channel-list li a:active,
-.ob-nav a:active {
-  transform: translateY(-1px) scale(0.985) !important;
-  filter: brightness(0.96);
-}
-
-/* 3) 바로가기 큰 버튼: 초록/네이비 교차 유지 + 모든 텍스트 흰색 고정 */
-.ob-big-links li:nth-child(odd) .button,
-.ob-big-links li:nth-child(odd) .button:visited {
-  background: #14532d !important;
-  border-color: #14532d !important;
-  color: #ffffff !important;
-  box-shadow: 0 18px 38px rgba(20, 83, 45, 0.26) !important;
-}
-
-.ob-big-links li:nth-child(even) .button,
-.ob-big-links li:nth-child(even) .button:visited {
-  background: #1e3a8a !important;
-  border-color: #1e3a8a !important;
-  color: #ffffff !important;
-  box-shadow: 0 18px 38px rgba(30, 58, 138, 0.26) !important;
-}
-
-.ob-big-links li .button,
-.ob-big-links li .button:visited,
-.ob-big-links li .button:hover,
-.ob-big-links li .button:focus-visible,
-.ob-big-links li .button:active {
-  color: #ffffff !important;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.38) !important;
-}
-
-/* 4) 상단 메뉴: hover 시 살아 움직이는 느낌 강화 */
-.ob-nav a:hover,
-.ob-nav a:focus-visible {
-  transform: translateY(-5px) scale(1.06) !important;
-  background: rgba(236, 253, 243, 0.96) !important;
-  color: #14532d !important;
-  box-shadow: 0 14px 30px rgba(20, 83, 45, 0.24), 0 0 0 1px rgba(20,83,45,0.10) inset !important;
-}
-
-.ob-nav a::after {
-  height: 3px !important;
-  border-radius: 999px;
-}
-
-/* 5) 링크형 불릿 버튼: 테두리와 클릭감 강화 */
-.ob-channel-list li a,
-.ob-channel-list li a:visited {
-  border: 2px solid #94a3b8 !important;
-  color: #0f172a !important;
-  background: #ffffff !important;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.09) !important;
-}
-
+.ob-call-mini:hover,
 .ob-channel-list li a:hover,
-.ob-channel-list li a:focus-visible {
-  border-color: #14532d !important;
-  background: #f0fdf4 !important;
-  color: #14532d !important;
-  transform: translateY(-3px) scale(1.035) !important;
-  box-shadow: 0 16px 32px rgba(20, 83, 45, 0.18) !important;
+.ob-big-links .button:hover,
+.actions .button:hover,
+.banner .actions .button:hover,
+.spotlight .actions .button:hover,
+.ob-contact .button:hover {
+  transform: translateY(-4px) scale(1.025) !important;
+  box-shadow: var(--ob-btn-motion-shadow) !important;
+  filter: brightness(1.08) saturate(1.08);
 }
 
-/* 6) 히어로/어두운 배경 위 텍스트 최종 가독성 */
-.banner .content,
-.banner .content *,
-.banner h1,
-.banner h2,
-.banner p,
-.banner .major,
-.banner .eyebrow {
+a.button:active,
+button.button:active,
+.button:active,
+.ob-floating-call:active,
+.ob-call-mini:active,
+.ob-channel-list li a:active,
+.ob-big-links .button:active,
+.actions .button:active,
+.banner .actions .button:active,
+.spotlight .actions .button:active,
+.ob-contact .button:active {
+  transform: translateY(-1px) scale(.985) !important;
+  filter: brightness(.98);
+}
+
+/* 진한 버튼은 무조건 밝은 텍스트 */
+.button,
+.button.primary,
+.ob-big-links .button,
+.actions .button,
+.banner .actions .button,
+.spotlight .actions .button,
+.ob-contact .button,
+.ob-floating-call,
+.ob-call-mini {
   color: #ffffff !important;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.72) !important;
+  text-shadow: 0 2px 7px rgba(0,0,0,.34) !important;
 }
 
-/* 7) 대표 작업 섹션: 배경은 너무 죽지 않게, 카드는 읽기 좋게 */
-.ob-featured-work::before {
-  background: rgba(5, 11, 23, 0.12) !important;
+.button *,
+.button.primary *,
+.ob-big-links .button *,
+.actions .button *,
+.banner .actions .button *,
+.spotlight .actions .button *,
+.ob-contact .button *,
+.ob-floating-call *,
+.ob-call-mini * {
+  color: inherit !important;
 }
 
+/* 링크형 불릿 버튼도 모바일 터치감 있게 */
+.ob-channel-list li a {
+  min-height: 42px;
+  border-width: 2px !important;
+  font-weight: 850 !important;
+}
+
+/* 대표 작업 카드 hover 보강 */
 .ob-featured-work .items.style1 > * {
-  background: rgba(12, 20, 34, 0.62) !important;
-  border: 1px solid rgba(255, 255, 255, 0.20) !important;
-  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.24) !important;
+  will-change: transform, box-shadow, filter;
+  transition: transform .24s cubic-bezier(.2,.8,.2,1), box-shadow .24s cubic-bezier(.2,.8,.2,1), filter .24s ease, background .24s ease !important;
 }
 
-.ob-featured-work .items.style1 > *:hover,
-.ob-featured-work .items.style1 > *:focus-within {
-  transform: translateY(-7px) scale(1.018) !important;
-  box-shadow: 0 30px 58px rgba(0, 0, 0, 0.32) !important;
-  background: rgba(15, 25, 42, 0.68) !important;
+.ob-featured-work .items.style1 > *:hover {
+  transform: translateY(-7px) scale(1.025) !important;
+  box-shadow: 0 32px 64px rgba(0,0,0,.34) !important;
+  filter: brightness(1.05);
 }
 
-.ob-featured-work h2,
-.ob-featured-work h3,
-.ob-featured-work p,
-.ob-featured-work .items.style1 > * h3,
-.ob-featured-work .items.style1 > * p {
-  color: #f8fafc !important;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.50) !important;
+/* 상단 메뉴 hover 조금 더 생동감 있게 */
+.ob-nav a {
+  position: relative;
+  font-weight: 800 !important;
+  transition: transform .22s cubic-bezier(.2,.8,.2,1), color .22s ease, text-shadow .22s ease !important;
 }
 
-/* 8) 모바일: 터치 영역과 폰트 안정성 */
+.ob-nav a:hover {
+  transform: translateY(-4px) scale(1.055) !important;
+  text-shadow: 0 8px 20px rgba(20,83,45,.28) !important;
+}
+
+/* 모바일: 글자와 버튼 터치 안정화 */
 @media screen and (max-width: 760px) {
-  body {
-    letter-spacing: -0.02em;
+  body,
+  p,
+  li,
+  a,
+  span,
+  strong {
+    letter-spacing: -0.012em;
   }
 
-  h1, h2, h3,
-  .banner h1,
-  .banner h2 {
-    letter-spacing: -0.052em !important;
-  }
-
-  a.button,
-  button,
   .button,
-  .ob-big-links .button,
+  .button.primary,
   .banner .actions .button,
-  .spotlight .actions .button {
-    min-height: 54px !important;
-    font-size: 0.98rem !important;
+  .actions .button,
+  .ob-big-links .button,
+  .ob-contact .button,
+  .ob-floating-call,
+  .ob-call-mini {
+    min-height: 52px !important;
+    padding: 1rem 1.2rem !important;
+    font-size: .98rem !important;
     font-weight: 850 !important;
   }
 
-  .ob-nav a:hover,
-  .ob-nav a:focus-visible {
+  .ob-channel-list li a {
+    min-height: 44px !important;
+    padding: .62rem .95rem !important;
+  }
+
+  .ob-nav a:hover {
     transform: translateY(-2px) scale(1.025) !important;
   }
-
-  .ob-featured-work::before {
-    background: rgba(5, 11, 23, 0.18) !important;
-  }
 }
 
 
-/* 찾아오시는 길 섹션 */
+/* =========================================================
+   오박사 찾아오시는 길: 카카오맵 화면 삽입 섹션
+   ========================================================= */
 .ob-directions {
-  background: linear-gradient(180deg, #f8fafc 0%, #eef7f1 100%);
+  background: #f7faf8;
 }
 
-.ob-directions .eyebrow {
-  color: #14532d !important;
-  text-shadow: none !important;
-}
-
-.ob-directions h2 {
-  color: #0f172a !important;
-  font-weight: 850 !important;
-  letter-spacing: -0.045em;
+.ob-directions .inner {
+  max-width: 1180px;
 }
 
 .ob-directions .major {
-  color: #334155 !important;
-  text-shadow: none !important;
-  font-weight: 650;
+  color: #1f2937;
 }
 
-.ob-map-card {
-  margin: 2rem auto 0;
-  padding: 1.8rem;
-  border: 2px solid rgba(20, 83, 45, 0.18);
-  border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 22px 48px rgba(15, 23, 42, 0.12);
+.ob-map-panel {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.34fr) minmax(0, 0.66fr);
+  gap: 1.5rem;
+  align-items: stretch;
+  margin-top: 2rem;
   text-align: left;
 }
 
-.ob-map-card h3 {
-  margin-bottom: 0.5rem;
-  color: #14532d !important;
-  font-weight: 850 !important;
+.ob-map-info,
+.ob-map-frame {
+  border: 1px solid rgba(20, 83, 45, 0.18);
+  border-radius: 16px;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.14);
+  overflow: hidden;
+  background: #ffffff;
 }
 
-.ob-map-card p {
-  margin-bottom: 1.3rem;
-  color: #334155 !important;
-  font-weight: 650;
+.ob-map-info {
+  padding: 2rem;
 }
 
-.ob-direction-actions .button,
-.ob-direction-actions .button:visited {
-  color: #ffffff !important;
-  font-weight: 850 !important;
-  border-radius: 9px !important;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.35) !important;
+.ob-map-info h3 {
+  margin-bottom: 1.25rem;
+  color: #0f172a;
 }
 
-.ob-direction-actions li:nth-child(1) .button {
-  background: #14532d !important;
-  border-color: #14532d !important;
-  box-shadow: 0 18px 38px rgba(20, 83, 45, 0.24) !important;
+.ob-map-info p {
+  margin: 0 0 1.1rem 0;
+  color: #263238;
+  line-height: 1.7;
 }
 
-.ob-direction-actions li:nth-child(2) .button {
-  background: #1e3a8a !important;
-  border-color: #1e3a8a !important;
-  box-shadow: 0 18px 38px rgba(30, 58, 138, 0.24) !important;
+.ob-map-info strong {
+  color: #14532d;
+  font-weight: 850;
+}
+
+.ob-map-info a:not(.button) {
+  color: #0f4f2b;
+  font-weight: 800;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(20, 83, 45, 0.28);
+}
+
+.ob-map-frame {
+  min-height: 420px;
+  background: #eef3ef;
+}
+
+.ob-map-frame .root_daum_roughmap,
+.ob-map-frame .root_daum_roughmap_landing,
+.ob-map-frame .wrap_map {
+  width: 100% !important;
+  height: 420px !important;
+  max-width: none !important;
+}
+
+@media screen and (max-width: 980px) {
+  .ob-map-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .ob-map-info {
+    text-align: center;
+  }
 }
 
 @media screen and (max-width: 760px) {
-  .ob-map-card {
-    padding: 1.35rem;
-    border-radius: 12px;
+  .ob-directions .inner {
+    padding-left: 1.15rem;
+    padding-right: 1.15rem;
   }
 
-  .ob-directions h2 {
-    font-size: 1.45rem;
-    line-height: 1.35;
+  .ob-map-info {
+    padding: 1.35rem;
+  }
+
+  .ob-map-frame,
+  .ob-map-frame .root_daum_roughmap,
+  .ob-map-frame .root_daum_roughmap_landing,
+  .ob-map-frame .wrap_map {
+    min-height: 340px;
+    height: 340px !important;
   }
 }

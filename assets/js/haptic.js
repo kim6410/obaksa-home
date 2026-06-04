@@ -1,76 +1,69 @@
 /**
- * Haptic Feedback for Obaksa
- * 모든 주요 버튼/링크에 모바일 햅틱 피드백을 적용합니다.
- * 지원하지 않는 브라우저에서는 조용히 무시됩니다.
+ * Obaksa Haptic Feedback v2
+ * - 주요 CTA/버튼/링크형 버튼 전체에 모바일 진동 피드백 적용
+ * - 지원하지 않는 브라우저에서는 조용히 무시
  */
 (function () {
-  "use strict";
+  'use strict';
 
-  function isHapticSupported() {
-    return typeof navigator !== "undefined" && typeof navigator.vibrate === "function";
+  function getVibrator() {
+    return navigator.vibrate || navigator.webkitVibrate || navigator.mozVibrate || navigator.msVibrate;
   }
 
-  function triggerHaptic(duration) {
+  function isHapticSupported() {
+    return typeof getVibrator() === 'function';
+  }
+
+  function triggerHaptic(pattern) {
     if (!isHapticSupported()) return;
     try {
-      navigator.vibrate(duration || 22);
-    } catch (e) {
-      // 지원하지 않거나 브라우저가 차단하면 아무 작업도 하지 않습니다.
+      getVibrator().call(navigator, pattern || 42);
+    } catch (error) {
+      // 미지원 기기에서는 아무 일도 하지 않습니다.
     }
   }
 
-  function isPrimaryPointerEvent(event) {
-    if (!event) return true;
-    if (event.pointerType && event.pointerType !== "touch" && event.pointerType !== "pen") return false;
-    return true;
+  function isInteractiveTarget(el) {
+    if (!el || !el.matches) return false;
+    return el.matches([
+      'a.button',
+      'button',
+      '[role="button"]',
+      '.button',
+      '.ob-floating-call',
+      '.ob-call-mini',
+      '.ob-channel-list a',
+      '.ob-big-links a',
+      '.actions a',
+      'a[href^="tel:"]',
+      'a[href^="mailto:"]',
+      'a[href*="kko.to"]',
+      'a[href*="map.kakao"]',
+      'a[href*="naver"]',
+      'a[href*="instagram"]',
+      'a[href*="daangn"]',
+      'a[href*="litt.ly"]',
+      'a[href*="google"]'
+    ].join(','));
   }
 
   function bindHaptic() {
-    var selector = [
-      "a.button",
-      "button",
-      ".button",
-      ".ob-nav a",
-      ".ob-call-mini",
-      ".ob-floating-call",
-      ".ob-channel-list a",
-      ".ob-big-links a",
-      "a[href^='tel:']",
-      "a[href^='sms:']",
-      "a[href*='naver']",
-      "a[href*='instagram']",
-      "a[href*='daangn']",
-      "a[href*='litt.ly']",
-      "a[href*='google']"
-    ].join(",");
+    document.addEventListener('pointerdown', function (event) {
+      const target = event.target && event.target.closest ? event.target.closest('a, button, [role="button"], .button') : null;
+      if (!target || !isInteractiveTarget(target)) return;
+      triggerHaptic(38);
+    }, { passive: true });
 
-    var targets = document.querySelectorAll(selector);
-
-    targets.forEach(function (el) {
-      if (el.dataset.obHapticBound === "1") return;
-      el.dataset.obHapticBound = "1";
-
-      el.addEventListener("pointerdown", function (event) {
-        if (!isPrimaryPointerEvent(event)) return;
-        triggerHaptic(18);
-      }, { passive: true });
-
-      el.addEventListener("keydown", function (event) {
-        if (event.key === "Enter" || event.key === " ") {
-          triggerHaptic(12);
-        }
-      });
-    });
+    document.addEventListener('click', function (event) {
+      const target = event.target && event.target.closest ? event.target.closest('a, button, [role="button"], .button') : null;
+      if (!target || !isInteractiveTarget(target)) return;
+      triggerHaptic([18, 28]);
+    }, { passive: true });
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", bindHaptic);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindHaptic, { once: true });
   } else {
     bindHaptic();
   }
-
-  window.ObaksaHaptic = {
-    trigger: triggerHaptic,
-    refresh: bindHaptic
-  };
 })();

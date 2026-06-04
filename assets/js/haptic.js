@@ -1,49 +1,76 @@
 /**
  * Haptic Feedback for Obaksa
- * Provides mobile device vibration feedback on button clicks
+ * 모든 주요 버튼/링크에 모바일 햅틱 피드백을 적용합니다.
+ * 지원하지 않는 브라우저에서는 조용히 무시됩니다.
  */
+(function () {
+  "use strict";
 
-(function() {
-  'use strict';
+  function isHapticSupported() {
+    return typeof navigator !== "undefined" && typeof navigator.vibrate === "function";
+  }
 
-  // Check if Vibration API is available
-  const isHapticSupported = () => {
-    return !!navigator.vibrate || !!navigator.webkitVibrate || !!navigator.mozVibrate || !!navigator.msVibrate;
-  };
-
-  // Trigger haptic feedback
-  const triggerHaptic = (duration = 50) => {
+  function triggerHaptic(duration) {
     if (!isHapticSupported()) return;
-    
-    const vibrator = navigator.vibrate || navigator.webkitVibrate || navigator.mozVibrate || navigator.msVibrate;
     try {
-      if (vibrator && typeof vibrator.call === 'function') {
-        vibrator.call(navigator, duration);
-      } else if (vibrator && typeof vibrator === 'function') {
-        vibrator(duration);
-      }
+      navigator.vibrate(duration || 22);
     } catch (e) {
-      // Silently fail if vibration is not supported
+      // 지원하지 않거나 브라우저가 차단하면 아무 작업도 하지 않습니다.
     }
-  };
+  }
 
-  // Initialize haptic feedback for buttons
-  const initHapticButtons = () => {
-    const buttons = document.querySelectorAll(
-      'a.button[href^="tel:"], a.button[href*="naver.com"], a.button[href*="instagram"], a.button[href*="blog.naver"], a.button[href*="booking"], a.button[href*="daangn"], a.button[href*="litt.ly"]'
-    );
+  function isPrimaryPointerEvent(event) {
+    if (!event) return true;
+    if (event.pointerType && event.pointerType !== "touch" && event.pointerType !== "pen") return false;
+    return true;
+  }
 
-    buttons.forEach(button => {
-      button.addEventListener('click', () => {
-        triggerHaptic(50);
+  function bindHaptic() {
+    var selector = [
+      "a.button",
+      "button",
+      ".button",
+      ".ob-nav a",
+      ".ob-call-mini",
+      ".ob-floating-call",
+      ".ob-channel-list a",
+      ".ob-big-links a",
+      "a[href^='tel:']",
+      "a[href^='sms:']",
+      "a[href*='naver']",
+      "a[href*='instagram']",
+      "a[href*='daangn']",
+      "a[href*='litt.ly']",
+      "a[href*='google']"
+    ].join(",");
+
+    var targets = document.querySelectorAll(selector);
+
+    targets.forEach(function (el) {
+      if (el.dataset.obHapticBound === "1") return;
+      el.dataset.obHapticBound = "1";
+
+      el.addEventListener("pointerdown", function (event) {
+        if (!isPrimaryPointerEvent(event)) return;
+        triggerHaptic(18);
+      }, { passive: true });
+
+      el.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+          triggerHaptic(12);
+        }
       });
     });
-  };
-
-  // Initialize on DOM ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initHapticButtons);
-  } else {
-    initHapticButtons();
   }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bindHaptic);
+  } else {
+    bindHaptic();
+  }
+
+  window.ObaksaHaptic = {
+    trigger: triggerHaptic,
+    refresh: bindHaptic
+  };
 })();

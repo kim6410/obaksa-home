@@ -1,3 +1,4 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css");
 
 /*
   오박사만능인테리어 다중 페이지 홈페이지 전용 CSS
@@ -289,5 +290,255 @@ a.button:hover,
 
   .ob-featured-work::before {
     background: rgba(5, 11, 23, 0.24) !important;
+  }
+}
+
+
+/* =========================================================
+   폰트·버튼·햅틱 최종 보강 패치 v3
+   목적: 한글/숫자/영문 폰트 균일화, 버튼 동적 인터랙션, 모바일 가독성 강화
+   ========================================================= */
+
+/* 1) 전체 폰트 통일: 한글·숫자·영문이 울퉁불퉁해 보이지 않도록 정리 */
+html,
+body,
+input,
+select,
+textarea,
+button,
+.button,
+.ob-nav a,
+.ob-logo,
+.ob-call-mini,
+.ob-floating-call,
+.ob-channel-list li a {
+  font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "kern" 1;
+}
+
+body {
+  letter-spacing: -0.018em;
+}
+
+h1, h2, h3, h4, h5, h6,
+.banner h1,
+.banner h2,
+.banner .major,
+.eyebrow {
+  font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif !important;
+  font-weight: 750 !important;
+  letter-spacing: -0.045em !important;
+  line-height: 1.22;
+}
+
+/* 숫자가 섞인 헤드라인의 시각적 높이 보정 */
+.banner h1,
+.banner h2,
+.ob-hero h2,
+.ob-subhero h1 {
+  font-variant-numeric: tabular-nums;
+  word-spacing: -0.02em;
+}
+
+/* 2) 모든 버튼 공통: 글씨는 선명하게, 움직임은 역동적이되 과하지 않게 */
+a.button,
+button,
+.button,
+.ob-call-mini,
+.ob-floating-call,
+.ob-channel-list li a,
+.ob-nav a {
+  font-weight: 850 !important;
+  letter-spacing: -0.012em !important;
+  transform: translateZ(0);
+  will-change: transform, box-shadow, filter;
+  transition:
+    transform 0.22s cubic-bezier(.2,.8,.2,1),
+    box-shadow 0.22s cubic-bezier(.2,.8,.2,1),
+    filter 0.22s ease,
+    background-color 0.22s ease,
+    border-color 0.22s ease,
+    color 0.22s ease !important;
+}
+
+/* 진한 배경 버튼은 어떤 경우에도 흰 글씨 */
+.button,
+.button *,
+.button.primary,
+.button.primary *,
+.ob-big-links .button,
+.ob-big-links .button *,
+.banner .actions .button,
+.banner .actions .button *,
+.spotlight .actions .button,
+.spotlight .actions .button *,
+.ob-contact .button,
+.ob-contact .button *,
+.ob-floating-call,
+.ob-floating-call *,
+.ob-call-mini,
+.ob-call-mini * {
+  color: #ffffff !important;
+}
+
+/* 모든 주요 버튼 hover/keyboard focus 움직임 */
+a.button:hover,
+a.button:focus-visible,
+button:hover,
+button:focus-visible,
+.button:hover,
+.button:focus-visible,
+.ob-call-mini:hover,
+.ob-call-mini:focus-visible,
+.ob-floating-call:hover,
+.ob-floating-call:focus-visible {
+  transform: translateY(-4px) scale(1.025) !important;
+  filter: brightness(1.08) saturate(1.04);
+  box-shadow: 0 20px 42px rgba(15, 23, 42, 0.28), 0 0 0 1px rgba(255,255,255,0.08) inset !important;
+}
+
+/* 누르는 순간 손맛 */
+a.button:active,
+button:active,
+.button:active,
+.ob-call-mini:active,
+.ob-floating-call:active,
+.ob-channel-list li a:active,
+.ob-nav a:active {
+  transform: translateY(-1px) scale(0.985) !important;
+  filter: brightness(0.96);
+}
+
+/* 3) 바로가기 큰 버튼: 초록/네이비 교차 유지 + 모든 텍스트 흰색 고정 */
+.ob-big-links li:nth-child(odd) .button,
+.ob-big-links li:nth-child(odd) .button:visited {
+  background: #14532d !important;
+  border-color: #14532d !important;
+  color: #ffffff !important;
+  box-shadow: 0 18px 38px rgba(20, 83, 45, 0.26) !important;
+}
+
+.ob-big-links li:nth-child(even) .button,
+.ob-big-links li:nth-child(even) .button:visited {
+  background: #1e3a8a !important;
+  border-color: #1e3a8a !important;
+  color: #ffffff !important;
+  box-shadow: 0 18px 38px rgba(30, 58, 138, 0.26) !important;
+}
+
+.ob-big-links li .button,
+.ob-big-links li .button:visited,
+.ob-big-links li .button:hover,
+.ob-big-links li .button:focus-visible,
+.ob-big-links li .button:active {
+  color: #ffffff !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.38) !important;
+}
+
+/* 4) 상단 메뉴: hover 시 살아 움직이는 느낌 강화 */
+.ob-nav a:hover,
+.ob-nav a:focus-visible {
+  transform: translateY(-5px) scale(1.06) !important;
+  background: rgba(236, 253, 243, 0.96) !important;
+  color: #14532d !important;
+  box-shadow: 0 14px 30px rgba(20, 83, 45, 0.24), 0 0 0 1px rgba(20,83,45,0.10) inset !important;
+}
+
+.ob-nav a::after {
+  height: 3px !important;
+  border-radius: 999px;
+}
+
+/* 5) 링크형 불릿 버튼: 테두리와 클릭감 강화 */
+.ob-channel-list li a,
+.ob-channel-list li a:visited {
+  border: 2px solid #94a3b8 !important;
+  color: #0f172a !important;
+  background: #ffffff !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.09) !important;
+}
+
+.ob-channel-list li a:hover,
+.ob-channel-list li a:focus-visible {
+  border-color: #14532d !important;
+  background: #f0fdf4 !important;
+  color: #14532d !important;
+  transform: translateY(-3px) scale(1.035) !important;
+  box-shadow: 0 16px 32px rgba(20, 83, 45, 0.18) !important;
+}
+
+/* 6) 히어로/어두운 배경 위 텍스트 최종 가독성 */
+.banner .content,
+.banner .content *,
+.banner h1,
+.banner h2,
+.banner p,
+.banner .major,
+.banner .eyebrow {
+  color: #ffffff !important;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.72) !important;
+}
+
+/* 7) 대표 작업 섹션: 배경은 너무 죽지 않게, 카드는 읽기 좋게 */
+.ob-featured-work::before {
+  background: rgba(5, 11, 23, 0.12) !important;
+}
+
+.ob-featured-work .items.style1 > * {
+  background: rgba(12, 20, 34, 0.62) !important;
+  border: 1px solid rgba(255, 255, 255, 0.20) !important;
+  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.24) !important;
+}
+
+.ob-featured-work .items.style1 > *:hover,
+.ob-featured-work .items.style1 > *:focus-within {
+  transform: translateY(-7px) scale(1.018) !important;
+  box-shadow: 0 30px 58px rgba(0, 0, 0, 0.32) !important;
+  background: rgba(15, 25, 42, 0.68) !important;
+}
+
+.ob-featured-work h2,
+.ob-featured-work h3,
+.ob-featured-work p,
+.ob-featured-work .items.style1 > * h3,
+.ob-featured-work .items.style1 > * p {
+  color: #f8fafc !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.50) !important;
+}
+
+/* 8) 모바일: 터치 영역과 폰트 안정성 */
+@media screen and (max-width: 760px) {
+  body {
+    letter-spacing: -0.02em;
+  }
+
+  h1, h2, h3,
+  .banner h1,
+  .banner h2 {
+    letter-spacing: -0.052em !important;
+  }
+
+  a.button,
+  button,
+  .button,
+  .ob-big-links .button,
+  .banner .actions .button,
+  .spotlight .actions .button {
+    min-height: 54px !important;
+    font-size: 0.98rem !important;
+    font-weight: 850 !important;
+  }
+
+  .ob-nav a:hover,
+  .ob-nav a:focus-visible {
+    transform: translateY(-2px) scale(1.025) !important;
+  }
+
+  .ob-featured-work::before {
+    background: rgba(5, 11, 23, 0.18) !important;
   }
 }

@@ -1365,3 +1365,97 @@ button.button:active,
     animation: none !important;
   }
 }
+
+/* =========================================================
+   오박사 PC 상단 메뉴 중앙 정렬 + PC 전용 스크롤 등장 모션
+   - 모바일에서는 기존 구조와 속도 유지
+   - JS 실패 시 콘텐츠가 숨겨지지 않도록 body.ob-motion-ready 조건 사용
+   ========================================================= */
+
+@media screen and (min-width: 981px) {
+  .ob-site-header {
+    justify-content: center !important;
+  }
+
+  .ob-brand-line {
+    position: absolute !important;
+    left: 1.4rem !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 2 !important;
+  }
+
+  .ob-nav {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin-left: 0 !important;
+    justify-content: center !important;
+    z-index: 1 !important;
+  }
+
+  .ob-nav a {
+    white-space: nowrap !important;
+  }
+
+  body.ob-motion-ready .ob-reveal {
+    opacity: 0;
+    transform: translate3d(0, 36px, 0) scale(0.985);
+    filter: blur(3px);
+    transition:
+      opacity 0.82s ease,
+      transform 0.82s cubic-bezier(.2, .8, .2, 1),
+      filter 0.82s ease;
+    transition-delay: var(--ob-reveal-delay, 0ms);
+    will-change: opacity, transform, filter;
+  }
+
+  body.ob-motion-ready .ob-reveal.is-visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+
+  body.ob-motion-ready .spotlight.orient-left .image.ob-reveal,
+  body.ob-motion-ready .spotlight.orient-right .content.ob-reveal,
+  body.ob-motion-ready .gallery article.ob-reveal:nth-child(odd),
+  body.ob-motion-ready .ob-real-case-slider article.ob-reveal:nth-child(odd) {
+    transform: translate3d(-42px, 0, 0) scale(0.985);
+  }
+
+  body.ob-motion-ready .spotlight.orient-right .image.ob-reveal,
+  body.ob-motion-ready .spotlight.orient-left .content.ob-reveal,
+  body.ob-motion-ready .gallery article.ob-reveal:nth-child(even),
+  body.ob-motion-ready .ob-real-case-slider article.ob-reveal:nth-child(even) {
+    transform: translate3d(42px, 0, 0) scale(0.985);
+  }
+
+  body.ob-motion-ready .spotlight .image.ob-reveal.is-visible,
+  body.ob-motion-ready .spotlight .content.ob-reveal.is-visible,
+  body.ob-motion-ready .gallery article.ob-reveal.is-visible,
+  body.ob-motion-ready .ob-real-case-slider article.ob-reveal.is-visible {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  body.ob-motion-ready .button.ob-reveal,
+  body.ob-motion-ready .actions.ob-reveal {
+    transform: translate3d(0, 24px, 0) scale(0.96);
+  }
+
+  body.ob-motion-ready .button.ob-reveal.is-visible,
+  body.ob-motion-ready .actions.ob-reveal.is-visible {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@media screen and (max-width: 980px), (prefers-reduced-motion: reduce) {
+  .ob-reveal,
+  .ob-reveal.is-visible {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}

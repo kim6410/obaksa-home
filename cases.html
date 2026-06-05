@@ -13,14 +13,36 @@
   <link rel="stylesheet" href="assets/css/obaksa-custom.css" />
   <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
   <style>
-    :root{--ob-blue:#071f4a;--ob-blue2:#0b367b;--ob-yellow:#ffd43b;--ob-green:#0b7a31;--ob-text:#172033;--ob-muted:#64748b;--ob-soft:#f6f8fc;--ob-line:#e5e7eb;}
-    body{word-break:keep-all;}
-    .case-board-wrap{width:min(100% - 2rem,1320px);margin:0 auto;}
+    /* ==========================================================
+       오박사만능인테리어 시공사례 게시판 전용 스타일
+       - 버튼 중앙 정렬
+       - 히어로 텍스트 크기 조정
+       - 게시판 폭 확대
+       - 캐릭터 이미지 확대
+       - 모바일 반응형 유지
+       ========================================================== */
+    :root{
+      --ob-blue:#071f4a;
+      --ob-blue2:#0b367b;
+      --ob-blue3:#174f9b;
+      --ob-yellow:#ffd43b;
+      --ob-green:#087a33;
+      --ob-green2:#05963f;
+      --ob-text:#172033;
+      --ob-muted:#64748b;
+      --ob-soft:#f6f8fc;
+      --ob-line:#e5e7eb;
+      --ob-card:#ffffff;
+    }
+
+    body{word-break:keep-all;background:#fff;color:var(--ob-text);}
+    .case-board-wrap{width:min(100% - 2rem,1420px);margin:0 auto;}
+
     .case-board-hero{
       position:relative;
       overflow:hidden;
-      min-height:560px;
-      padding:7.2rem 0 5.2rem;
+      min-height:520px;
+      padding:6.5rem 0 4.8rem;
       color:#fff;
       text-align:center;
       background:#061b42;
@@ -31,16 +53,16 @@
     .case-board-hero::before{
       content:"";
       position:absolute;
-      inset:-7%;
+      inset:-6%;
       z-index:-3;
-      background-image:url('https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=2000&q=88');
+      background-image:url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=2200&q=88');
       background-size:cover;
-      background-position:center 52%;
+      background-position:center 48%;
       opacity:1;
       transform:scale(1.04);
-      animation:caseHeroDrift 18s ease-in-out infinite alternate;
+      animation:caseHeroDrift 20s ease-in-out infinite alternate;
+      filter:contrast(1.08) saturate(1.02) brightness(1.05);
       will-change:transform;
-      filter:contrast(1.12) saturate(1.04) brightness(1.05);
     }
     .case-board-hero::after{
       content:"";
@@ -48,31 +70,34 @@
       inset:0;
       z-index:-2;
       background:
-        linear-gradient(90deg, rgba(6,27,66,.74) 0%, rgba(6,27,66,.56) 38%, rgba(6,27,66,.18) 100%),
-        linear-gradient(180deg, rgba(6,27,66,.18) 0%, rgba(6,27,66,.48) 100%);
+        radial-gradient(circle at 76% 20%, rgba(255,255,255,.16), transparent 30%),
+        linear-gradient(90deg, rgba(5,18,44,.72) 0%, rgba(7,31,74,.54) 44%, rgba(7,31,74,.24) 100%),
+        linear-gradient(180deg, rgba(7,31,74,.18) 0%, rgba(7,31,74,.58) 100%);
     }
     .case-board-hero .case-board-wrap{
       position:relative;
       z-index:1;
-      width:min(100% - 2rem,1040px);
-      padding:2.35rem 2rem 2.1rem;
-      border:1px solid rgba(255,255,255,.24);
-      border-radius:32px;
-      background:linear-gradient(135deg, rgba(7,31,74,.72), rgba(11,54,123,.42));
-      box-shadow:0 28px 80px rgba(0,0,0,.28);
-      backdrop-filter:blur(3px);
+      width:min(100% - 2rem,1120px);
+      padding:2.1rem 2.2rem 2rem;
+      border:1px solid rgba(255,255,255,.26);
+      border-radius:30px;
+      background:linear-gradient(135deg, rgba(7,31,74,.66), rgba(11,54,123,.34));
+      box-shadow:0 28px 80px rgba(0,0,0,.26);
+      backdrop-filter:blur(5px);
     }
     .case-board-hero .eyebrow{
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      margin:0 auto .95rem;
-      padding:.42rem 1rem;
+      height:42px;
+      margin:0 auto .9rem;
+      padding:0 1.1rem;
       border-radius:999px;
       background:rgba(236,253,245,.92);
       color:#0b367b;
       font-weight:900;
       letter-spacing:-.03em;
+      line-height:1!important;
       text-shadow:none;
       box-shadow:0 10px 24px rgba(0,0,0,.12);
     }
@@ -80,53 +105,267 @@
       from{transform:scale(1.04) translate3d(-1.1%, -1%, 0);}
       to{transform:scale(1.12) translate3d(1.1%, 1%, 0);}
     }
-    .case-board-hero h1{color:#fff;font-weight:900;letter-spacing:-.075em;font-size:clamp(2.15rem,4.8vw,4.3rem);line-height:1.1;margin:0 auto 1rem;max-width:980px;text-shadow:0 4px 18px rgba(0,0,0,.62),0 1px 0 rgba(0,0,0,.25);}
-    .case-board-hero p{color:rgba(255,255,255,.96);line-height:1.9;letter-spacing:-.035em;font-size:1.08rem;margin:0 auto;max-width:760px;text-shadow:0 3px 14px rgba(0,0,0,.62);}
-    .case-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:2rem;}
-    .case-stats div{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);border-radius:18px;padding:1rem;backdrop-filter:blur(8px);box-shadow:0 12px 30px rgba(0,0,0,.15);}
-    .case-stats strong{display:block;color:#ffd43b;font-size:1.7rem;font-weight:900;line-height:1.15;}
-    .case-stats span{font-size:.92rem;color:rgba(255,255,255,.9);}
-    .case-board-section{padding:4rem 0;}
-    .case-filter{display:flex;flex-wrap:wrap;gap:.75rem;justify-content:center;align-items:center;margin:0 auto 1.8rem;}
-    .case-filter button{display:inline-flex;align-items:center;justify-content:center;min-width:96px;height:44px;line-height:1!important;border:1px solid #dbe3ef;background:#fff;color:#0b2e6d;border-radius:999px;padding:0 1.05rem;font-weight:900;letter-spacing:-.03em;cursor:pointer;box-shadow:0 5px 14px rgba(15,23,42,.04);transition:.18s ease;text-align:center;}
-    .case-filter button:hover{transform:translateY(-1px);border-color:#0b367b;}
-    .case-filter button.is-active{background:#0b367b;color:#fff;border-color:#0b367b;box-shadow:0 8px 18px rgba(11,54,123,.22);}
-    .case-feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem;margin:0 auto 2.2rem;max-width:980px;}
-    .case-feature-card{background:#fff;border:1px solid var(--ob-line);border-radius:24px;overflow:hidden;box-shadow:0 14px 35px rgba(15,23,42,.09);}
+    .case-board-hero h1{
+      color:#fff;
+      font-weight:900;
+      letter-spacing:-.07em;
+      font-size:clamp(2rem,3.9vw,3.45rem);
+      line-height:1.14;
+      margin:0 auto .95rem;
+      max-width:940px;
+      text-shadow:0 4px 18px rgba(0,0,0,.62),0 1px 0 rgba(0,0,0,.25);
+    }
+    .case-board-hero p{
+      color:rgba(255,255,255,.96);
+      line-height:1.85;
+      letter-spacing:-.035em;
+      font-size:1.04rem;
+      margin:0 auto;
+      max-width:780px;
+      text-shadow:0 3px 14px rgba(0,0,0,.62);
+    }
+    .case-stats{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:1rem;
+      margin:1.9rem auto 0;
+      max-width:960px;
+    }
+    .case-stats div{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      min-height:92px;
+      background:rgba(255,255,255,.18);
+      border:1px solid rgba(255,255,255,.30);
+      border-radius:18px;
+      padding:1rem;
+      backdrop-filter:blur(8px);
+      box-shadow:0 12px 30px rgba(0,0,0,.15);
+    }
+    .case-stats strong{display:block;color:#ffd43b;font-size:1.65rem;font-weight:900;line-height:1.1;}
+    .case-stats span{display:block;margin-top:.35rem;font-size:.92rem;color:rgba(255,255,255,.92);line-height:1.2;}
+
+    .case-board-section{padding:4rem 0;background:linear-gradient(180deg,#fff 0%,#fbfdff 100%);}
+
+    .case-feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.35rem;margin:0 auto 2.35rem;max-width:1060px;}
+    .case-feature-card{background:#fff;border:1px solid var(--ob-line);border-radius:24px;overflow:hidden;box-shadow:0 16px 38px rgba(15,23,42,.10);transition:.2s ease;}
+    .case-feature-card:hover{transform:translateY(-3px);box-shadow:0 22px 46px rgba(15,23,42,.14);}
     .case-feature-card img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;}
     .case-feature-card div{padding:1.2rem;}
     .case-feature-card h2{font-size:1.25rem;line-height:1.35;letter-spacing:-.05em;margin:0 0 .55rem;color:#13233a;font-weight:900;}
     .case-feature-card p{line-height:1.7;color:#64748b;letter-spacing:-.03em;margin:0 0 1rem;}
     .case-card-links{display:flex;gap:.55rem;flex-wrap:wrap;}
-    .case-card-links a{display:inline-flex;align-items:center;justify-content:center;min-height:40px;line-height:1.1!important;border-radius:999px;padding:0 .95rem;font-weight:900;color:#0b367b!important;border:1px solid #dbe3ef;background:#fff;text-decoration:none;text-align:center;}
+    .case-card-links a{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:40px;
+      line-height:1!important;
+      border-radius:999px;
+      padding:0 .95rem;
+      font-weight:900;
+      color:#0b367b!important;
+      border:1px solid #dbe3ef;
+      background:#fff;
+      text-decoration:none;
+      text-align:center;
+    }
     .case-card-links a:nth-child(2){color:#0b7a31!important;}
-    .case-table{width:min(100%,1180px);margin:0 auto;background:#fff;border:1px solid var(--ob-line);border-radius:22px;overflow:hidden;box-shadow:0 18px 45px rgba(15,23,42,.08);}
-    .case-row{display:grid;grid-template-columns:118px 126px minmax(0,1fr) 84px;gap:1rem;align-items:center;padding:1.18rem 1.25rem;border-bottom:1px solid var(--ob-line);}
+
+    .case-filter{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.75rem;
+      justify-content:center;
+      align-items:center;
+      margin:0 auto 1.75rem;
+    }
+    .case-filter button{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:104px;
+      height:46px;
+      line-height:1!important;
+      border:1.5px solid #dbe3ef;
+      background:#fff;
+      color:#0b2e6d!important;
+      border-radius:999px;
+      padding:0 1.15rem;
+      font-weight:900;
+      letter-spacing:-.03em;
+      cursor:pointer;
+      box-shadow:0 6px 16px rgba(15,23,42,.05);
+      transition:.18s ease;
+      text-align:center;
+      vertical-align:middle;
+    }
+    .case-filter button:hover{transform:translateY(-2px);border-color:#0b367b;background:#f7fbff;box-shadow:0 10px 20px rgba(11,54,123,.13);}
+    .case-filter button.is-active,
+    .case-filter button.is-active:hover{
+      background:linear-gradient(135deg,#0b367b,#07306e);
+      color:#fff!important;
+      border-color:#0b367b;
+      box-shadow:0 10px 24px rgba(11,54,123,.30);
+      text-shadow:none;
+    }
+
+    .case-table{
+      width:min(100%,1320px);
+      margin:0 auto;
+      background:#fff;
+      border:1px solid var(--ob-line);
+      border-radius:22px;
+      overflow:hidden;
+      box-shadow:0 18px 45px rgba(15,23,42,.08);
+    }
+    .case-row{
+      display:grid;
+      grid-template-columns:132px 140px minmax(0,1fr) 96px;
+      gap:1.25rem;
+      align-items:center;
+      padding:1.35rem 1.55rem;
+      border-bottom:1px solid var(--ob-line);
+    }
     .case-row:last-child{border-bottom:0;}
-    .case-head{background:#f3f6fb;font-weight:900;color:#0b2e6d;padding:.9rem 1.25rem;}
-    .case-date{font-weight:900;color:#334155;white-space:nowrap;font-size:1rem;}
+    .case-head{background:#f3f6fb;font-weight:900;color:#0b2e6d;padding:1rem 1.55rem;}
+    .case-date{font-weight:900;color:#24324a;white-space:nowrap;font-size:1.02rem;letter-spacing:-.02em;}
     .case-cat{color:#475569;font-weight:800;}
-    .case-cat span{display:inline-flex;align-items:center;justify-content:center;min-width:78px;height:34px;line-height:1!important;border-radius:999px;background:#eef6ff;color:#0b367b;padding:0 .7rem;font-size:.9rem;white-space:nowrap;text-align:center;}
-    .case-title a{display:block;font-weight:900;color:#13233a;border:0;letter-spacing:-.045em;line-height:1.36;font-size:1.05rem;}
+    .case-cat span{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:86px;
+      height:36px;
+      line-height:1!important;
+      border-radius:999px;
+      background:#eef6ff;
+      color:#0b367b;
+      padding:0 .82rem;
+      font-size:.92rem;
+      font-weight:900;
+      white-space:nowrap;
+      text-align:center;
+    }
+    .case-title a{
+      display:-webkit-box;
+      -webkit-line-clamp:1;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      font-weight:900;
+      color:#10213a;
+      border:0;
+      letter-spacing:-.045em;
+      line-height:1.38;
+      font-size:1.08rem;
+      text-decoration:none;
+    }
     .case-title a:hover{color:#0b367b;}
-    .case-title p{margin:.32rem 0 0;color:#64748b;line-height:1.45;font-size:.92rem;letter-spacing:-.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .case-more a{display:inline-flex;align-items:center;justify-content:center;width:64px;height:38px;line-height:1!important;background:#0b7a31;color:#fff!important;border:0;border-radius:999px;font-size:.88rem;font-weight:900;text-decoration:none;box-shadow:0 8px 16px rgba(11,122,49,.16);white-space:nowrap;text-align:center;padding:0!important;}
-    .case-more a:hover{background:#096226;color:#fff!important;}
-    .case-mini-guide{width:min(100%,1180px);margin:2rem auto 0;display:grid;grid-template-columns:auto 1fr auto;gap:1.2rem;align-items:center;background:#f8fbff;border:1px solid var(--ob-line);border-radius:22px;padding:1.35rem 1.6rem;box-shadow:0 14px 34px rgba(15,23,42,.06);}
-    .case-mini-icon{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#eef6ff;color:#0b367b;font-size:1.65rem;}
-    .case-mini-guide h2{font-size:1.25rem;margin:0 0 .35rem;color:#13233a;font-weight:900;letter-spacing:-.04em;}
-    .case-mini-guide p{margin:0;color:#475569;line-height:1.75;letter-spacing:-.035em;}
-    .case-mini-character{width:116px;max-width:24vw;display:block;}
+    .case-title p{
+      margin:.42rem 0 0;
+      color:#64748b;
+      line-height:1.45;
+      font-size:.94rem;
+      letter-spacing:-.03em;
+      display:-webkit-box;
+      -webkit-line-clamp:1;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+    .case-more{display:flex;align-items:center;justify-content:center;}
+    .case-more a{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:72px;
+      height:40px;
+      line-height:1!important;
+      background:linear-gradient(135deg,#0b7a31,#0a8f3b);
+      color:#fff!important;
+      border:0;
+      border-radius:999px;
+      font-size:.9rem;
+      font-weight:900;
+      text-decoration:none;
+      box-shadow:0 9px 18px rgba(11,122,49,.20);
+      white-space:nowrap;
+      text-align:center;
+      padding:0!important;
+      vertical-align:middle;
+    }
+    .case-more a::after{content:'›';font-size:1.15rem;margin-left:.22rem;line-height:1;}
+    .case-more a:hover{background:linear-gradient(135deg,#096226,#078737);color:#fff!important;transform:translateY(-1px);}
+
+    .case-mini-guide{
+      width:min(100%,1320px);
+      margin:2rem auto 0;
+      display:grid;
+      grid-template-columns:auto minmax(0,1fr) auto auto;
+      gap:1.6rem;
+      align-items:center;
+      background:linear-gradient(135deg,#f8fbff,#ffffff);
+      border:1px solid var(--ob-line);
+      border-radius:24px;
+      padding:1.35rem 1.8rem;
+      box-shadow:0 16px 38px rgba(15,23,42,.07);
+    }
+    .case-mini-icon{width:74px;height:74px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#eef6ff;color:#0b367b;font-size:1.8rem;}
+    .case-mini-guide h2{font-size:1.28rem;margin:0 0 .38rem;color:#13233a;font-weight:900;letter-spacing:-.04em;}
+    .case-mini-guide p{margin:0;color:#475569;line-height:1.72;letter-spacing:-.035em;}
+    .case-value-list{display:grid;grid-template-columns:repeat(4,92px);gap:.85rem;align-items:center;justify-content:center;}
+    .case-value-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.32rem;color:#0b2e6d;font-weight:900;font-size:.86rem;letter-spacing:-.04em;text-align:center;line-height:1.25;}
+    .case-value-item span{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border:1px solid #dbe7f6;border-radius:50%;background:#fff;color:#0b367b;font-size:1.05rem;box-shadow:0 6px 14px rgba(15,23,42,.06);}
+    .case-mini-character{width:160px;max-width:18vw;display:block;filter:drop-shadow(0 10px 18px rgba(15,23,42,.12));}
+
     .case-guide{background:#f8fbff;border-top:1px solid var(--ob-line);padding:3.2rem 0;}
     .case-guide h2{font-weight:900;letter-spacing:-.05em;color:#13233a;}
     .case-guide p{line-height:1.9;color:#475569;letter-spacing:-.035em;}
+
     @media (prefers-reduced-motion:reduce){.case-board-hero::before{animation:none;transform:scale(1.06);}}
-    @media screen and (max-width:900px){.case-board-hero{min-height:auto}.case-board-hero .case-board-wrap{width:min(100% - 1.4rem,1040px);padding:1.8rem 1.15rem;border-radius:24px}.case-stats{grid-template-columns:repeat(2,1fr)}.case-feature-grid{grid-template-columns:1fr;max-width:560px}.case-row{grid-template-columns:1fr;gap:.55rem}.case-head{display:none}.case-row{padding:1.15rem}.case-date:before{content:'날짜 ';color:#94a3b8}.case-cat:before{content:'분류 ';color:#94a3b8}.case-title p{white-space:normal}.case-more a{width:100%;height:42px;margin-top:.5rem}.case-mini-guide{grid-template-columns:1fr;text-align:center}.case-mini-icon{margin:0 auto}.case-mini-character{margin:0 auto;width:100px;}}
-    @media screen and (max-width:560px){.case-board-wrap{width:min(100% - 1.1rem,1320px)}.case-board-hero{padding:5.4rem 0 3.2rem}.case-board-hero .case-board-wrap{width:min(100% - 1rem,1040px);padding:1.45rem 1rem;border-radius:20px}.case-stats{grid-template-columns:1fr}.case-filter{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;padding-bottom:.25rem}.case-filter button{flex:0 0 auto;min-width:86px;height:40px}.case-board-section{padding:2.8rem 0}.case-row{padding:1rem}.case-title a{font-size:.98rem}.case-mini-guide{padding:1.15rem}.case-feature-card h2{font-size:1.12rem}}
+    @media screen and (max-width:1100px){
+      .case-mini-guide{grid-template-columns:auto 1fr auto;}
+      .case-value-list{grid-column:1 / -1;grid-template-columns:repeat(4,1fr);order:3;}
+      .case-mini-character{width:140px;max-width:22vw;}
+    }
+    @media screen and (max-width:900px){
+      .case-board-hero{min-height:auto;}
+      .case-board-hero .case-board-wrap{width:min(100% - 1.4rem,1040px);padding:1.8rem 1.15rem;border-radius:24px;}
+      .case-board-hero h1{font-size:clamp(1.85rem,8vw,2.75rem);}
+      .case-stats{grid-template-columns:repeat(2,1fr);}
+      .case-feature-grid{grid-template-columns:1fr;max-width:560px;}
+      .case-table{border-radius:18px;}
+      .case-row{grid-template-columns:1fr;gap:.58rem;padding:1.15rem;}
+      .case-head{display:none;}
+      .case-date:before{content:'날짜 ';color:#94a3b8;font-weight:800;}
+      .case-cat:before{content:'분류 ';color:#94a3b8;font-weight:800;}
+      .case-title a{-webkit-line-clamp:2;}
+      .case-title p{-webkit-line-clamp:2;}
+      .case-more a{width:100%;height:42px;margin-top:.5rem;}
+      .case-mini-guide{grid-template-columns:1fr;text-align:center;}
+      .case-mini-icon{margin:0 auto;}
+      .case-value-list{grid-template-columns:repeat(2,1fr);}
+      .case-mini-character{margin:0 auto;width:138px;max-width:42vw;}
+    }
+    @media screen and (max-width:560px){
+      .case-board-wrap{width:min(100% - 1.1rem,1420px);}
+      .case-board-hero{padding:5.2rem 0 3rem;}
+      .case-board-hero .case-board-wrap{width:min(100% - 1rem,1040px);padding:1.45rem 1rem;border-radius:20px;}
+      .case-board-hero p{font-size:.96rem;line-height:1.78;}
+      .case-stats{grid-template-columns:1fr;}
+      .case-filter{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;padding-bottom:.25rem;}
+      .case-filter button{flex:0 0 auto;min-width:88px;height:40px;}
+      .case-board-section{padding:2.8rem 0;}
+      .case-row{padding:1rem;}
+      .case-title a{font-size:.99rem;}
+      .case-mini-guide{padding:1.15rem;}
+      .case-feature-card h2{font-size:1.12rem;}
+    }
 </style>
 </head>
 <body class="is-preload">
 <header id="site-header" class="ob-site-header"><div class="ob-brand-line"><a class="ob-logo" href="index.html">오박사만능인테리어</a><a class="ob-home-mini" href="index.html" aria-label="홈으로"><span class="icon solid fa-home" aria-hidden="true"></span></a><span class="ob-header-sep" aria-hidden="true">/</span><a class="ob-header-phone" href="tel:01082845584">010-8284-5584</a></div><nav class="ob-nav" aria-label="주요 메뉴"><a href="about.html">오박사 소개</a><a href="services.html">서비스</a><a href="cases.html" class="is-active">시공사례</a><a href="community.html">STORY</a><a href="contact.html">예약·문의</a></nav></header>
 <main><section class="case-board-hero"><div class="case-board-wrap"><p class="eyebrow">시공사례 게시판</p><h1>울산 집수리 현장을 한눈에 봅니다</h1><p>오박사만능인테리어가 울산 북구를 중심으로 진행한 누수복구, 세면대 교체, 도배 장판, 욕실 수리, 생활 집수리 사례를 게시판형 목록으로 정리했습니다.</p><div class="case-stats"><div><strong>2</strong><span>등록 사례</span></div><div><strong>1</strong><span>누수복구</span></div><div><strong>1</strong><span>욕실수리</span></div><div><strong>30년+</strong><span>현장 경험</span></div></div></div></section>
-<section class="case-board-section"><div class="case-board-wrap"><div class="case-feature-grid"><article class="case-feature-card"><img src="images/cases/2026-06-05-sink-collapse/instagram-thumbnail.png" alt="울산 북구 신천동 무지개아파트 세면대 교체 썸네일" loading="lazy"><div><h2>신천동 무지개아파트 세면대 붕괴 복구</h2><p>통째로 떨어진 세면대를 긴다리 세면대로 안전하게 재시공한 사례입니다.</p><div class="case-card-links"><a href="cases/2026/case-2026-06-05-sink-collapse.html">자세히 보기</a><a href="https://www.instagram.com/reel/DZNSShEuhP5/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==" target="_blank" rel="noopener">인스타 릴스 보기</a></div></div></article><article class="case-feature-card"><img src="images/cases/2026-06-06-baeksan-leak/instagram-thumbnail.png" alt="울산 중산동 백산그린타운아파트 누수 복구 썸네일" loading="lazy"><div><h2>중산동 백산그린타운 천장 누수 복구</h2><p>윗집 누수로 생긴 곰팡이를 제거하고 도배와 장판까지 마무리한 사례입니다.</p><div class="case-card-links"><a href="cases/2026/case-2026-06-06-baeksan-leak.html">자세히 보기</a><a href="https://www.instagram.com/reel/DZNW2v6ORjD/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==" target="_blank" rel="noopener">인스타 릴스 보기</a></div></div></article></div><div class="case-filter" aria-label="시공사례 분류"><button type="button" class="is-active" data-filter="all">전체</button><button type="button" data-filter="누수복구">누수복구</button><button type="button" data-filter="욕실수리">욕실수리</button><button type="button" data-filter="도배장판">도배장판</button><button type="button" data-filter="생활집수리">생활집수리</button></div><div class="case-table" aria-label="시공사례 목록"><div class="case-row case-head"><div>날짜</div><div>분류</div><div>제목</div><div>이동</div></div><article class="case-row" data-category="욕실수리"><div class="case-date">2026.06.05</div><div class="case-cat"><span>욕실수리</span></div><div class="case-title"><a href="cases/2026/case-2026-06-05-sink-collapse.html">울산 북구 신천동 무지개아파트 세면대 붕괴, 긴다리 세면대로 안전 재시공</a><p>세면대 떨어짐 · 파손 도기 철거 · 벽체 고정 확인 · 긴다리 세면대 교체</p></div><div class="case-more"><a href="cases/2026/case-2026-06-05-sink-collapse.html">보기</a></div></article><article class="case-row" data-category="누수복구 도배장판"><div class="case-date">2026.06.06</div><div class="case-cat"><span>누수복구</span></div><div class="case-title"><a href="cases/2026/case-2026-06-06-baeksan-leak.html">울산 북구 중산동 백산그린타운아파트 천장 누수 곰팡이 제거 후 도배 장판 시공</a><p>윗집 누수 · 곰팡이 제거 · 천장 석고보드 보수 · 도배 장판 마감</p></div><div class="case-more"><a href="cases/2026/case-2026-06-06-baeksan-leak.html">보기</a></div></article></div><div class="case-mini-guide"><div class="case-mini-icon"><span class="icon solid fa-home" aria-hidden="true"></span></div><div><h2>꼼꼼한 진단, 정직한 시공</h2><p>오박사만능인테리어는 보이지 않는 곳까지 확인하고, 오래도록 안전하게 사용할 수 있는 시공을 약속드립니다.</p></div><img class="case-mini-character" src="images/obaksa-character.png" alt="오박사만능인테리어 캐릭터" loading="lazy"></div></div></section><section class="case-guide"><div class="case-board-wrap"><h2>게시판형으로 계속 쌓는 이유</h2><p>사례가 많아질수록 카드만 나열하면 고객이 원하는 작업을 찾기 어렵습니다. 날짜, 지역, 분류, 제목이 보이는 게시판형 목록은 누수복구, 세면대 교체, 도배 장판, 욕실 수리 사례를 빠르게 비교할 수 있어 상담 전환에 유리합니다.</p></div></section></main>
+<section class="case-board-section"><div class="case-board-wrap"><div class="case-feature-grid"><article class="case-feature-card"><img src="images/cases/2026-06-05-sink-collapse/instagram-thumbnail.png" alt="울산 북구 신천동 무지개아파트 세면대 교체 썸네일" loading="lazy"><div><h2>신천동 무지개아파트 세면대 붕괴 복구</h2><p>통째로 떨어진 세면대를 긴다리 세면대로 안전하게 재시공한 사례입니다.</p><div class="case-card-links"><a href="cases/2026/case-2026-06-05-sink-collapse.html">자세히 보기</a><a href="https://www.instagram.com/reel/DZNSShEuhP5/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==" target="_blank" rel="noopener">인스타 릴스 보기</a></div></div></article><article class="case-feature-card"><img src="images/cases/2026-06-06-baeksan-leak/instagram-thumbnail.png" alt="울산 중산동 백산그린타운아파트 누수 복구 썸네일" loading="lazy"><div><h2>중산동 백산그린타운 천장 누수 복구</h2><p>윗집 누수로 생긴 곰팡이를 제거하고 도배와 장판까지 마무리한 사례입니다.</p><div class="case-card-links"><a href="cases/2026/case-2026-06-06-baeksan-leak.html">자세히 보기</a><a href="https://www.instagram.com/reel/DZNW2v6ORjD/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==" target="_blank" rel="noopener">인스타 릴스 보기</a></div></div></article></div><div class="case-filter" aria-label="시공사례 분류"><button type="button" class="is-active" data-filter="all">전체</button><button type="button" data-filter="누수복구">누수복구</button><button type="button" data-filter="욕실수리">욕실수리</button><button type="button" data-filter="도배장판">도배장판</button><button type="button" data-filter="생활집수리">생활집수리</button></div><div class="case-table" aria-label="시공사례 목록"><div class="case-row case-head"><div>날짜</div><div>분류</div><div>제목</div><div>이동</div></div><article class="case-row" data-category="욕실수리"><div class="case-date">2026.06.05</div><div class="case-cat"><span>욕실수리</span></div><div class="case-title"><a href="cases/2026/case-2026-06-05-sink-collapse.html">울산 북구 신천동 무지개아파트 세면대 붕괴, 긴다리 세면대로 안전 재시공</a><p>세면대 떨어짐 · 파손 도기 철거 · 벽체 고정 확인 · 긴다리 세면대 교체</p></div><div class="case-more"><a href="cases/2026/case-2026-06-05-sink-collapse.html">보기</a></div></article><article class="case-row" data-category="누수복구 도배장판"><div class="case-date">2026.06.06</div><div class="case-cat"><span>누수복구</span></div><div class="case-title"><a href="cases/2026/case-2026-06-06-baeksan-leak.html">울산 북구 중산동 백산그린타운아파트 천장 누수 곰팡이 제거 후 도배 장판 시공</a><p>윗집 누수 · 곰팡이 제거 · 천장 석고보드 보수 · 도배 장판 마감</p></div><div class="case-more"><a href="cases/2026/case-2026-06-06-baeksan-leak.html">보기</a></div></article></div><div class="case-mini-guide"><div class="case-mini-icon"><span class="icon solid fa-home" aria-hidden="true"></span></div><div><h2>꼼꼼한 진단, 정직한 시공</h2><p>오박사만능인테리어는 보이지 않는 곳까지 확인하고, 오래도록 안전하게 사용할 수 있는 시공을 약속드립니다.</p></div><div class="case-value-list" aria-label="시공 원칙"><div class="case-value-item"><span class="icon solid fa-trophy" aria-hidden="true"></span>30년+<br>현장 경력</div><div class="case-value-item"><span class="icon solid fa-shield-alt" aria-hidden="true"></span>정직한<br>투명 시공</div><div class="case-value-item"><span class="icon solid fa-tools" aria-hidden="true"></span>꼼꼼한<br>세심 시공</div><div class="case-value-item"><span class="icon solid fa-heart" aria-hidden="true"></span>시공 후<br>사후관리</div></div><img class="case-mini-character" src="images/obaksa-character.png" alt="오박사만능인테리어 캐릭터" loading="lazy"></div></div></section><section class="case-guide"><div class="case-board-wrap"><h2>게시판형으로 계속 쌓는 이유</h2><p>사례가 많아질수록 카드만 나열하면 고객이 원하는 작업을 찾기 어렵습니다. 날짜, 지역, 분류, 제목이 보이는 게시판형 목록은 누수복구, 세면대 교체, 도배 장판, 욕실 수리 사례를 빠르게 비교할 수 있어 상담 전환에 유리합니다.</p></div></section></main>
 <footer class="wrapper style1 align-center ob-footer"><div class="inner"><h2>오박사만능인테리어</h2><p>울산 북구를 기반으로 경주와 경북 일부 지역까지 생활 집수리, 욕실수리, 인테리어 보수 작업을 진행합니다.</p><ul class="ob-channel-list"><li><a href="https://www.instagram.com/obaksa_homefix/reels/" target="_blank" rel="noopener">인스타그램</a></li><li><a href="https://naver.me/xUwdrR2T" target="_blank" rel="noopener">네이버 스마트플레이스</a></li><li><a href="https://blog.naver.com/obarksa110" target="_blank" rel="noopener">네이버 블로그</a></li><li><a href="https://booking.naver.com/booking/6/bizes/1370780" target="_blank" rel="noopener">네이버 예약</a></li><li><a href="https://share.google/AbeE6N8sx9xNJgwJf" target="_blank" rel="noopener">구글 비즈니스</a></li><li><a href="https://www.daangn.com/kr/local-profile/phxro9wwp648/?referrer=share" target="_blank" rel="noopener">당근마켓</a></li><li><a href="https://litt.ly/obarksa" target="_blank" rel="noopener">리틀리</a></li></ul><p class="ob-business-info"><span>상호 오박사 만능인테리어</span><span>사업자번호 417-03-80300</span><span>전화 010-8284-5584</span><span>주소 울산 북구 호계동 685-11</span></p></div></footer><script src="assets/js/jquery.min.js"></script><script src="assets/js/jquery.scrollex.min.js"></script><script src="assets/js/jquery.scrolly.min.js"></script><script src="assets/js/browser.min.js"></script><script src="assets/js/breakpoints.min.js"></script><script src="assets/js/util.js"></script><script src="assets/js/main.js"></script><script>document.querySelectorAll('.case-filter button').forEach(function(btn){btn.addEventListener('click',function(){document.querySelectorAll('.case-filter button').forEach(function(b){b.classList.remove('is-active')});btn.classList.add('is-active');var f=btn.getAttribute('data-filter');document.querySelectorAll('.case-row[data-category]').forEach(function(row){var cats=row.getAttribute('data-category')||'';row.style.display=(f==='all'||cats.indexOf(f)>-1)?'grid':'none';});});});</script></body></html>

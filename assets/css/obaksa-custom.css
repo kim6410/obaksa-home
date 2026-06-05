@@ -2048,7 +2048,7 @@ button.button:active,
   padding:4.1rem 1.2rem 3.2rem !important;
   background-image:
     linear-gradient(180deg, rgba(4,10,22,.52), rgba(4,10,22,.42)),
-    url("../../images/hero-house.jpg") !important;
+    url("../../images/gallery/case_hero.jpg") !important;
   background-size:cover !important;
   background-position:center !important;
   background-repeat:no-repeat !important;
@@ -2438,8 +2438,8 @@ button.button:active,
   .ob-real-slider-wrap,
   .ob-footer,
   .ob-footer .inner,
-  .ob-world-footer,
-  .ob-world-grid,
+  .ob-footer .ob-world-footer,
+  .ob-footer .ob-world-grid,
   #ob-service-accordion,
   #ob-service-accordion .inner,
   #ob-service-accordion .content,
@@ -2514,28 +2514,28 @@ button.button:active,
     color: #ffffff !important;
   }
 
-  .ob-world-grid {
+  .ob-footer .ob-world-grid {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) !important;
     gap: 0.58rem !important;
     overflow-x: hidden !important;
   }
 
-  .ob-world-card,
-  .ob-world-card * {
+  .ob-footer .ob-world-card,
+  .ob-footer .ob-world-card * {
     max-width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
   }
 
-  .ob-world-card {
+  .ob-footer .ob-world-card {
     overflow: hidden !important;
   }
 
-  .ob-world-city,
-  .ob-world-title,
-  .ob-world-time,
-  .ob-world-date {
+  .ob-footer .ob-world-city,
+  .ob-footer .ob-world-title,
+  .ob-footer .ob-world-time,
+  .ob-footer .ob-world-date {
     white-space: normal !important;
     overflow-wrap: anywhere !important;
     word-break: keep-all !important;
@@ -2866,5 +2866,151 @@ button.button:active,
 
   #ob-service-accordion .ob-service-title {
     font-size: .88rem !important;
+  }
+}
+
+
+/* =========================================================
+   FINAL SERVICE/WORLD MOBILE REPAIR 2026-06-06B
+   목적:
+   1) 월드클락 CSS는 푸터 내부에만 적용되도록 완전 격리
+   2) 모바일 월드클락 도시명 +2px, 도시명/디지털시간 좌측 시작점 정렬
+   3) 시공 분야 배경 이미지 누락 복구
+   4) 모바일 시공 분야는 닫혔을 때 제목만, 눌렀을 때 설명 펼침
+   ========================================================= */
+#ob-service-accordion.ob-featured-work {
+  background-image:
+    linear-gradient(180deg, rgba(4,10,22,.52), rgba(4,10,22,.42)),
+    url("../../images/gallery/case_hero.jpg") !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-color: #0b1220 !important;
+}
+
+@media screen and (max-width: 640px) {
+  /* 월드클락: 기능은 그대로 두고 글자와 정렬만 보정 */
+  .ob-footer .ob-world-meta {
+    align-items: stretch !important;
+  }
+
+  .ob-footer .ob-world-city,
+  .ob-footer .ob-world-mainline {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+  }
+
+  .ob-footer .ob-world-city-name,
+  .ob-footer .ob-world-city > span:first-child {
+    font-size: .925rem !important; /* 기존 .8rem 기준 약 +2px */
+    line-height: 1.1 !important;
+    letter-spacing: -.035em !important;
+    text-align: left !important;
+  }
+
+  .ob-footer .ob-world-mobile-date {
+    font-size: .8rem !important;
+  }
+
+  .ob-footer .ob-world-time {
+    display: block !important;
+    text-align: left !important;
+    margin-left: 0 !important;
+  }
+
+  /* 시공 분야: 모바일 배경 표시 보강 */
+  #ob-service-accordion.ob-featured-work {
+    padding: 1.7rem .82rem 1.5rem !important;
+    background-image:
+      linear-gradient(180deg, rgba(4,10,22,.58), rgba(4,10,22,.46)),
+      url("../../images/gallery/case_hero.jpg") !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    background-color: #0b1220 !important;
+  }
+
+  #ob-service-accordion .ob-service-grid {
+    gap: .4rem !important;
+  }
+
+  #ob-service-accordion .ob-service-card {
+    background: rgba(8,15,28,.46) !important;
+    border: 1px solid rgba(255,255,255,.2) !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+  }
+
+  #ob-service-accordion .ob-service-toggle {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 18px !important;
+    align-items: center !important;
+    justify-content: stretch !important;
+    min-height: 40px !important;
+    height: auto !important;
+    padding: .55rem .72rem !important;
+    text-align: left !important;
+    cursor: pointer !important;
+  }
+
+  #ob-service-accordion .ob-service-icon {
+    display: none !important;
+  }
+
+  #ob-service-accordion .ob-service-arrow {
+    display: inline-flex !important;
+    width: 18px !important;
+    height: 18px !important;
+    opacity: .9 !important;
+  }
+
+  #ob-service-accordion .ob-service-title {
+    display: block !important;
+    width: 100% !important;
+    font-size: .96rem !important;
+    line-height: 1.15 !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #ob-service-accordion .ob-service-detail {
+    display: grid !important;
+    grid-template-rows: 0fr !important;
+    padding: 0 .78rem !important;
+    border-top: 1px solid rgba(255,255,255,0) !important;
+    font-size: .82rem !important;
+    line-height: 1.55 !important;
+  }
+
+  #ob-service-accordion .ob-service-detail > * {
+    display: block !important;
+    overflow: hidden !important;
+  }
+
+  #ob-service-accordion .ob-service-detail p {
+    margin: 0 0 .48rem !important;
+  }
+
+  #ob-service-accordion .ob-service-card.is-open .ob-service-detail {
+    grid-template-rows: 1fr !important;
+    padding: .18rem .78rem .72rem !important;
+    border-top-color: rgba(255,255,255,.14) !important;
+  }
+
+  #ob-service-accordion .ob-service-badge {
+    display: none !important;
+  }
+}
+
+@media screen and (max-width: 380px) {
+  .ob-footer .ob-world-city-name,
+  .ob-footer .ob-world-city > span:first-child {
+    font-size: .86rem !important;
+  }
+
+  #ob-service-accordion .ob-service-title {
+    font-size: .92rem !important;
   }
 }

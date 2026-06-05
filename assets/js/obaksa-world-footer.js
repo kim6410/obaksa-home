@@ -63,21 +63,6 @@
     return '날씨 코드 ' + code;
   }
 
-  function codeToIcon(code){
-    if(code == null) return '·';
-    if(code >= 200 && code <= 299) return '⚡';
-    if(code >= 300 && code <= 399) return '☂';
-    if(code >= 500 && code <= 599) return '☔';
-    if(code >= 600 && code <= 699) return '❄';
-    if(code >= 700 && code <= 799) return '≋';
-    if(code === 800) return '☀';
-    if(code === 801) return '◐';
-    if(code === 802) return '☁';
-    if(code === 803) return '☁';
-    if(code === 804) return '☁';
-    return '·';
-  }
-
   function makeCard(city){
     return [
       '<article class="ob-world-card" data-city="'+city.id+'">',
@@ -88,7 +73,7 @@
         '</div>',
         '<div class="ob-world-meta">',
           '<div class="ob-world-city"><span>'+city.label+'</span><span class="ob-world-tz">'+city.tz+'</span></div>',
-          '<div class="ob-world-time-row"><div class="ob-world-time" data-time>--:--:--</div><span class="ob-world-mobile-wx" data-mobile-wx title="현재 날씨">·</span></div>',
+          '<div class="ob-world-time" data-time>--:--:--</div>',
           '<div class="ob-world-date" data-date>----</div>',
           '<div class="ob-world-weather">',
             '<span class="ob-world-pill ob-world-cond" data-cond>상태 확인 중</span>',
@@ -143,13 +128,7 @@
       const tempEl = card.querySelector('[data-temp]');
       const humEl = card.querySelector('[data-hum]');
       const windEl = card.querySelector('[data-wind]');
-      const mobileWx = card.querySelector('[data-mobile-wx]');
       if(cond) cond.textContent = codeToLabel(code);
-      if(mobileWx){
-        mobileWx.textContent = codeToIcon(code);
-        mobileWx.setAttribute('aria-label', codeToLabel(code));
-        mobileWx.setAttribute('title', codeToLabel(code));
-      }
       if(tempEl) tempEl.textContent = temp == null ? '--' : String(Math.round(temp));
       if(humEl) humEl.textContent = hum == null ? '--' : String(Math.round(hum));
       if(windEl) windEl.textContent = wind == null ? '--' : String(Math.round(wind));

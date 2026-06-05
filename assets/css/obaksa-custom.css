@@ -2053,3 +2053,234 @@ button.button:active,
   .ob-footer .ob-world-footer::before{animation:none;}
 }
 }
+
+/* =========================================================
+   오박사 index 시공 분야 슬림 아코디언 패치 - 2026-06-06
+   목적: PC/모바일 모두 배경 이미지는 유지하고, 카드 높이는 낮추며,
+         전체 카드를 누르면 상세 설명이 펼쳐지는 구조로 변경합니다.
+   ========================================================= */
+.ob-service-accordion-section{
+  padding-top:3.2rem !important;
+  padding-bottom:3.4rem !important;
+}
+.ob-service-accordion-section::before{
+  background:linear-gradient(180deg, rgba(5,11,23,.28), rgba(5,11,23,.42)) !important;
+}
+.ob-service-accordion-section .inner{
+  max-width:1120px !important;
+}
+.ob-service-accordion-section h2{
+  margin-bottom:.48rem !important;
+  font-size:2.05rem !important;
+  line-height:1.15 !important;
+}
+.ob-service-lead{
+  max-width:720px;
+  margin:0 auto 1.15rem !important;
+  color:rgba(255,255,255,.84) !important;
+  font-size:.98rem;
+  line-height:1.65 !important;
+}
+.ob-service-accordion{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0,1fr));
+  gap:.78rem;
+  margin:0 auto;
+  text-align:left;
+}
+.ob-service-card{
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.20);
+  border-radius:18px;
+  background:rgba(8,15,28,.34);
+  box-shadow:0 18px 42px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  transition:background .22s ease, border-color .22s ease, box-shadow .22s ease, transform .22s ease;
+}
+.ob-service-card:hover{
+  transform:translateY(-3px);
+  background:rgba(8,15,28,.44);
+  border-color:rgba(217,255,230,.36);
+  box-shadow:0 22px 54px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.10);
+}
+.ob-service-card[open]{
+  background:rgba(8,15,28,.52);
+  border-color:rgba(217,255,230,.42);
+}
+.ob-service-card summary{
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr) 26px;
+  align-items:center;
+  gap:.72rem;
+  min-height:72px;
+  padding:.75rem 1rem;
+  cursor:pointer;
+  list-style:none;
+  outline:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.ob-service-card summary::-webkit-details-marker{display:none;}
+.ob-service-card .icon.style2.major{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:42px !important;
+  height:42px !important;
+  line-height:42px !important;
+  margin:0 !important;
+  border-radius:999px !important;
+  color:#d9ffe6 !important;
+  background:rgba(6,20,18,.22) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.16), 0 10px 22px rgba(0,0,0,.18) !important;
+  font-size:1.18rem !important;
+}
+.ob-service-title{
+  display:block;
+  color:#fff;
+  font-size:1.13rem;
+  font-weight:950;
+  letter-spacing:-.045em;
+  line-height:1.18;
+  text-shadow:0 2px 10px rgba(0,0,0,.55);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.ob-service-arrow{
+  position:relative;
+  width:26px;
+  height:26px;
+  border-radius:999px;
+  background:rgba(255,255,255,.06);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.13);
+}
+.ob-service-arrow::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:8px;
+  height:8px;
+  border-right:2px solid rgba(255,255,255,.88);
+  border-bottom:2px solid rgba(255,255,255,.88);
+  transform:translate(-55%,-65%) rotate(45deg);
+  transition:transform .2s ease;
+}
+.ob-service-card[open] .ob-service-arrow::before{
+  transform:translate(-50%,-35%) rotate(225deg);
+}
+.ob-service-detail{
+  padding:0 1.05rem .95rem 4.75rem;
+  color:rgba(255,255,255,.88);
+  animation:obServiceOpen .22s ease both;
+}
+.ob-service-detail p{
+  margin:0 0 .38rem !important;
+  color:rgba(255,255,255,.88) !important;
+  font-size:.9rem;
+  line-height:1.62 !important;
+  text-shadow:0 2px 10px rgba(0,0,0,.55) !important;
+}
+.ob-service-detail p:last-child{margin-bottom:0 !important;}
+.ob-service-proof{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  max-width:100%;
+  margin:1.05rem auto 0 !important;
+  padding:.62rem 1rem;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:999px;
+  background:rgba(8,15,28,.34);
+  color:rgba(255,255,255,.88) !important;
+  font-size:.88rem;
+  font-weight:800;
+  line-height:1.35 !important;
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+@keyframes obServiceOpen{
+  from{opacity:0;transform:translateY(-4px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+@media screen and (max-width:980px){
+  .ob-service-accordion-section{
+    padding-top:2.5rem !important;
+    padding-bottom:2.65rem !important;
+  }
+  .ob-service-accordion{
+    grid-template-columns:1fr;
+    gap:.62rem;
+  }
+  .ob-service-card summary{
+    min-height:66px;
+  }
+}
+
+@media screen and (max-width:760px){
+  .ob-service-accordion-section{
+    padding-top:2.1rem !important;
+    padding-bottom:2.2rem !important;
+    background-position:center center !important;
+  }
+  .ob-service-accordion-section::before{
+    background:linear-gradient(180deg, rgba(5,11,23,.34), rgba(5,11,23,.46)) !important;
+  }
+  .ob-service-accordion-section .inner{
+    padding-left:1rem !important;
+    padding-right:1rem !important;
+  }
+  .ob-service-accordion-section h2{
+    font-size:1.78rem !important;
+    margin-bottom:.32rem !important;
+  }
+  .ob-service-lead{
+    margin-bottom:.82rem !important;
+    font-size:.84rem;
+    line-height:1.55 !important;
+  }
+  .ob-service-accordion{
+    gap:.46rem;
+  }
+  .ob-service-card{
+    border-radius:15px;
+    background:rgba(8,15,28,.26);
+  }
+  .ob-service-card summary{
+    grid-template-columns:34px minmax(0,1fr) 22px;
+    min-height:54px;
+    gap:.56rem;
+    padding:.48rem .68rem;
+  }
+  .ob-service-card .icon.style2.major{
+    width:34px !important;
+    height:34px !important;
+    line-height:34px !important;
+    font-size:1rem !important;
+  }
+  .ob-service-title{
+    font-size:1rem;
+  }
+  .ob-service-arrow{
+    width:22px;
+    height:22px;
+  }
+  .ob-service-detail{
+    padding:0 .72rem .68rem 3.62rem;
+  }
+  .ob-service-detail p{
+    font-size:.8rem;
+    line-height:1.48 !important;
+    margin-bottom:.28rem !important;
+  }
+  .ob-service-proof{
+    margin-top:.72rem !important;
+    padding:.5rem .72rem;
+    border-radius:14px;
+    font-size:.76rem;
+    line-height:1.45 !important;
+  }
+}

@@ -1787,3 +1787,206 @@ button.button:active,
     transform: translate3d(0, 0, 0) scale(1) !important;
   }
 }
+
+/* =========================================================
+   오박사 공통 푸터 · 세계 시계 / 날씨 위젯
+   - 모든 페이지 footer 내부에서만 작동하도록 .ob-world-footer로 스코프 고정
+   - PC: 3열 카드 / 모바일: 1열 카드
+   ========================================================= */
+.ob-footer .ob-world-footer{
+  width:min(100%, 1080px);
+  margin:2.15rem auto 1.65rem;
+  padding:1.15rem;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:24px;
+  background:
+    radial-gradient(760px 260px at 12% 0%, rgba(16,185,129,.18), transparent 58%),
+    radial-gradient(680px 300px at 92% 16%, rgba(37,99,235,.18), transparent 60%),
+    linear-gradient(180deg, rgba(15,23,42,.92), rgba(2,6,23,.94));
+  box-shadow:0 24px 70px rgba(2,6,23,.34);
+  color:#fff;
+  overflow:hidden;
+  position:relative;
+}
+.ob-footer .ob-world-footer::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(120deg, transparent 0%, rgba(255,255,255,.06) 44%, transparent 70%);
+  transform:translateX(-110%);
+  animation:obWorldSweep 9s ease-in-out infinite;
+  pointer-events:none;
+}
+.ob-footer .ob-world-head{
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:1rem;
+  margin-bottom:1rem;
+}
+.ob-footer .ob-world-head strong{
+  display:block;
+  color:#fff;
+  font-size:1.18rem;
+  font-weight:900;
+  letter-spacing:-.04em;
+  text-align:left;
+}
+.ob-footer .ob-world-head span{
+  display:block;
+  margin-top:.32rem;
+  color:rgba(255,255,255,.72);
+  font-size:.86rem;
+  line-height:1.55;
+  text-align:left;
+  word-break:keep-all;
+}
+.ob-footer .ob-world-refresh{
+  flex:0 0 auto;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:999px;
+  background:linear-gradient(180deg, rgba(22,163,74,.95), rgba(21,128,61,.95));
+  color:#fff !important;
+  height:38px;
+  padding:0 1rem;
+  font-size:.78rem;
+  font-weight:900;
+  letter-spacing:-.02em;
+  cursor:pointer;
+  box-shadow:0 12px 26px rgba(22,163,74,.18);
+}
+.ob-footer .ob-world-grid{
+  position:relative;
+  z-index:1;
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:.75rem;
+}
+.ob-footer .ob-world-card{
+  display:grid;
+  grid-template-columns:74px minmax(0, 1fr);
+  gap:.85rem;
+  align-items:center;
+  min-height:132px;
+  padding:.92rem;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:18px;
+  background:linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.035));
+  box-shadow:0 16px 34px rgba(0,0,0,.22);
+  backdrop-filter:blur(8px);
+}
+.ob-footer .ob-world-clock{
+  width:74px;
+  height:74px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.20);
+  background:radial-gradient(circle at 50% 50%, rgba(255,255,255,.11), rgba(255,255,255,.035) 56%, transparent 57%);
+  position:relative;
+  box-shadow:inset 0 0 0 5px rgba(255,255,255,.035), 0 10px 22px rgba(0,0,0,.24);
+}
+.ob-footer .ob-world-clock::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  background:#fff;
+  box-shadow:0 0 0 5px rgba(34,197,94,.16);
+}
+.ob-footer .ob-world-hand{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform-origin:50% 100%;
+  transform:translate(-50%,-100%) rotate(0deg);
+  border-radius:999px;
+}
+.ob-footer .ob-world-hand.hour{width:5px;height:25px;background:rgba(255,255,255,.94);}
+.ob-footer .ob-world-hand.min{width:3px;height:32px;background:rgba(255,255,255,.82);}
+.ob-footer .ob-world-hand.sec{width:2px;height:35px;background:#22c55e;box-shadow:0 0 12px rgba(34,197,94,.45);}
+.ob-footer .ob-world-city{
+  display:flex;
+  justify-content:space-between;
+  gap:.6rem;
+  align-items:baseline;
+  color:#fff;
+  font-weight:900;
+  letter-spacing:-.04em;
+  line-height:1.28;
+}
+.ob-footer .ob-world-tz{
+  color:rgba(255,255,255,.52);
+  font-size:.68rem;
+  white-space:nowrap;
+  font-weight:800;
+}
+.ob-footer .ob-world-time{
+  margin:.32rem 0 .1rem;
+  color:#5eead4;
+  font-size:1.34rem;
+  font-weight:1000;
+  letter-spacing:.04em;
+  text-align:left;
+  text-shadow:0 0 18px rgba(45,212,191,.16);
+}
+.ob-footer .ob-world-date{
+  color:rgba(255,255,255,.68);
+  font-size:.74rem;
+  line-height:1.35;
+  text-align:left;
+}
+.ob-footer .ob-world-weather{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.36rem;
+  margin-top:.62rem;
+}
+.ob-footer .ob-world-pill{
+  display:inline-flex;
+  align-items:center;
+  min-height:25px;
+  padding:.28rem .52rem;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:999px;
+  background:rgba(255,255,255,.055);
+  color:rgba(255,255,255,.86);
+  font-size:.69rem;
+  font-weight:800;
+  line-height:1;
+  white-space:nowrap;
+}
+.ob-footer .ob-world-pill strong{color:#fff;font-weight:1000;margin-left:.22rem;}
+.ob-footer .ob-world-cond{max-width:100%;overflow:hidden;text-overflow:ellipsis;}
+.ob-footer .ob-world-sync{
+  position:relative;
+  z-index:1;
+  margin:.9rem 0 0;
+  color:rgba(255,255,255,.54);
+  font-size:.76rem;
+  text-align:right;
+}
+@keyframes obWorldSweep{0%,62%{transform:translateX(-110%);} 82%,100%{transform:translateX(110%);}}
+@media screen and (max-width:980px){
+  .ob-footer .ob-world-grid{grid-template-columns:repeat(2, minmax(0, 1fr));}
+}
+@media screen and (max-width:640px){
+  .ob-footer .ob-world-footer{margin:1.55rem auto 1.3rem;padding:.9rem;border-radius:20px;}
+  .ob-footer .ob-world-head{align-items:stretch;flex-direction:column;gap:.75rem;}
+  .ob-footer .ob-world-refresh{width:100%;}
+  .ob-footer .ob-world-grid{grid-template-columns:1fr;gap:.62rem;}
+  .ob-footer .ob-world-card{grid-template-columns:64px minmax(0,1fr);min-height:116px;padding:.78rem;border-radius:16px;}
+  .ob-footer .ob-world-clock{width:64px;height:64px;}
+  .ob-footer .ob-world-hand.hour{height:21px;}
+  .ob-footer .ob-world-hand.min{height:27px;}
+  .ob-footer .ob-world-hand.sec{height:30px;}
+  .ob-footer .ob-world-time{font-size:1.18rem;}
+  .ob-footer .ob-world-sync{text-align:center;font-size:.7rem;}
+}
+@media (prefers-reduced-motion: reduce){
+  .ob-footer .ob-world-footer::before{animation:none;}
+}

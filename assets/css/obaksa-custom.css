@@ -1459,3 +1459,117 @@ button.button:active,
     animation: none !important;
   }
 }
+
+
+/* =========================================================
+   about.html 모바일 전용 정리 패치
+   - PC 레이아웃은 그대로 유지
+   - 모바일에서 현장 사례 이미지가 작게 보이는 문제 보정
+   - 좌우 여백을 줄이고, 글/이미지/버튼을 카드형으로 정돈
+   ========================================================= */
+@media screen and (max-width: 736px) {
+  .ob-about-promise .inner {
+    padding: 2.4rem 1rem 1.6rem !important;
+  }
+
+  .ob-about-promise h2 {
+    font-size: 1.85rem !important;
+    line-height: 1.18 !important;
+    margin-bottom: 1.2rem !important;
+  }
+
+  .ob-about-promise .ob-card-grid {
+    gap: 0.75rem !important;
+    margin-top: 1.2rem !important;
+  }
+
+  .ob-about-promise .ob-card-grid div {
+    padding: 1rem 1rem !important;
+    border-radius: 0.9rem !important;
+  }
+
+  .ob-about-proof {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    margin: 0 !important;
+    padding: 0 0 0.7rem !important;
+    background: #ffffff !important;
+    overflow: visible !important;
+    text-align: left !important;
+  }
+
+  .ob-about-proof .image {
+    position: relative !important;
+    width: calc(100% - 24px) !important;
+    min-width: 0 !important;
+    aspect-ratio: 16 / 9.6;
+    height: auto !important;
+    margin: 1.1rem auto 0 !important;
+    border-radius: 18px !important;
+    overflow: hidden !important;
+    background: #eef2f7 !important;
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.16) !important;
+  }
+
+  .ob-about-proof .image img {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+    border-radius: 18px !important;
+  }
+
+  .ob-about-proof .content {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 1.55rem 1.08rem 2rem !important;
+    text-align: left !important;
+  }
+
+  .ob-about-proof .content h2 {
+    font-size: 2rem !important;
+    line-height: 1.2 !important;
+    margin-bottom: 1rem !important;
+    letter-spacing: -0.055em !important;
+  }
+
+  .ob-about-proof .content p {
+    margin: 0 0 0.85rem !important;
+    font-size: 0.98rem !important;
+    line-height: 1.82 !important;
+  }
+
+  .ob-about-proof .content p br {
+    display: none !important;
+  }
+
+  .ob-about-proof .actions {
+    margin-top: 1.25rem !important;
+    width: 100% !important;
+  }
+
+  .ob-about-proof .actions li,
+  .ob-about-proof .button {
+    width: 100% !important;
+  }
+}
+
+@media screen and (max-width: 420px) {
+  .ob-about-proof .image {
+    width: calc(100% - 20px) !important;
+    aspect-ratio: 16 / 10.4;
+    border-radius: 16px !important;
+  }
+
+  .ob-about-proof .image img {
+    border-radius: 16px !important;
+  }
+
+  .ob-about-proof .content {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}

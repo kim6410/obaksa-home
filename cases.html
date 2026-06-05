@@ -33,7 +33,7 @@
       background-image:url('https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1800&q=80');
       background-size:cover;
       background-position:center;
-      opacity:.42;
+      opacity:.72;
       transform:scale(1.04);
       animation:caseHeroDrift 18s ease-in-out infinite alternate;
       will-change:transform;
@@ -44,15 +44,15 @@
       inset:0;
       z-index:-1;
       background:
-        radial-gradient(circle at 24% 18%, rgba(255,212,59,.18), transparent 28%),
-        linear-gradient(135deg, rgba(6,27,66,.93), rgba(11,54,123,.82));
+        radial-gradient(circle at 24% 18%, rgba(255,212,59,.10), transparent 30%),
+        linear-gradient(135deg, rgba(6,27,66,.66), rgba(11,54,123,.48));
     }
     @keyframes caseHeroDrift{
       from{transform:scale(1.04) translate3d(-1.2%, -1%, 0);}
       to{transform:scale(1.12) translate3d(1.2%, 1%, 0);}
     }
-    .case-board-hero h1{color:#fff;font-weight:900;letter-spacing:-.07em;font-size:clamp(2.15rem,4.6vw,4.15rem);line-height:1.12;margin:.8rem auto 1rem;max-width:980px;text-shadow:0 8px 26px rgba(0,0,0,.28);}
-    .case-board-hero p{color:rgba(255,255,255,.92);line-height:1.9;letter-spacing:-.035em;font-size:1.08rem;margin:0 auto;max-width:760px;text-shadow:0 6px 18px rgba(0,0,0,.22);}
+    .case-board-hero h1{color:#fff;font-weight:900;letter-spacing:-.07em;font-size:clamp(2.15rem,4.6vw,4.15rem);line-height:1.12;margin:.8rem auto 1rem;max-width:980px;text-shadow:0 10px 30px rgba(0,0,0,.42);}
+    .case-board-hero p{color:rgba(255,255,255,.92);line-height:1.9;letter-spacing:-.035em;font-size:1.08rem;margin:0 auto;max-width:760px;text-shadow:0 7px 20px rgba(0,0,0,.38);}
     .case-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:2rem;}
     .case-stats div{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);border-radius:18px;padding:1rem;backdrop-filter:blur(8px);box-shadow:0 12px 30px rgba(0,0,0,.12);}
     .case-stats strong{display:block;color:#ffd43b;font-size:1.7rem;font-weight:900;line-height:1.15;}

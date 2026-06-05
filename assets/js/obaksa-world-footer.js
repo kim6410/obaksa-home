@@ -18,8 +18,8 @@
     ]
   };
 
-  const roots = Array.from(document.querySelectorAll('.ob-world-footer'));
-  if(!roots.length) return;
+  let roots = [];
+  const ROOT_SELECTOR = '#obaksa-world-footer.ob-world-footer, section.ob-world-footer[aria-label="세계 시계와 날씨"]';
 
   function pad(n){ return String(n).padStart(2,'0'); }
 
@@ -192,13 +192,35 @@
     }
   }
 
-  roots.forEach(function(root){
-    mount(root);
-    const btn = root.querySelector('[data-ob-world-refresh]');
-    if(btn) btn.addEventListener('click', refreshWeather);
-  });
-  tick();
-  setInterval(tick, 1000);
-  refreshWeather();
-  setInterval(refreshWeather, CONFIG.refreshMinutes * 60 * 1000);
+  function init(){
+    roots = Array.from(document.querySelectorAll(ROOT_SELECTOR)).filter(function(root){
+      return !root.hasAttribute('data-ob-world-mounted');
+    });
+    if(!roots.length) return;
+
+    roots.forEach(function(root){
+      root.setAttribute('data-ob-world-mounted', 'true');
+      mount(root);
+      const btn = root.querySelector('[data-ob-world-refresh]');
+      if(btn && !btn.hasAttribute('data-ob-world-click')){
+        btn.setAttribute('data-ob-world-click', 'true');
+        btn.addEventListener('click', refreshWeather);
+      }
+    });
+
+    tick();
+    refreshWeather();
+
+    if(!window.__obaksaWorldTickTimer){
+      window.__obaksaWorldTickTimer = setInterval(tick, 1000);
+    }
+    if(!window.__obaksaWorldWeatherTimer){
+      window.__obaksaWorldWeatherTimer = setInterval(refreshWeather, CONFIG.refreshMinutes * 60 * 1000);
+    }
+  }
+
+  window.ObaksaWorldFooter = { init:init };
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();

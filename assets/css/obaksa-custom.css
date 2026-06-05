@@ -1793,243 +1793,301 @@ button.button:active,
 }
 
 /* =========================================================
-   오박사 공통 푸터 · 세계 시계 / 날씨 위젯
-   - 모든 페이지 footer 내부에서만 작동하도록 .ob-world-footer로 스코프 고정
-   - PC: 2열 와이드 카드 / 모바일: 1열 카드
-   - 컨트롤 센터: 색상, 폭, 시계 크기, 카드 간격은 이 영역에서 조정
+   오박사 공통 푸터 · 세계 시계 / 날씨 위젯 완전 격리 패치
+   - 이 영역은 #obaksa-world-footer 안에서만 작동합니다.
+   - .card, .title, .item, section 같은 전역 선택자를 절대 사용하지 않습니다.
+   - 다른 섹션의 배경, 높이, 아코디언 클릭 영역에 영향을 주지 않도록 잠급니다.
    ========================================================= */
-.ob-footer .ob-world-footer{
-  width:min(calc(100vw - 2rem), 1440px);
-  margin:2.15rem 0 1.65rem 50%;
-  padding:1.45rem;
-  border:1px solid rgba(96,165,250,.30);
-  border-radius:24px;
+#obaksa-world-footer.ob-world-footer{
+  box-sizing:border-box !important;
+  width:min(calc(100vw - 2rem), 1440px) !important;
+  max-width:1440px !important;
+  margin:2.15rem 0 1.65rem 50% !important;
+  padding:1.45rem !important;
+  border:1px solid rgba(96,165,250,.30) !important;
+  border-radius:24px !important;
   background:
     radial-gradient(900px 360px at 9% 0%, rgba(14,165,233,.28), transparent 60%),
     radial-gradient(820px 380px at 92% 12%, rgba(37,99,235,.24), transparent 62%),
-    linear-gradient(180deg, #073b70 0%, #062c58 46%, #061a3a 100%);
-  box-shadow:0 28px 80px rgba(2,6,23,.38), inset 0 1px 0 rgba(255,255,255,.10);
-  color:#fff;
-  overflow:hidden;
-  position:relative;
-  transform:translateX(-50%);
-}
-.ob-footer .ob-world-footer::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:
-    linear-gradient(120deg, transparent 0%, rgba(255,255,255,.07) 44%, transparent 70%);
-  transform:translateX(-110%);
-  animation:obWorldSweep 9s ease-in-out infinite;
-  pointer-events:none;
-}
-.ob-footer .ob-world-head{
-  position:relative;
-  z-index:1;
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:1rem;
-  margin-bottom:1.15rem;
-}
-.ob-footer .ob-world-head strong{
-  display:block;
-  color:#fff;
-  font-size:1.38rem;
-  font-weight:950;
-  letter-spacing:-.045em;
-  text-align:left;
-}
-.ob-footer .ob-world-head span{
-  display:block;
-  margin-top:.38rem;
-  color:rgba(255,255,255,.76);
-  font-size:.9rem;
-  line-height:1.55;
-  text-align:left;
-  word-break:keep-all;
-}
-.ob-footer .ob-world-refresh{
-  flex:0 0 auto;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  border:1px solid rgba(125,211,252,.42);
-  border-radius:12px;
-  background:linear-gradient(180deg, rgba(37,99,235,.98), rgba(2,132,199,.96));
+    linear-gradient(180deg, #073b70 0%, #062c58 46%, #061a3a 100%) !important;
+  box-shadow:0 28px 80px rgba(2,6,23,.38), inset 0 1px 0 rgba(255,255,255,.10) !important;
   color:#fff !important;
-  min-width:142px;
-  height:44px;
-  padding:0 1.15rem;
-  font-size:.88rem;
-  font-weight:950;
-  letter-spacing:-.02em;
-  line-height:1;
-  cursor:pointer;
-  box-shadow:0 14px 30px rgba(14,165,233,.22);
+  overflow:hidden !important;
+  position:relative !important;
+  transform:translateX(-50%) !important;
+  text-align:left !important;
+  line-height:1.4 !important;
 }
-.ob-footer .ob-world-grid{
-  position:relative;
-  z-index:1;
-  display:grid;
-  grid-template-columns:repeat(2, minmax(0, 1fr));
-  gap:.9rem 1rem;
+#obaksa-world-footer.ob-world-footer,
+#obaksa-world-footer.ob-world-footer *{
+  box-sizing:border-box !important;
 }
-.ob-footer .ob-world-card{
-  display:grid;
-  grid-template-columns:96px minmax(0, 1fr);
-  gap:1.05rem;
-  align-items:center;
-  min-height:168px;
-  padding:1rem 1.05rem;
-  border:1px solid rgba(125,211,252,.22);
-  border-radius:16px;
-  background:
-    radial-gradient(520px 220px at 6% 0%, rgba(14,165,233,.12), transparent 58%),
-    linear-gradient(180deg, rgba(7,59,112,.74), rgba(6,31,66,.74));
-  box-shadow:none;
-  backdrop-filter:none;
+#obaksa-world-footer.ob-world-footer::before{
+  content:"" !important;
+  position:absolute !important;
+  inset:0 !important;
+  background:linear-gradient(120deg, transparent 0%, rgba(255,255,255,.07) 44%, transparent 70%) !important;
+  transform:translateX(-110%) !important;
+  animation:obWorldSweep 9s ease-in-out infinite !important;
+  pointer-events:none !important;
 }
-.ob-footer .ob-world-clock{
-  width:89px;
-  height:89px;
-  border-radius:50%;
-  border:1px solid rgba(255,255,255,.24);
-  background:
-    radial-gradient(circle at 50% 50%, rgba(125,211,252,.12), rgba(255,255,255,.035) 55%, rgba(0,0,0,.08) 56%),
-    rgba(6,20,48,.42);
-  position:relative;
-  box-shadow:inset 0 0 0 6px rgba(255,255,255,.035), 0 10px 22px rgba(0,0,0,.18);
+#obaksa-world-footer .ob-world-head{
+  position:relative !important;
+  z-index:1 !important;
+  display:flex !important;
+  align-items:flex-start !important;
+  justify-content:space-between !important;
+  gap:1rem !important;
+  margin:0 0 1.15rem !important;
+  padding:0 !important;
+  width:100% !important;
 }
-.ob-footer .ob-world-clock::after{
-  content:"";
-  position:absolute;
-  left:50%;
-  top:50%;
-  width:9px;
-  height:9px;
-  border-radius:50%;
-  transform:translate(-50%,-50%);
-  background:#fff;
-  box-shadow:0 0 0 5px rgba(94,234,212,.20);
+#obaksa-world-footer .ob-world-head strong{
+  display:block !important;
+  color:#fff !important;
+  font-size:1.38rem !important;
+  font-weight:950 !important;
+  letter-spacing:-.045em !important;
+  text-align:left !important;
+  line-height:1.18 !important;
+  margin:0 !important;
 }
-.ob-footer .ob-world-hand{
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform-origin:50% 100%;
+#obaksa-world-footer .ob-world-head span{
+  display:block !important;
+  margin:.38rem 0 0 !important;
+  color:rgba(255,255,255,.76) !important;
+  font-size:.9rem !important;
+  line-height:1.55 !important;
+  text-align:left !important;
+  word-break:keep-all !important;
+}
+#obaksa-world-footer .ob-world-refresh{
+  flex:0 0 auto !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border:1px solid rgba(125,211,252,.42) !important;
+  border-radius:12px !important;
+  background:linear-gradient(180deg, rgba(37,99,235,.98), rgba(2,132,199,.96)) !important;
+  color:#fff !important;
+  min-width:142px !important;
+  height:44px !important;
+  padding:0 1.15rem !important;
+  font-size:.88rem !important;
+  font-weight:950 !important;
+  letter-spacing:-.02em !important;
+  line-height:1 !important;
+  cursor:pointer !important;
+  box-shadow:0 14px 30px rgba(14,165,233,.22) !important;
+  text-decoration:none !important;
+}
+#obaksa-world-footer .ob-world-grid{
+  position:relative !important;
+  z-index:1 !important;
+  display:grid !important;
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  gap:.9rem 1rem !important;
+  width:100% !important;
+  max-width:100% !important;
+  margin:0 !important;
+  padding:0 !important;
+}
+#obaksa-world-footer .ob-world-card{
+  display:grid !important;
+  grid-template-columns:96px minmax(0, 1fr) !important;
+  gap:1.05rem !important;
+  align-items:center !important;
+  width:100% !important;
+  min-width:0 !important;
+  min-height:168px !important;
+  margin:0 !important;
+  padding:1rem 1.05rem !important;
+  border:1px solid rgba(125,211,252,.22) !important;
+  border-radius:16px !important;
+  background:radial-gradient(520px 220px at 6% 0%, rgba(14,165,233,.12), transparent 58%), linear-gradient(180deg, rgba(7,59,112,.74), rgba(6,31,66,.74)) !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  overflow:hidden !important;
+}
+#obaksa-world-footer .ob-world-clock{
+  width:89px !important;
+  height:89px !important;
+  border-radius:50% !important;
+  border:1px solid rgba(255,255,255,.24) !important;
+  background:radial-gradient(circle at 50% 50%, rgba(125,211,252,.12), rgba(255,255,255,.035) 55%, rgba(0,0,0,.08) 56%), rgba(6,20,48,.42) !important;
+  position:relative !important;
+  box-shadow:inset 0 0 0 6px rgba(255,255,255,.035), 0 10px 22px rgba(0,0,0,.18) !important;
+  min-width:0 !important;
+}
+#obaksa-world-footer .ob-world-clock::after{
+  content:"" !important;
+  position:absolute !important;
+  left:50% !important;
+  top:50% !important;
+  width:9px !important;
+  height:9px !important;
+  border-radius:50% !important;
+  transform:translate(-50%,-50%) !important;
+  background:#fff !important;
+  box-shadow:0 0 0 5px rgba(94,234,212,.20) !important;
+}
+#obaksa-world-footer .ob-world-hand{
+  position:absolute !important;
+  left:50% !important;
+  top:50% !important;
+  transform-origin:50% 100% !important;
   transform:translate(-50%,-100%) rotate(0deg);
-  border-radius:999px;
+  border-radius:999px !important;
+  display:block !important;
+  margin:0 !important;
+  padding:0 !important;
 }
-.ob-footer .ob-world-hand.hour{width:6px;height:30px;background:rgba(255,255,255,.96);}
-.ob-footer .ob-world-hand.min{width:4px;height:38px;background:rgba(255,255,255,.86);}
-.ob-footer .ob-world-hand.sec{width:2px;height:42px;background:#22d3ee;box-shadow:0 0 12px rgba(34,211,238,.45);}
-.ob-footer .ob-world-city{
-  display:flex;
-  justify-content:flex-start;
-  gap:.8rem;
-  align-items:center;
-  color:#fff;
-  font-weight:950;
-  letter-spacing:-.045em;
-  line-height:1.18;
-  white-space:nowrap;
-  overflow:hidden;
+#obaksa-world-footer .ob-world-hand.hour{width:6px !important;height:30px !important;background:rgba(255,255,255,.96) !important;}
+#obaksa-world-footer .ob-world-hand.min{width:4px !important;height:38px !important;background:rgba(255,255,255,.86) !important;}
+#obaksa-world-footer .ob-world-hand.sec{width:2px !important;height:42px !important;background:#22d3ee !important;box-shadow:0 0 12px rgba(34,211,238,.45) !important;}
+#obaksa-world-footer .ob-world-meta{
+  display:block !important;
+  min-width:0 !important;
+  width:100% !important;
+  margin:0 !important;
+  padding:0 !important;
+  text-align:left !important;
 }
-.ob-footer .ob-world-city > span:first-child{
-  flex:0 1 auto;
-  min-width:0;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-  font-size:1.08rem;
+#obaksa-world-footer .ob-world-city{
+  display:flex !important;
+  justify-content:flex-start !important;
+  align-items:center !important;
+  gap:.8rem !important;
+  width:100% !important;
+  min-width:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  color:#fff !important;
+  font-weight:950 !important;
+  letter-spacing:-.045em !important;
+  line-height:1.18 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-align:left !important;
 }
-.ob-footer .ob-world-tz{
-  flex:0 0 auto;
-  color:rgba(255,255,255,.66);
-  font-size:.74rem;
-  white-space:nowrap;
-  font-weight:850;
-  border:1px solid rgba(125,211,252,.18);
-  border-radius:8px;
-  padding:.22rem .45rem;
-  background:rgba(2,6,23,.12);
+#obaksa-world-footer .ob-world-city-name{
+  flex:0 1 auto !important;
+  min-width:0 !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+  font-size:1.08rem !important;
 }
-.ob-footer .ob-world-time{
-  margin:.42rem 0 .12rem;
-  color:#5eead4;
-  font-size:1.58rem;
-  font-weight:1000;
-  letter-spacing:.04em;
-  text-align:left;
-  text-shadow:0 0 18px rgba(45,212,191,.18);
+#obaksa-world-footer .ob-world-mobile-date{display:none !important;}
+#obaksa-world-footer .ob-world-tz{
+  flex:0 0 auto !important;
+  color:rgba(255,255,255,.66) !important;
+  font-size:.74rem !important;
+  white-space:nowrap !important;
+  font-weight:850 !important;
+  border:1px solid rgba(125,211,252,.18) !important;
+  border-radius:8px !important;
+  padding:.22rem .45rem !important;
+  background:rgba(2,6,23,.12) !important;
 }
-.ob-footer .ob-world-date{
-  color:rgba(255,255,255,.72);
-  font-size:.78rem;
-  line-height:1.35;
-  text-align:left;
+#obaksa-world-footer .ob-world-mainline{
+  display:block !important;
+  width:100% !important;
+  min-width:0 !important;
+  margin:.42rem 0 .12rem !important;
+  padding:0 !important;
 }
-.ob-footer .ob-world-weather{
-  display:flex;
-  flex-wrap:wrap;
-  gap:.46rem;
-  margin-top:.72rem;
+#obaksa-world-footer .ob-world-time{
+  display:block !important;
+  margin:0 !important;
+  padding:0 !important;
+  color:#5eead4 !important;
+  font-size:1.58rem !important;
+  font-weight:1000 !important;
+  letter-spacing:.04em !important;
+  text-align:left !important;
+  line-height:1.18 !important;
+  text-shadow:0 0 18px rgba(45,212,191,.18) !important;
 }
-.ob-footer .ob-world-pill{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-height:30px;
-  padding:0 .62rem;
-  border:1px solid rgba(125,211,252,.22);
-  border-radius:10px;
-  background:rgba(3,32,68,.40);
-  color:rgba(255,255,255,.90);
-  font-size:.74rem;
-  font-weight:850;
-  line-height:1;
-  white-space:nowrap;
-  vertical-align:middle;
+#obaksa-world-footer .ob-world-mobile-compact{display:none !important;}
+#obaksa-world-footer .ob-world-date{
+  color:rgba(255,255,255,.72) !important;
+  font-size:.78rem !important;
+  line-height:1.35 !important;
+  text-align:left !important;
+  margin:0 !important;
+  padding:0 !important;
 }
-.ob-footer .ob-world-pill strong{color:#fff;font-weight:1000;margin-left:.24rem;line-height:1;}
-.ob-footer .ob-world-cond{max-width:100%;overflow:hidden;text-overflow:ellipsis;}
-.ob-footer .ob-world-sync{
-  position:relative;
-  z-index:1;
-  margin:1.1rem 0 0;
-  padding-top:.85rem;
-  border-top:1px solid rgba(125,211,252,.16);
-  color:rgba(255,255,255,.62);
-  font-size:.78rem;
-  text-align:right;
+#obaksa-world-footer .ob-world-weather{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  gap:.46rem !important;
+  margin:.72rem 0 0 !important;
+  padding:0 !important;
+  width:100% !important;
+}
+#obaksa-world-footer .ob-world-pill{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-height:30px !important;
+  padding:0 .62rem !important;
+  border:1px solid rgba(125,211,252,.22) !important;
+  border-radius:10px !important;
+  background:rgba(3,32,68,.40) !important;
+  color:rgba(255,255,255,.90) !important;
+  font-size:.74rem !important;
+  font-weight:850 !important;
+  line-height:1 !important;
+  white-space:nowrap !important;
+  vertical-align:middle !important;
+  width:auto !important;
+  max-width:100% !important;
+  margin:0 !important;
+}
+#obaksa-world-footer .ob-world-pill strong{color:#fff !important;font-weight:1000 !important;margin-left:.24rem !important;line-height:1 !important;}
+#obaksa-world-footer .ob-world-cond{max-width:100% !important;overflow:hidden !important;text-overflow:ellipsis !important;}
+#obaksa-world-footer .ob-world-sync{
+  position:relative !important;
+  z-index:1 !important;
+  margin:1.1rem 0 0 !important;
+  padding:.85rem 0 0 !important;
+  border-top:1px solid rgba(125,211,252,.16) !important;
+  color:rgba(255,255,255,.62) !important;
+  font-size:.78rem !important;
+  text-align:right !important;
+  line-height:1.4 !important;
 }
 @keyframes obWorldSweep{0%,62%{transform:translateX(-110%);} 82%,100%{transform:translateX(110%);}}
 @media screen and (max-width:1100px){
-  .ob-footer .ob-world-footer{width:min(calc(100vw - 1.4rem), 980px);padding:1.15rem;}
-  .ob-footer .ob-world-grid{grid-template-columns:1fr;}
+  #obaksa-world-footer.ob-world-footer{width:min(calc(100vw - 1.4rem), 980px) !important;padding:1.15rem !important;}
+  #obaksa-world-footer .ob-world-grid{grid-template-columns:1fr !important;}
 }
 @media screen and (max-width:640px){
-  .ob-footer .ob-world-footer{margin:1.55rem 0 1.3rem 50%;padding:.9rem;border-radius:20px;}
-  .ob-footer .ob-world-head{align-items:stretch;flex-direction:column;gap:.75rem;}
-  .ob-footer .ob-world-refresh{width:100%;min-width:0;}
-  .ob-footer .ob-world-grid{grid-template-columns:1fr;gap:.62rem;}
-  .ob-footer .ob-world-card{grid-template-columns:78px minmax(0,1fr);min-height:128px;padding:.78rem;border-radius:16px;gap:.78rem;}
-  .ob-footer .ob-world-clock{width:78px;height:78px;}
-  .ob-footer .ob-world-hand.hour{height:26px;}
-  .ob-footer .ob-world-hand.min{height:33px;}
-  .ob-footer .ob-world-hand.sec{height:37px;}
-  .ob-footer .ob-world-city{gap:.45rem;}
-  .ob-footer .ob-world-city > span:first-child{font-size:.98rem;}
-  .ob-footer .ob-world-tz{font-size:.64rem;padding:.18rem .34rem;}
-  .ob-footer .ob-world-time{font-size:1.28rem;}
-  .ob-footer .ob-world-pill{min-height:28px;font-size:.68rem;padding:0 .5rem;}
-  .ob-footer .ob-world-sync{text-align:center;font-size:.7rem;}
+  #obaksa-world-footer.ob-world-footer{margin:1.55rem 0 1.3rem 50% !important;padding:.9rem !important;border-radius:20px !important;}
+  #obaksa-world-footer .ob-world-head{align-items:stretch !important;flex-direction:column !important;gap:.75rem !important;}
+  #obaksa-world-footer .ob-world-refresh{width:100% !important;min-width:0 !important;}
+  #obaksa-world-footer .ob-world-grid{grid-template-columns:1fr !important;gap:.62rem !important;}
+  #obaksa-world-footer .ob-world-card{grid-template-columns:78px minmax(0,1fr) !important;min-height:136px !important;padding:.78rem !important;border-radius:16px !important;gap:.78rem !important;}
+  #obaksa-world-footer .ob-world-clock{width:78px !important;height:78px !important;}
+  #obaksa-world-footer .ob-world-hand.hour{height:26px !important;}
+  #obaksa-world-footer .ob-world-hand.min{height:33px !important;}
+  #obaksa-world-footer .ob-world-hand.sec{height:37px !important;}
+  #obaksa-world-footer .ob-world-city{gap:.45rem !important;align-items:baseline !important;}
+  #obaksa-world-footer .ob-world-city-name{font-size:1.10rem !important;}
+  #obaksa-world-footer .ob-world-mobile-date{display:inline-block !important;flex:0 0 auto !important;color:rgba(255,255,255,.70) !important;font-size:.72rem !important;font-weight:850 !important;white-space:nowrap !important;}
+  #obaksa-world-footer .ob-world-tz{font-size:.64rem !important;padding:.18rem .34rem !important;}
+  #obaksa-world-footer .ob-world-mainline{display:flex !important;align-items:center !important;justify-content:space-between !important;gap:.5rem !important;margin:.38rem 0 .08rem !important;}
+  #obaksa-world-footer .ob-world-time{font-size:1.28rem !important;flex:0 0 auto !important;text-align:left !important;}
+  #obaksa-world-footer .ob-world-mobile-compact{display:inline-flex !important;align-items:center !important;gap:.25rem !important;color:rgba(255,255,255,.90) !important;font-size:.72rem !important;font-weight:850 !important;line-height:1 !important;white-space:nowrap !important;}
+  #obaksa-world-footer .ob-world-weather{display:none !important;}
+  #obaksa-world-footer .ob-world-date{display:none !important;}
+  #obaksa-world-footer .ob-world-pill{min-height:28px !important;font-size:.68rem !important;padding:0 .5rem !important;}
+  #obaksa-world-footer .ob-world-sync{text-align:center !important;font-size:.7rem !important;}
 }
 @media (prefers-reduced-motion: reduce){
-  .ob-footer .ob-world-footer::before{animation:none;}
-}
+  #obaksa-world-footer.ob-world-footer::before{animation:none !important;}
 }
 
 /* =========================================================
@@ -2438,8 +2496,8 @@ button.button:active,
   .ob-real-slider-wrap,
   .ob-footer,
   .ob-footer .inner,
-  .ob-footer .ob-world-footer,
-  .ob-footer .ob-world-grid,
+  #obaksa-world-footer.ob-world-footer,
+  #obaksa-world-footer .ob-world-grid,
   #ob-service-accordion,
   #ob-service-accordion .inner,
   #ob-service-accordion .content,
@@ -2514,28 +2572,28 @@ button.button:active,
     color: #ffffff !important;
   }
 
-  .ob-footer .ob-world-grid {
+  #obaksa-world-footer .ob-world-grid {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) !important;
     gap: 0.58rem !important;
     overflow-x: hidden !important;
   }
 
-  .ob-footer .ob-world-card,
-  .ob-footer .ob-world-card * {
+  #obaksa-world-footer .ob-world-card,
+  #obaksa-world-footer .ob-world-card * {
     max-width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
   }
 
-  .ob-footer .ob-world-card {
+  #obaksa-world-footer .ob-world-card {
     overflow: hidden !important;
   }
 
-  .ob-footer .ob-world-city,
-  .ob-footer .ob-world-title,
-  .ob-footer .ob-world-time,
-  .ob-footer .ob-world-date {
+  #obaksa-world-footer .ob-world-city,
+  #obaksa-world-footer .ob-world-title,
+  #obaksa-world-footer .ob-world-time,
+  #obaksa-world-footer .ob-world-date {
     white-space: normal !important;
     overflow-wrap: anywhere !important;
     word-break: keep-all !important;
@@ -2548,24 +2606,24 @@ button.button:active,
    - 모바일: 도시 오른쪽 날짜/요일, 시간 오른쪽 날씨+온습도
    - 모바일 카드 높이 추가 축소
    ========================================================= */
-.ob-footer .ob-world-mainline{
+#obaksa-world-footer .ob-world-mainline{
   display:block;
 }
-.ob-footer .ob-world-mobile-date,
-.ob-footer .ob-world-mobile-compact{
+#obaksa-world-footer .ob-world-mobile-date,
+#obaksa-world-footer .ob-world-mobile-compact{
   display:none;
 }
-.ob-footer .ob-world-cond{
+#obaksa-world-footer .ob-world-cond{
   gap:.36rem;
 }
-.ob-footer .ob-world-weather-emoji{
+#obaksa-world-footer .ob-world-weather-emoji{
   display:inline-flex;
   align-items:center;
   justify-content:center;
   line-height:1;
   font-size:1.02em;
 }
-.ob-footer .ob-world-weather-mini{
+#obaksa-world-footer .ob-world-weather-mini{
   display:inline-flex;
   align-items:center;
   line-height:1;
@@ -2573,35 +2631,35 @@ button.button:active,
 }
 
 @media screen and (max-width:640px){
-  .ob-footer .ob-world-footer{
+  #obaksa-world-footer.ob-world-footer{
     width:min(calc(100vw - 1rem), 100%) !important;
     margin:1.15rem 0 1rem 50% !important;
     padding:.72rem !important;
     border-radius:16px !important;
   }
 
-  .ob-footer .ob-world-head{
+  #obaksa-world-footer .ob-world-head{
     margin-bottom:.58rem !important;
     gap:.32rem !important;
   }
 
-  .ob-footer .ob-world-head strong{
+  #obaksa-world-footer .ob-world-head strong{
     font-size:1.02rem !important;
     line-height:1.2 !important;
   }
 
-  .ob-footer .ob-world-head span{
+  #obaksa-world-footer .ob-world-head span{
     margin-top:.2rem !important;
     font-size:.72rem !important;
     line-height:1.35 !important;
   }
 
-  .ob-footer .ob-world-refresh,
-  .ob-footer .ob-world-sync{
+  #obaksa-world-footer .ob-world-refresh,
+  #obaksa-world-footer .ob-world-sync{
     display:none !important;
   }
 
-  .ob-footer .ob-world-grid{
+  #obaksa-world-footer .ob-world-grid{
     grid-template-columns:minmax(0, 1fr) !important;
     gap:.38rem !important;
     width:100% !important;
@@ -2609,7 +2667,7 @@ button.button:active,
     overflow:hidden !important;
   }
 
-  .ob-footer .ob-world-card{
+  #obaksa-world-footer .ob-world-card{
     grid-template-columns:44px minmax(0, 1fr) !important;
     min-height:62px !important;
     padding:.42rem .5rem !important;
@@ -2618,30 +2676,30 @@ button.button:active,
     align-items:center !important;
   }
 
-  .ob-footer .ob-world-clock{
+  #obaksa-world-footer .ob-world-clock{
     width:44px !important;
     height:44px !important;
     box-shadow:inset 0 0 0 3px rgba(255,255,255,.035), 0 6px 14px rgba(0,0,0,.14) !important;
   }
 
-  .ob-footer .ob-world-clock::after{
+  #obaksa-world-footer .ob-world-clock::after{
     width:6px !important;
     height:6px !important;
     box-shadow:0 0 0 3px rgba(94,234,212,.18) !important;
   }
 
-  .ob-footer .ob-world-hand.hour{width:4px !important;height:14px !important;}
-  .ob-footer .ob-world-hand.min{width:3px !important;height:18px !important;}
-  .ob-footer .ob-world-hand.sec{width:1.5px !important;height:20px !important;}
+  #obaksa-world-footer .ob-world-hand.hour{width:4px !important;height:14px !important;}
+  #obaksa-world-footer .ob-world-hand.min{width:3px !important;height:18px !important;}
+  #obaksa-world-footer .ob-world-hand.sec{width:1.5px !important;height:20px !important;}
 
-  .ob-footer .ob-world-meta{
+  #obaksa-world-footer .ob-world-meta{
     min-width:0 !important;
     display:flex !important;
     flex-direction:column !important;
     gap:.16rem !important;
   }
 
-  .ob-footer .ob-world-city{
+  #obaksa-world-footer .ob-world-city{
     display:grid !important;
     grid-template-columns:minmax(0, 1fr) auto !important;
     align-items:center !important;
@@ -2653,8 +2711,8 @@ button.button:active,
     line-height:1.15 !important;
   }
 
-  .ob-footer .ob-world-city-name,
-  .ob-footer .ob-world-city > span:first-child{
+  #obaksa-world-footer .ob-world-city-name,
+  #obaksa-world-footer .ob-world-city > span:first-child{
     display:block !important;
     min-width:0 !important;
     overflow:hidden !important;
@@ -2665,7 +2723,7 @@ button.button:active,
     color:#ffffff !important;
   }
 
-  .ob-footer .ob-world-mobile-date{
+  #obaksa-world-footer .ob-world-mobile-date{
     display:inline-flex !important;
     justify-content:flex-end !important;
     min-width:0 !important;
@@ -2679,11 +2737,11 @@ button.button:active,
     letter-spacing:-.04em !important;
   }
 
-  .ob-footer .ob-world-tz{
+  #obaksa-world-footer .ob-world-tz{
     display:none !important;
   }
 
-  .ob-footer .ob-world-mainline{
+  #obaksa-world-footer .ob-world-mainline{
     display:flex !important;
     align-items:center !important;
     justify-content:space-between !important;
@@ -2692,7 +2750,7 @@ button.button:active,
     min-width:0 !important;
   }
 
-  .ob-footer .ob-world-time{
+  #obaksa-world-footer .ob-world-time{
     margin:0 !important;
     font-size:1.05rem !important;
     line-height:1.1 !important;
@@ -2701,7 +2759,7 @@ button.button:active,
     white-space:nowrap !important;
   }
 
-  .ob-footer .ob-world-mobile-compact{
+  #obaksa-world-footer .ob-world-mobile-compact{
     display:inline-flex !important;
     align-items:center !important;
     justify-content:flex-end !important;
@@ -2715,40 +2773,40 @@ button.button:active,
     line-height:1 !important;
   }
 
-  .ob-footer .ob-world-mobile-compact .ob-world-weather-emoji{
+  #obaksa-world-footer .ob-world-mobile-compact .ob-world-weather-emoji{
     font-size:.96rem !important;
   }
 
-  .ob-footer .ob-world-date,
-  .ob-footer .ob-world-weather{
+  #obaksa-world-footer .ob-world-date,
+  #obaksa-world-footer .ob-world-weather{
     display:none !important;
   }
 }
 
 @media screen and (max-width:380px){
-  .ob-footer .ob-world-card{
+  #obaksa-world-footer .ob-world-card{
     grid-template-columns:40px minmax(0, 1fr) !important;
     min-height:58px !important;
     padding:.38rem .44rem !important;
     gap:.42rem !important;
   }
 
-  .ob-footer .ob-world-clock{
+  #obaksa-world-footer .ob-world-clock{
     width:40px !important;
     height:40px !important;
   }
 
-  .ob-footer .ob-world-time{
+  #obaksa-world-footer .ob-world-time{
     font-size:.98rem !important;
   }
 
-  .ob-footer .ob-world-city-name,
-  .ob-footer .ob-world-city > span:first-child,
-  .ob-footer .ob-world-mobile-date{
+  #obaksa-world-footer .ob-world-city-name,
+  #obaksa-world-footer .ob-world-city > span:first-child,
+  #obaksa-world-footer .ob-world-mobile-date{
     font-size:.72rem !important;
   }
 
-  .ob-footer .ob-world-mobile-compact{
+  #obaksa-world-footer .ob-world-mobile-compact{
     font-size:.7rem !important;
   }
 }
@@ -2759,7 +2817,7 @@ button.button:active,
    2) 모바일 시공 아코디언: 제목만 보이는 초슬림 목록
    ========================================================= */
 @media screen and (max-width: 640px) {
-  .ob-footer .ob-world-card {
+  #obaksa-world-footer .ob-world-card {
     min-height: 82px !important;
     padding: .58rem .62rem !important;
     grid-template-columns: 52px minmax(0, 1fr) !important;
@@ -2767,31 +2825,31 @@ button.button:active,
     overflow: visible !important;
   }
 
-  .ob-footer .ob-world-clock {
+  #obaksa-world-footer .ob-world-clock {
     width: 52px !important;
     height: 52px !important;
   }
 
-  .ob-footer .ob-world-hand.hour { height: 17px !important; }
-  .ob-footer .ob-world-hand.min { height: 22px !important; }
-  .ob-footer .ob-world-hand.sec { height: 24px !important; }
+  #obaksa-world-footer .ob-world-hand.hour { height: 17px !important; }
+  #obaksa-world-footer .ob-world-hand.min { height: 22px !important; }
+  #obaksa-world-footer .ob-world-hand.sec { height: 24px !important; }
 
-  .ob-footer .ob-world-meta {
+  #obaksa-world-footer .ob-world-meta {
     gap: .22rem !important;
     overflow: visible !important;
   }
 
-  .ob-footer .ob-world-time {
+  #obaksa-world-footer .ob-world-time {
     font-size: 1.12rem !important;
   }
 
-  .ob-footer .ob-world-city-name,
-  .ob-footer .ob-world-city > span:first-child,
-  .ob-footer .ob-world-mobile-date {
+  #obaksa-world-footer .ob-world-city-name,
+  #obaksa-world-footer .ob-world-city > span:first-child,
+  #obaksa-world-footer .ob-world-mobile-date {
     font-size: .8rem !important;
   }
 
-  .ob-footer .ob-world-mobile-compact {
+  #obaksa-world-footer .ob-world-mobile-compact {
     font-size: .78rem !important;
   }
 
@@ -2849,12 +2907,12 @@ button.button:active,
 }
 
 @media screen and (max-width: 380px) {
-  .ob-footer .ob-world-card {
+  #obaksa-world-footer .ob-world-card {
     min-height: 78px !important;
     grid-template-columns: 48px minmax(0, 1fr) !important;
   }
 
-  .ob-footer .ob-world-clock {
+  #obaksa-world-footer .ob-world-clock {
     width: 48px !important;
     height: 48px !important;
   }
@@ -2890,29 +2948,29 @@ button.button:active,
 
 @media screen and (max-width: 640px) {
   /* 월드클락: 기능은 그대로 두고 글자와 정렬만 보정 */
-  .ob-footer .ob-world-meta {
+  #obaksa-world-footer .ob-world-meta {
     align-items: stretch !important;
   }
 
-  .ob-footer .ob-world-city,
-  .ob-footer .ob-world-mainline {
+  #obaksa-world-footer .ob-world-city,
+  #obaksa-world-footer .ob-world-mainline {
     padding-left: 0 !important;
     margin-left: 0 !important;
   }
 
-  .ob-footer .ob-world-city-name,
-  .ob-footer .ob-world-city > span:first-child {
+  #obaksa-world-footer .ob-world-city-name,
+  #obaksa-world-footer .ob-world-city > span:first-child {
     font-size: .925rem !important; /* 기존 .8rem 기준 약 +2px */
     line-height: 1.1 !important;
     letter-spacing: -.035em !important;
     text-align: left !important;
   }
 
-  .ob-footer .ob-world-mobile-date {
+  #obaksa-world-footer .ob-world-mobile-date {
     font-size: .8rem !important;
   }
 
-  .ob-footer .ob-world-time {
+  #obaksa-world-footer .ob-world-time {
     display: block !important;
     text-align: left !important;
     margin-left: 0 !important;
@@ -3005,12 +3063,61 @@ button.button:active,
 }
 
 @media screen and (max-width: 380px) {
-  .ob-footer .ob-world-city-name,
-  .ob-footer .ob-world-city > span:first-child {
+  #obaksa-world-footer .ob-world-city-name,
+  #obaksa-world-footer .ob-world-city > span:first-child {
     font-size: .86rem !important;
   }
 
   #ob-service-accordion .ob-service-title {
     font-size: .92rem !important;
+  }
+}
+
+
+/* =========================================================
+   시공 분야 모바일 복구 안전핀 v2026-06-06C
+   - 월드클락과 별개로 배경 이미지와 버튼 클릭 영역을 다시 고정합니다.
+   ========================================================= */
+#ob-service-accordion.ob-featured-work{
+  background-image:linear-gradient(180deg, rgba(4,10,22,.52), rgba(4,10,22,.42)), url("../../images/gallery/case_hero.jpg") !important;
+  background-size:cover !important;
+  background-position:center top !important;
+  background-repeat:no-repeat !important;
+}
+#ob-service-accordion .ob-service-toggle{
+  pointer-events:auto !important;
+  cursor:pointer !important;
+  touch-action:manipulation !important;
+}
+#ob-service-accordion .ob-service-detail{
+  pointer-events:auto !important;
+}
+@media screen and (max-width:736px){
+  #ob-service-accordion .ob-service-icon,
+  #ob-service-accordion .ob-service-arrow{
+    display:none !important;
+  }
+  #ob-service-accordion .ob-service-toggle{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    min-height:44px !important;
+    padding:.52rem .72rem !important;
+  }
+  #ob-service-accordion .ob-service-title{
+    font-size:1rem !important;
+    line-height:1.22 !important;
+    text-align:left !important;
+  }
+  #ob-service-accordion .ob-service-detail{
+    max-height:0 !important;
+    opacity:0 !important;
+    overflow:hidden !important;
+    padding:0 .72rem !important;
+  }
+  #ob-service-accordion .ob-service-card.is-open .ob-service-detail{
+    max-height:260px !important;
+    opacity:1 !important;
+    padding:.15rem .72rem .74rem !important;
   }
 }

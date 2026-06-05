@@ -1271,3 +1271,11 @@ button.button:active,
     height: min(115vw, 430px) !important;
   }
 }
+
+.spotlight .content {
+    width: 50% !important;
+}
+
+.spotlight .image {
+    width: 50% !important;
+}

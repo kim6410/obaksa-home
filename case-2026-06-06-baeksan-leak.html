@@ -30,8 +30,39 @@
     .case-badges span{background:#fff;color:#0b2e6d;border-radius:999px;padding:.55rem .85rem;font-size:.88rem;font-weight:800;}
     .case-actions{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.6rem;}
     .case-actions a{border-radius:999px;font-weight:900;letter-spacing:-.03em;}
-    .case-btn-primary{background:var(--ob-yellow)!important;color:#111!important;border-color:var(--ob-yellow)!important;}
-    .case-btn-white{background:#fff!important;color:#0b2e6d!important;border-color:#fff!important;}
+    /* 버튼 글자색 강제 보정: 공통 CSS의 .button.primary, .button:hover 규칙보다 우선 적용 */
+    .case-page a.button.case-btn-primary,
+    .case-page a.button.primary.case-btn-primary,
+    .case-page .case-actions a.button.case-btn-primary,
+    .case-page .case-actions a.button.primary.case-btn-primary{
+      background:var(--ob-yellow)!important;
+      color:#111!important;
+      border:1px solid var(--ob-yellow)!important;
+      box-shadow:0 14px 30px rgba(255,213,58,.28)!important;
+      text-shadow:none!important;
+    }
+    .case-page a.button.case-btn-primary:hover,
+    .case-page a.button.primary.case-btn-primary:hover,
+    .case-page .case-actions a.button.case-btn-primary:hover,
+    .case-page .case-actions a.button.primary.case-btn-primary:hover{
+      background:#ffe36a!important;
+      color:#111!important;
+      border-color:#ffe36a!important;
+    }
+    .case-page a.button.case-btn-white,
+    .case-page .case-actions a.button.case-btn-white{
+      background:#fff!important;
+      color:#0b2e6d!important;
+      border:1px solid rgba(255,255,255,.95)!important;
+      box-shadow:0 14px 30px rgba(2,6,23,.18)!important;
+      text-shadow:none!important;
+    }
+    .case-page a.button.case-btn-white:hover,
+    .case-page .case-actions a.button.case-btn-white:hover{
+      background:#eaf2ff!important;
+      color:#071f4a!important;
+      border-color:#eaf2ff!important;
+    }
     .case-section{padding:4.25rem 0;border-bottom:1px solid var(--ob-line);}
     .case-section h2{font-size:clamp(1.55rem,3vw,2.45rem);line-height:1.25;letter-spacing:-.055em;color:#13233a;font-weight:900;margin:0 0 1rem;}
     .case-section p{font-size:1.03rem;line-height:2;letter-spacing:-.035em;margin:.65rem 0;}

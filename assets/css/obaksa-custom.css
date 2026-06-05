@@ -1279,3 +1279,89 @@ button.button:active,
 .spotlight .image {
     width: 50% !important;
 }
+
+/* =========================================================
+   오박사 히어로 PC 전용 슬로우 무빙 + 현재 메뉴 하이라이트
+   - 모바일에서는 애니메이션 완전 비활성화
+   - GitHub Pages 정적 페이지용 CSS 전용 효과
+   ========================================================= */
+
+/* 현재 페이지 메뉴 하이라이트 */
+.ob-nav a.is-active {
+  color: #ffffff !important;
+  background: #0f7a4f !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 8px 22px rgba(15, 122, 79, 0.34) !important;
+}
+
+.ob-nav a.is-active:hover {
+  color: #ffffff !important;
+  background: #0b633f !important;
+}
+
+/* PC에서만 히어로 이미지가 천천히 살아 움직이게 처리 */
+@media screen and (min-width: 737px) {
+  .ob-hero .image,
+  .ob-subhero .image {
+    overflow: hidden !important;
+  }
+
+  .ob-hero .image img,
+  .ob-subhero .image img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+    transform: scale(1.07) translate3d(-1.2%, 0, 0);
+    transform-origin: center center;
+    animation: obHeroSlowMovePc 22s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+
+  .ob-hero .content,
+  .ob-subhero .content {
+    animation: obHeroTextSoftIn 0.9s ease-out both;
+  }
+}
+
+@keyframes obHeroSlowMovePc {
+  0% {
+    transform: scale(1.07) translate3d(-1.2%, 0.2%, 0);
+  }
+
+  50% {
+    transform: scale(1.12) translate3d(1.2%, -0.8%, 0);
+  }
+
+  100% {
+    transform: scale(1.08) translate3d(-0.6%, 0.7%, 0);
+  }
+}
+
+@keyframes obHeroTextSoftIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 모바일에서는 히어로 애니메이션 제거: 원본 이미지 폭주와 어지러움 방지 */
+@media screen and (max-width: 736px) {
+  .ob-hero .image img,
+  .ob-subhero .image img {
+    animation: none !important;
+    transform: none !important;
+    will-change: auto !important;
+  }
+
+  .ob-hero .content,
+  .ob-subhero .content {
+    animation: none !important;
+  }
+}

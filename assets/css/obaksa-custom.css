@@ -951,27 +951,48 @@ button.button:active,
   }
 }
 
-/* 실제 현장 사진 3장 슬라이드형 정렬 */
+/* =========================================================
+   실제 현장 사진: PC/모바일 공통 대형 가로 슬라이드
+   - 원본 사이즈대로 커지는 문제 방지
+   - 좌우로 밀어서 보는 슬라이드 쇼 형태
+   - PC는 넓고 높게, 모바일은 한 장씩 화면에 맞게
+   ========================================================= */
 .ob-real-gallery {
   background: #f7faf8;
   overflow: hidden;
+  padding-top: 4rem !important;
+  padding-bottom: 4.2rem !important;
 }
 
 .ob-real-gallery .inner {
-  max-width: 1440px !important;
-  width: min(100%, 1440px) !important;
+  max-width: none !important;
+  width: 100% !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.ob-real-gallery .inner > h2,
+.ob-real-gallery .inner > p {
+  max-width: 980px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
 }
 
 .ob-real-gallery-grid {
   display: flex;
-  gap: 28px;
-  margin-top: 2.4rem;
+  flex-wrap: nowrap;
+  gap: 30px;
+  width: 100%;
+  margin-top: 2.3rem;
+  padding: 0.4rem max(24px, calc((100vw - 1180px) / 2)) 2.5rem;
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
-  scroll-padding: 3vw;
-  padding: 0.4rem 3vw 2.2rem;
+  scroll-padding-left: max(24px, calc((100vw - 1180px) / 2));
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-inline: contain;
 }
 
 .ob-real-gallery-grid::-webkit-scrollbar {
@@ -984,77 +1005,119 @@ button.button:active,
 }
 
 .ob-real-gallery-grid::-webkit-scrollbar-thumb {
-  background: rgba(20, 83, 45, 0.55);
+  background: rgba(20, 83, 45, 0.58);
   border-radius: 999px;
 }
 
 .ob-real-gallery-grid figure {
-  flex: 0 0 clamp(560px, 72vw, 980px);
+  flex: 0 0 min(82vw, 1180px);
   scroll-snap-align: center;
   margin: 0;
   background: #ffffff;
-  border-radius: 18px;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 22px 52px rgba(15, 23, 42, 0.18);
-  border: 1px solid rgba(20, 83, 45, 0.20);
+  box-shadow: 0 24px 58px rgba(15, 23, 42, 0.20);
+  border: 1px solid rgba(20, 83, 45, 0.22);
   transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
 }
 
 .ob-real-gallery-grid figure:hover {
   transform: translateY(-6px);
-  box-shadow: 0 30px 70px rgba(15, 23, 42, 0.24);
-  border-color: rgba(20, 83, 45, 0.36);
+  box-shadow: 0 34px 78px rgba(15, 23, 42, 0.26);
+  border-color: rgba(20, 83, 45, 0.38);
 }
 
 .ob-real-gallery-grid img {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  object-position: center;
-  display: block;
+  width: 100% !important;
+  height: clamp(460px, 58vh, 680px) !important;
+  max-width: none !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  display: block !important;
 }
 
 .ob-real-gallery-grid figcaption {
-  padding: 18px 16px 20px;
+  min-height: 68px;
+  padding: 18px 18px 20px;
   font-weight: 900;
   color: #0f172a;
   font-size: 1.08rem;
   letter-spacing: -0.02em;
   background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* 모바일에서는 한 장씩 크게 넘겨보는 슬라이드 */
+/* 태블릿 */
+@media screen and (max-width: 980px) {
+  .ob-real-gallery {
+    padding-top: 3.2rem !important;
+    padding-bottom: 3.5rem !important;
+  }
+
+  .ob-real-gallery-grid {
+    gap: 22px;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    scroll-padding-left: 1.25rem;
+  }
+
+  .ob-real-gallery-grid figure {
+    flex-basis: 86vw;
+    border-radius: 18px;
+  }
+
+  .ob-real-gallery-grid img {
+    height: clamp(380px, 54vh, 560px) !important;
+  }
+}
+
+/* 모바일: 원본 크기 폭주 방지 + 한 장씩 크게 슬라이드 */
 @media screen and (max-width: 736px) {
-  .ob-real-gallery .inner {
-    width: 100% !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+  .ob-real-gallery {
+    padding-top: 2.8rem !important;
+    padding-bottom: 3rem !important;
   }
 
   .ob-real-gallery .inner > h2,
   .ob-real-gallery .inner > p {
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
+    padding-left: 1.15rem;
+    padding-right: 1.15rem;
   }
 
   .ob-real-gallery-grid {
-    gap: 18px;
-    padding: 0.2rem 1.1rem 2rem;
-    scroll-padding: 1.1rem;
+    gap: 16px;
+    padding: 0.2rem 1rem 2.2rem;
+    scroll-padding-left: 1rem;
+    scroll-snap-type: x mandatory;
   }
 
   .ob-real-gallery-grid figure {
-    flex-basis: 88vw;
+    flex: 0 0 calc(100vw - 2rem);
+    max-width: calc(100vw - 2rem);
     border-radius: 16px;
+    scroll-snap-align: center;
   }
 
   .ob-real-gallery-grid img {
-    aspect-ratio: 16 / 9;
+    width: 100% !important;
+    height: clamp(300px, 58vh, 460px) !important;
+    object-fit: cover !important;
+    object-position: center !important;
   }
 
   .ob-real-gallery-grid figcaption {
-    padding: 14px 12px 16px;
+    min-height: 58px;
+    padding: 13px 12px 15px;
     font-size: 1rem;
+  }
+}
+
+/* 아주 작은 모바일 */
+@media screen and (max-width: 420px) {
+  .ob-real-gallery-grid img {
+    height: clamp(270px, 54vh, 400px) !important;
   }
 }
 

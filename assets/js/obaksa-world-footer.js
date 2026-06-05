@@ -48,6 +48,20 @@
     return Number.isFinite(n) ? n : null;
   }
 
+  function codeToEmoji(code){
+    if(code == null) return '•';
+    if(code >= 200 && code <= 299) return '⛈';
+    if(code >= 300 && code <= 399) return '🌦';
+    if(code >= 500 && code <= 599) return '🌧';
+    if(code >= 600 && code <= 699) return '❄';
+    if(code >= 700 && code <= 799) return '🌫';
+    if(code === 800) return '☀';
+    if(code === 801) return '🌤';
+    if(code === 802) return '⛅';
+    if(code === 803 || code === 804) return '☁';
+    return '•';
+  }
+
   function codeToLabel(code){
     if(code == null) return '상태 확인 중';
     if(code >= 200 && code <= 299) return '천둥번개';
@@ -72,11 +86,14 @@
           '<span class="ob-world-hand sec" data-hand="sec"></span>',
         '</div>',
         '<div class="ob-world-meta">',
-          '<div class="ob-world-city"><span>'+city.label+'</span><span class="ob-world-tz">'+city.tz+'</span></div>',
-          '<div class="ob-world-time" data-time>--:--:--</div>',
+          '<div class="ob-world-city"><span class="ob-world-city-name">'+city.label+'</span><span class="ob-world-mobile-date" data-mobile-date>----</span><span class="ob-world-tz">'+city.tz+'</span></div>',
+          '<div class="ob-world-mainline">',
+            '<div class="ob-world-time" data-time>--:--:--</div>',
+            '<span class="ob-world-mobile-compact" data-mobile-weather><span class="ob-world-weather-emoji">•</span><span class="ob-world-weather-mini">--℃ · --%</span></span>',
+          '</div>',
           '<div class="ob-world-date" data-date>----</div>',
           '<div class="ob-world-weather">',
-            '<span class="ob-world-pill ob-world-cond" data-cond>상태 확인 중</span>',
+            '<span class="ob-world-pill ob-world-cond" data-cond><span class="ob-world-weather-emoji">•</span><span class="ob-world-cond-label">상태 확인 중</span></span>',
             '<span class="ob-world-pill">기온 <strong data-temp>--</strong>℃</span>',
             '<span class="ob-world-pill">습도 <strong data-hum>--</strong>%</span>',
             '<span class="ob-world-pill">풍속 <strong data-wind>--</strong>m/s</span>',
@@ -104,11 +121,13 @@
         const hourDeg = (((t.h % 12) + t.m / 60 + t.s / 3600) / 12) * 360;
         const timeEl = card.querySelector('[data-time]');
         const dateEl = card.querySelector('[data-date]');
+        const mobileDateEl = card.querySelector('[data-mobile-date]');
         const hourEl = card.querySelector('[data-hand="hour"]');
         const minEl = card.querySelector('[data-hand="min"]');
         const secEl = card.querySelector('[data-hand="sec"]');
         if(timeEl) timeEl.textContent = timeText(city.tz);
         if(dateEl) dateEl.textContent = dateText(city.tz);
+        if(mobileDateEl) mobileDateEl.textContent = dateText(city.tz).replace(/\. /g, '.').replace(/\.$/, '');
         if(hourEl) hourEl.style.transform = 'translate(-50%,-100%) rotate('+hourDeg+'deg)';
         if(minEl) minEl.style.transform = 'translate(-50%,-100%) rotate('+minDeg+'deg)';
         if(secEl) secEl.style.transform = 'translate(-50%,-100%) rotate('+secDeg+'deg)';
@@ -125,12 +144,17 @@
       const card = root.querySelector('[data-city="'+city.id+'"]');
       if(!card) return;
       const cond = card.querySelector('[data-cond]');
+      const compact = card.querySelector('[data-mobile-weather]');
       const tempEl = card.querySelector('[data-temp]');
       const humEl = card.querySelector('[data-hum]');
       const windEl = card.querySelector('[data-wind]');
-      if(cond) cond.textContent = codeToLabel(code);
-      if(tempEl) tempEl.textContent = temp == null ? '--' : String(Math.round(temp));
-      if(humEl) humEl.textContent = hum == null ? '--' : String(Math.round(hum));
+      const emoji = codeToEmoji(code);
+      const tempText = temp == null ? '--' : String(Math.round(temp));
+      const humText = hum == null ? '--' : String(Math.round(hum));
+      if(cond) cond.innerHTML = '<span class="ob-world-weather-emoji">' + emoji + '</span><span class="ob-world-cond-label">' + codeToLabel(code) + '</span>';
+      if(compact) compact.innerHTML = '<span class="ob-world-weather-emoji">' + emoji + '</span><span class="ob-world-weather-mini">' + tempText + '℃ · ' + humText + '%</span>';
+      if(tempEl) tempEl.textContent = tempText;
+      if(humEl) humEl.textContent = humText;
       if(windEl) windEl.textContent = wind == null ? '--' : String(Math.round(wind));
     });
   }

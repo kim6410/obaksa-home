@@ -1556,3 +1556,11 @@ button.button:active,
     padding-right: 1rem !important;
   }
 }
+
+
+/* 2026-06-06 백산그린타운 누수 복구 시공사례 카드 */
+.ob-case-feature { background: #f7f9fd; border-bottom: 1px solid rgba(10, 30, 70, 0.08); }
+.ob-case-feature .eyebrow { color: #0b367b; font-weight: 800; letter-spacing: -0.02em; }
+.ob-feature-card { max-width: 1120px; margin: 0 auto 3rem; background: #fff; border-radius: 28px; overflow: hidden; box-shadow: 0 18px 48px rgba(15, 23, 42, 0.12); }
+.ob-feature-card .image img { object-fit: cover; }
+@media screen and (max-width: 736px) { .ob-feature-card { margin-left: 0.75rem; margin-right: 0.75rem; border-radius: 20px; } }

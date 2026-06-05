@@ -1272,12 +1272,16 @@ button.button:active,
   }
 }
 
-.spotlight .content {
-    width: 50% !important;
-}
+/* PC에서만 Spotlight를 50:50으로 고정합니다.
+   모바일에서는 아래 전용 패치가 100% 폭으로 다시 잡습니다. */
+@media screen and (min-width: 981px) {
+  .spotlight .content {
+      width: 50% !important;
+  }
 
-.spotlight .image {
-    width: 50% !important;
+  .spotlight .image {
+      width: 50% !important;
+  }
 }
 
 /* =========================================================
@@ -2399,3 +2403,141 @@ button.button:active,
   }
 }
 
+
+
+/* =========================================================
+   모바일 가로 넘침 방지 최종 패치 v2026-06-06
+   목적: GitHub 모바일에서 우측이 잘리는 현상 방지
+   수정 범위: CSS만 교체해도 적용
+   ========================================================= */
+@media screen and (max-width: 736px) {
+  html,
+  body,
+  #wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  body * {
+    box-sizing: border-box !important;
+  }
+
+  .wrapper,
+  .inner,
+  .content,
+  .spotlight,
+  .spotlight.style1,
+  .spotlight .content,
+  .spotlight .image,
+  .banner,
+  .ob-hero,
+  .ob-subhero,
+  .ob-featured-work,
+  .ob-real-gallery,
+  .ob-real-slider-wrap,
+  .ob-footer,
+  .ob-footer .inner,
+  .ob-world-footer,
+  .ob-world-grid,
+  #ob-service-accordion,
+  #ob-service-accordion .inner,
+  #ob-service-accordion .content,
+  #ob-service-accordion .ob-service-wrap,
+  #ob-service-accordion .ob-service-grid,
+  #ob-service-accordion .ob-service-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .spotlight,
+  .spotlight.style1,
+  .spotlight.style1.orient-left,
+  .spotlight.style1.orient-right {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    overflow-x: hidden !important;
+  }
+
+  .spotlight .content,
+  .spotlight .image {
+    flex: 0 0 auto !important;
+    overflow-x: hidden !important;
+  }
+
+  .spotlight .image img,
+  .banner .image img,
+  .ob-hero .image img,
+  .ob-subhero .image img {
+    max-width: 100% !important;
+  }
+
+  #ob-service-accordion.ob-featured-work {
+    padding-left: 0.82rem !important;
+    padding-right: 0.82rem !important;
+    overflow-x: hidden !important;
+  }
+
+  #ob-service-accordion .ob-service-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0.58rem !important;
+    overflow-x: hidden !important;
+  }
+
+  #ob-service-accordion .ob-service-card {
+    overflow: hidden !important;
+  }
+
+  #ob-service-accordion .ob-service-toggle {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    display: grid !important;
+    grid-template-columns: 36px minmax(0, 1fr) 20px !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    overflow: hidden !important;
+  }
+
+  #ob-service-accordion .ob-service-title,
+  #ob-service-accordion .ob-service-detail,
+  #ob-service-accordion .ob-service-detail *,
+  #ob-service-accordion .ob-service-badge {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: keep-all !important;
+    color: #ffffff !important;
+  }
+
+  .ob-world-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0.58rem !important;
+    overflow-x: hidden !important;
+  }
+
+  .ob-world-card,
+  .ob-world-card * {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .ob-world-card {
+    overflow: hidden !important;
+  }
+
+  .ob-world-city,
+  .ob-world-title,
+  .ob-world-time,
+  .ob-world-date {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: keep-all !important;
+  }
+}

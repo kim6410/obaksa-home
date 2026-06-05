@@ -13,7 +13,8 @@
       { id:'hanoi', label:'베트남 하노이', tz:'Asia/Ho_Chi_Minh', lat:21.0278, lon:105.8342 },
       { id:'london', label:'영국 런던', tz:'Europe/London', lat:51.5072, lon:-0.1276 },
       { id:'washington', label:'미국 워싱턴 D.C.', tz:'America/New_York', lat:38.9072, lon:-77.0369 },
-      { id:'tehran', label:'이란 테헤란', tz:'Asia/Tehran', lat:35.6892, lon:51.3890 }
+      { id:'tehran', label:'이란 테헤란', tz:'Asia/Tehran', lat:35.6892, lon:51.3890 },
+      { id:'jerusalem', label:'이스라엘 예루살렘', tz:'Asia/Jerusalem', lat:31.7683, lon:35.2137 }
     ]
   };
 

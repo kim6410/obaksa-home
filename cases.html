@@ -16,11 +16,45 @@
     :root{--ob-blue:#071f4a;--ob-blue2:#0b367b;--ob-yellow:#ffd43b;--ob-green:#0b7a31;--ob-text:#172033;--ob-muted:#64748b;--ob-soft:#f6f8fc;--ob-line:#e5e7eb;}
     body{word-break:keep-all;}
     .case-board-wrap{width:min(100% - 2rem,1320px);margin:0 auto;}
-    .case-board-hero{padding:6.4rem 0 4.2rem;background:linear-gradient(135deg,#061b42,#0b367b);color:#fff;text-align:center;}
-    .case-board-hero h1{color:#fff;font-weight:900;letter-spacing:-.07em;font-size:clamp(2.1rem,5vw,4rem);line-height:1.15;margin:.8rem 0 1rem;}
-    .case-board-hero p{color:rgba(255,255,255,.9);line-height:1.9;letter-spacing:-.035em;font-size:1.08rem;margin:0 auto;max-width:760px;}
+    .case-board-hero{
+      position:relative;
+      overflow:hidden;
+      padding:6.4rem 0 4.2rem;
+      color:#fff;
+      text-align:center;
+      background:#061b42;
+      isolation:isolate;
+    }
+    .case-board-hero::before{
+      content:"";
+      position:absolute;
+      inset:-6%;
+      z-index:-2;
+      background-image:url('https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1800&q=80');
+      background-size:cover;
+      background-position:center;
+      opacity:.42;
+      transform:scale(1.04);
+      animation:caseHeroDrift 18s ease-in-out infinite alternate;
+      will-change:transform;
+    }
+    .case-board-hero::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      z-index:-1;
+      background:
+        radial-gradient(circle at 24% 18%, rgba(255,212,59,.18), transparent 28%),
+        linear-gradient(135deg, rgba(6,27,66,.93), rgba(11,54,123,.82));
+    }
+    @keyframes caseHeroDrift{
+      from{transform:scale(1.04) translate3d(-1.2%, -1%, 0);}
+      to{transform:scale(1.12) translate3d(1.2%, 1%, 0);}
+    }
+    .case-board-hero h1{color:#fff;font-weight:900;letter-spacing:-.07em;font-size:clamp(2.15rem,4.6vw,4.15rem);line-height:1.12;margin:.8rem auto 1rem;max-width:980px;text-shadow:0 8px 26px rgba(0,0,0,.28);}
+    .case-board-hero p{color:rgba(255,255,255,.92);line-height:1.9;letter-spacing:-.035em;font-size:1.08rem;margin:0 auto;max-width:760px;text-shadow:0 6px 18px rgba(0,0,0,.22);}
     .case-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:2rem;}
-    .case-stats div{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:18px;padding:1rem;}
+    .case-stats div{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);border-radius:18px;padding:1rem;backdrop-filter:blur(8px);box-shadow:0 12px 30px rgba(0,0,0,.12);}
     .case-stats strong{display:block;color:#ffd43b;font-size:1.7rem;font-weight:900;line-height:1.15;}
     .case-stats span{font-size:.92rem;color:rgba(255,255,255,.9);}
     .case-board-section{padding:4rem 0;}
@@ -57,6 +91,7 @@
     .case-guide{background:#f8fbff;border-top:1px solid var(--ob-line);padding:3.2rem 0;}
     .case-guide h2{font-weight:900;letter-spacing:-.05em;color:#13233a;}
     .case-guide p{line-height:1.9;color:#475569;letter-spacing:-.035em;}
+    @media (prefers-reduced-motion:reduce){.case-board-hero::before{animation:none;transform:scale(1.06);}}
     @media screen and (max-width:900px){.case-stats{grid-template-columns:repeat(2,1fr)}.case-feature-grid{grid-template-columns:1fr;max-width:560px}.case-row{grid-template-columns:1fr;gap:.55rem}.case-head{display:none}.case-row{padding:1.15rem}.case-date:before{content:'날짜 ';color:#94a3b8}.case-cat:before{content:'분류 ';color:#94a3b8}.case-title p{white-space:normal}.case-more a{width:100%;height:42px;margin-top:.5rem}.case-mini-guide{grid-template-columns:1fr;text-align:center}.case-mini-icon{margin:0 auto}.case-mini-character{margin:0 auto;width:100px;}}
     @media screen and (max-width:560px){.case-board-wrap{width:min(100% - 1.1rem,1320px)}.case-board-hero{padding:5.4rem 0 3.2rem}.case-stats{grid-template-columns:1fr}.case-filter{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;padding-bottom:.25rem}.case-filter button{flex:0 0 auto;min-width:86px;height:40px}.case-board-section{padding:2.8rem 0}.case-row{padding:1rem}.case-title a{font-size:.98rem}.case-mini-guide{padding:1.15rem}.case-feature-card h2{font-size:1.12rem}}
 </style>

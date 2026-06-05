@@ -1587,3 +1587,203 @@ button.button:active,
     line-height: 1.22 !important;
   }
 }
+
+
+/* =========================================================
+   작업 패치 2026-06-05: index 히어로 CTA + 모바일 오버레이 + 모바일 모션
+   - PC: 전화/네이버 예약 버튼을 좌우 배치
+   - 모바일: 이미지 위에 문구와 버튼이 겹쳐 보이도록 구성
+   - 모바일: 기존 PC 스크롤 등장 모션을 가볍게 이식
+   ========================================================= */
+
+/* PC 히어로 버튼: 세로 stacked 구조를 가로 CTA로 재배치 */
+@media screen and (min-width: 981px) {
+  .ob-hero .actions.stacked {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    width: min(100%, 430px) !important;
+    margin-top: 1.6rem !important;
+  }
+
+  .ob-hero .actions.stacked li {
+    flex: 1 1 0 !important;
+    width: auto !important;
+    padding: 0 !important;
+  }
+
+  .ob-hero .actions.stacked .button {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 56px !important;
+    padding-left: 0.9rem !important;
+    padding-right: 0.9rem !important;
+  }
+}
+
+/* 모바일 히어로: 이미지 위 오버레이 카드형 첫 화면 */
+@media screen and (max-width: 736px) {
+  body {
+    padding-top: 92px;
+  }
+
+  .ob-hero.banner.style1,
+  .ob-hero.banner.style1.fullscreen {
+    display: grid !important;
+    min-height: calc(100svh - 92px) !important;
+    height: auto !important;
+    grid-template: 1fr / 1fr !important;
+    align-items: stretch !important;
+    text-align: left !important;
+    overflow: hidden !important;
+    isolation: isolate !important;
+    background: #0f172a !important;
+  }
+
+  .ob-hero.banner.style1::before {
+    z-index: 2 !important;
+    background:
+      linear-gradient(90deg, rgba(5, 10, 20, 0.84) 0%, rgba(5, 10, 20, 0.62) 52%, rgba(5, 10, 20, 0.36) 100%),
+      linear-gradient(180deg, rgba(5, 10, 20, 0.30) 0%, rgba(5, 10, 20, 0.88) 100%) !important;
+  }
+
+  .ob-hero.banner.style1 .image,
+  .ob-hero.banner.style1.fullscreen .image {
+    grid-area: 1 / 1 !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: 100% !important;
+    min-height: calc(100svh - 92px) !important;
+    position: relative !important;
+    z-index: 1 !important;
+  }
+
+  .ob-hero.banner.style1 .image img {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+    transform: scale(1.06) !important;
+    animation: obHeroMobileSlowMove 16s ease-in-out infinite alternate !important;
+    will-change: transform !important;
+  }
+
+  .ob-hero.banner.style1 .content,
+  .ob-hero.banner.style1.fullscreen .content {
+    grid-area: 1 / 1 !important;
+    position: relative !important;
+    z-index: 3 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: calc(100svh - 92px) !important;
+    padding: clamp(1.15rem, 5vw, 1.75rem) !important;
+    margin: 0 !important;
+    background: transparent !important;
+    animation: obHeroTextSoftIn .85s ease-out both !important;
+  }
+
+  .ob-hero .eyebrow {
+    width: fit-content !important;
+    max-width: 100% !important;
+    margin-bottom: 0.9rem !important;
+    padding: 0.48rem 0.82rem !important;
+    font-size: 0.82rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .ob-hero h3 {
+    margin: 0 0 0.95rem 0 !important;
+    font-size: clamp(1.72rem, 8.1vw, 2.28rem) !important;
+    line-height: 1.18 !important;
+    letter-spacing: -0.055em !important;
+  }
+
+  .ob-hero .major {
+    margin-bottom: 0.75rem !important;
+    font-size: clamp(1.02rem, 4.2vw, 1.16rem) !important;
+    line-height: 1.68 !important;
+    font-weight: 800 !important;
+  }
+
+  .ob-hero .content > p:not(.eyebrow):not(.major) {
+    margin-bottom: 1.15rem !important;
+    font-size: 0.93rem !important;
+    line-height: 1.72 !important;
+    font-weight: 650 !important;
+  }
+
+  .ob-hero .actions.stacked {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 0.65rem !important;
+    width: 100% !important;
+    margin-top: 0.25rem !important;
+  }
+
+  .ob-hero .actions.stacked li {
+    flex: 1 1 0 !important;
+    width: auto !important;
+    padding: 0 !important;
+  }
+
+  .ob-hero .actions.stacked .button {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 54px !important;
+    padding: 0.9rem 0.62rem !important;
+    font-size: 0.9rem !important;
+    border-radius: 10px !important;
+  }
+}
+
+@media screen and (max-width: 380px) {
+  .ob-hero .actions.stacked {
+    flex-direction: column !important;
+    gap: 0.55rem !important;
+  }
+
+  .ob-hero .actions.stacked .button {
+    min-height: 50px !important;
+  }
+}
+
+@keyframes obHeroMobileSlowMove {
+  0% { transform: scale(1.06) translate3d(-1.2%, 0, 0); }
+  50% { transform: scale(1.11) translate3d(1.2%, -0.8%, 0); }
+  100% { transform: scale(1.08) translate3d(-0.4%, 0.7%, 0); }
+}
+
+/* 모바일 스크롤 모션: 기존 PC 모션을 더 가볍게 적용 */
+@media screen and (max-width: 980px) and (prefers-reduced-motion: no-preference) {
+  body.ob-motion-ready .ob-reveal {
+    opacity: 0 !important;
+    transform: translate3d(0, 28px, 0) scale(0.985) !important;
+    filter: blur(2px) !important;
+    transition:
+      opacity 0.68s ease,
+      transform 0.68s cubic-bezier(.2, .8, .2, 1),
+      filter 0.68s ease !important;
+    transition-delay: var(--ob-reveal-delay, 0ms) !important;
+    will-change: opacity, transform, filter !important;
+  }
+
+  body.ob-motion-ready .ob-reveal.is-visible {
+    opacity: 1 !important;
+    transform: translate3d(0, 0, 0) scale(1) !important;
+    filter: blur(0) !important;
+  }
+
+  body.ob-motion-ready .spotlight .image.ob-reveal {
+    transform: translate3d(0, 32px, 0) scale(1.02) !important;
+  }
+
+  body.ob-motion-ready .spotlight .image.ob-reveal.is-visible {
+    transform: translate3d(0, 0, 0) scale(1) !important;
+  }
+}

@@ -1,15 +1,15 @@
 /*
-  오박사만능인테리어 PC 전용 스크롤 모션
-  - 모바일에서는 자동 비활성화
+  오박사만능인테리어 반응형 스크롤 모션
+  - PC와 모바일 모두 IntersectionObserver로 가볍게 동작
   - IntersectionObserver 기반이라 가볍게 동작
 */
 (function () {
   'use strict';
 
-  var isDesktop = window.matchMedia && window.matchMedia('(min-width: 981px)').matches;
+  var canAnimate = window.matchMedia && window.matchMedia('(min-width: 320px)').matches;
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  if (!isDesktop || reduceMotion) return;
+  if (!canAnimate || reduceMotion) return;
 
   function ready(fn) {
     if (document.readyState === 'loading') {

@@ -1460,115 +1460,98 @@ button.button:active,
   }
 }
 
-
 /* =========================================================
-   about.html 모바일 전용 정리 패치
-   - PC 레이아웃은 그대로 유지
-   - 모바일에서 현장 사례 이미지가 작게 보이는 문제 보정
-   - 좌우 여백을 줄이고, 글/이미지/버튼을 카드형으로 정돈
+   오박사 모바일 Spotlight 균형 보정 패치
+   - index.html / community.html / about.html 공통 적용
+   - PC 50:50 레이아웃은 유지
+   - 모바일에서는 이미지와 본문이 세로로 자연스럽게 쌓이도록 강제
    ========================================================= */
 @media screen and (max-width: 736px) {
-  .ob-about-promise .inner {
-    padding: 2.4rem 1rem 1.6rem !important;
-  }
-
-  .ob-about-promise h2 {
-    font-size: 1.85rem !important;
-    line-height: 1.18 !important;
-    margin-bottom: 1.2rem !important;
-  }
-
-  .ob-about-promise .ob-card-grid {
-    gap: 0.75rem !important;
-    margin-top: 1.2rem !important;
-  }
-
-  .ob-about-promise .ob-card-grid div {
-    padding: 1rem 1rem !important;
-    border-radius: 0.9rem !important;
-  }
-
-  .ob-about-proof {
+  .spotlight.style1,
+  .spotlight.style1.orient-left,
+  .spotlight.style1.orient-right {
     display: flex !important;
     flex-direction: column-reverse !important;
-    margin: 0 !important;
-    padding: 0 0 0.7rem !important;
-    background: #ffffff !important;
-    overflow: visible !important;
+    width: 100% !important;
+    overflow: hidden !important;
     text-align: left !important;
   }
 
-  .ob-about-proof .image {
-    position: relative !important;
-    width: calc(100% - 24px) !important;
+  .spotlight.style1 .image {
+    width: 100% !important;
     min-width: 0 !important;
-    aspect-ratio: 16 / 9.6;
-    height: auto !important;
-    margin: 1.1rem auto 0 !important;
-    border-radius: 18px !important;
+    max-width: 100% !important;
+    flex: 0 0 auto !important;
+    display: block !important;
     overflow: hidden !important;
-    background: #eef2f7 !important;
-    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.16) !important;
   }
 
-  .ob-about-proof .image img {
-    position: absolute !important;
-    inset: 0 !important;
+  .spotlight.style1 .image img {
+    position: relative !important;
+    display: block !important;
     width: 100% !important;
-    height: 100% !important;
+    height: auto !important;
+    max-height: 52vh !important;
     object-fit: cover !important;
     object-position: center center !important;
-    border-radius: 18px !important;
+    border-radius: 0 !important;
   }
 
-  .ob-about-proof .content {
+  .spotlight.style1 .content {
     width: 100% !important;
-    max-width: none !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    flex: 0 0 auto !important;
+    padding: 2.2rem 1.25rem 2.3rem !important;
     margin: 0 !important;
-    padding: 1.55rem 1.08rem 2rem !important;
     text-align: left !important;
   }
 
-  .ob-about-proof .content h2 {
-    font-size: 2rem !important;
-    line-height: 1.2 !important;
-    margin-bottom: 1rem !important;
-    letter-spacing: -0.055em !important;
+  .spotlight.style1 .content h2 {
+    font-size: clamp(1.55rem, 7vw, 2.05rem) !important;
+    line-height: 1.28 !important;
+    letter-spacing: -0.04em !important;
+    margin: 0 0 1rem !important;
   }
 
-  .ob-about-proof .content p {
-    margin: 0 0 0.85rem !important;
+  .spotlight.style1 .content p {
     font-size: 0.98rem !important;
     line-height: 1.82 !important;
+    margin: 0 0 1.05rem !important;
+    word-break: keep-all !important;
   }
 
-  .ob-about-proof .content p br {
-    display: none !important;
+  .spotlight.style1 .content .actions,
+  .spotlight.style1 .content .actions.stacked {
+    margin: 1.45rem 0 0 !important;
+    padding: 0 !important;
+    display: block !important;
+    text-align: left !important;
   }
 
-  .ob-about-proof .actions {
-    margin-top: 1.25rem !important;
-    width: 100% !important;
+  .spotlight.style1 .content .actions li {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
-  .ob-about-proof .actions li,
-  .ob-about-proof .button {
-    width: 100% !important;
+  .spotlight.style1 .content .button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 46px !important;
+    padding: 0 1.25rem !important;
+    border-radius: 7px !important;
+    white-space: nowrap !important;
   }
 }
 
 @media screen and (max-width: 420px) {
-  .ob-about-proof .image {
-    width: calc(100% - 20px) !important;
-    aspect-ratio: 16 / 10.4;
-    border-radius: 16px !important;
+  .spotlight.style1 .image img {
+    max-height: 46vh !important;
   }
 
-  .ob-about-proof .image img {
-    border-radius: 16px !important;
-  }
-
-  .ob-about-proof .content {
+  .spotlight.style1 .content {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
   }

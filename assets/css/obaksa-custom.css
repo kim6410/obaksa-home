@@ -2279,3 +2279,123 @@ button.button:active,
     transition:none !important;
   }
 }
+
+
+/* =========================================================
+   모바일 시공 분야 가로 넘침 긴급 보정 패치 v2026-06-06
+   목적:
+   - GitHub 모바일에서 시공 분야 카드가 우측으로 잘리는 문제 해결
+   - PC용 2열/고정폭/nowrap 영향 차단
+   - obaksa-custom.css 하나만 교체해도 적용되도록 최하단 강제 고정
+   ========================================================= */
+
+@media screen and (max-width: 736px) {
+  html,
+  body {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  #ob-service-accordion,
+  #ob-service-accordion * {
+    box-sizing: border-box !important;
+  }
+
+  #ob-service-accordion.ob-featured-work {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    padding-left: 0.9rem !important;
+    padding-right: 0.9rem !important;
+  }
+
+  #ob-service-accordion .inner,
+  #ob-service-accordion .content,
+  #ob-service-accordion header,
+  #ob-service-accordion .ob-service-wrap,
+  #ob-service-accordion .ob-service-grid {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  #ob-service-accordion .ob-service-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0.58rem !important;
+  }
+
+  #ob-service-accordion .ob-service-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  #ob-service-accordion .ob-service-toggle {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    display: grid !important;
+    grid-template-columns: 38px minmax(0, 1fr) 22px !important;
+    align-items: center !important;
+    gap: 0.52rem !important;
+    overflow: hidden !important;
+  }
+
+  #ob-service-accordion .ob-service-icon,
+  #ob-service-accordion .ob-service-arrow {
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+  }
+
+  #ob-service-accordion .ob-service-title {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    color: #ffffff !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: keep-all !important;
+    line-height: 1.25 !important;
+    text-align: left !important;
+  }
+
+  #ob-service-accordion .ob-service-detail,
+  #ob-service-accordion .ob-service-detail *,
+  #ob-service-accordion .ob-service-badge {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    color: #ffffff !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: keep-all !important;
+  }
+}
+
+@media screen and (max-width: 420px) {
+  #ob-service-accordion.ob-featured-work {
+    padding-left: 0.72rem !important;
+    padding-right: 0.72rem !important;
+  }
+
+  #ob-service-accordion .ob-service-toggle {
+    grid-template-columns: 34px minmax(0, 1fr) 20px !important;
+    gap: 0.45rem !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  #ob-service-accordion .ob-service-title {
+    font-size: 0.94rem !important;
+  }
+}
+

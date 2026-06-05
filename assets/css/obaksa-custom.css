@@ -2752,3 +2752,119 @@ button.button:active,
     font-size:.7rem !important;
   }
 }
+
+/* =========================================================
+   FINAL MOBILE PATCH 2026-06-06
+   1) 모바일 월드타임: 기능 유지 + 높이 잘림 방지
+   2) 모바일 시공 아코디언: 제목만 보이는 초슬림 목록
+   ========================================================= */
+@media screen and (max-width: 640px) {
+  .ob-footer .ob-world-card {
+    min-height: 82px !important;
+    padding: .58rem .62rem !important;
+    grid-template-columns: 52px minmax(0, 1fr) !important;
+    gap: .62rem !important;
+    overflow: visible !important;
+  }
+
+  .ob-footer .ob-world-clock {
+    width: 52px !important;
+    height: 52px !important;
+  }
+
+  .ob-footer .ob-world-hand.hour { height: 17px !important; }
+  .ob-footer .ob-world-hand.min { height: 22px !important; }
+  .ob-footer .ob-world-hand.sec { height: 24px !important; }
+
+  .ob-footer .ob-world-meta {
+    gap: .22rem !important;
+    overflow: visible !important;
+  }
+
+  .ob-footer .ob-world-time {
+    font-size: 1.12rem !important;
+  }
+
+  .ob-footer .ob-world-city-name,
+  .ob-footer .ob-world-city > span:first-child,
+  .ob-footer .ob-world-mobile-date {
+    font-size: .8rem !important;
+  }
+
+  .ob-footer .ob-world-mobile-compact {
+    font-size: .78rem !important;
+  }
+
+  #ob-service-accordion.ob-featured-work {
+    padding: 1.65rem .82rem 1.45rem !important;
+  }
+
+  #ob-service-accordion h2 {
+    font-size: 1.45rem !important;
+    margin-bottom: .35rem !important;
+  }
+
+  #ob-service-accordion .ob-service-lead {
+    display: none !important;
+  }
+
+  #ob-service-accordion .ob-service-grid {
+    gap: .38rem !important;
+  }
+
+  #ob-service-accordion .ob-service-card {
+    border-radius: 12px !important;
+    min-height: 0 !important;
+  }
+
+  #ob-service-accordion .ob-service-toggle {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 38px !important;
+    height: 38px !important;
+    padding: 0 .72rem !important;
+    border-radius: 12px !important;
+    text-align: center !important;
+  }
+
+  #ob-service-accordion .ob-service-icon,
+  #ob-service-accordion .ob-service-arrow,
+  #ob-service-accordion .ob-service-detail,
+  #ob-service-accordion .ob-service-detail *,
+  #ob-service-accordion .ob-service-badge {
+    display: none !important;
+  }
+
+  #ob-service-accordion .ob-service-title {
+    display: block !important;
+    width: 100% !important;
+    font-size: .92rem !important;
+    line-height: 1.15 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+}
+
+@media screen and (max-width: 380px) {
+  .ob-footer .ob-world-card {
+    min-height: 78px !important;
+    grid-template-columns: 48px minmax(0, 1fr) !important;
+  }
+
+  .ob-footer .ob-world-clock {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  #ob-service-accordion .ob-service-toggle {
+    min-height: 36px !important;
+    height: 36px !important;
+  }
+
+  #ob-service-accordion .ob-service-title {
+    font-size: .88rem !important;
+  }
+}

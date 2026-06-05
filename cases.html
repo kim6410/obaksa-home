@@ -110,5 +110,67 @@
 <script src="assets/js/util.js"></script>
 <script src="assets/js/main.js"></script>
 <script src="assets/js/haptic.js"></script>
+
+<script>
+/* =========================================================
+   오박사 실제 현장사진 자동 슬라이드
+   - article을 추가하면 자동으로 슬라이드 대상에 포함됩니다.
+   - PC/모바일 모두 5초마다 천천히 다음 사진으로 이동합니다.
+   ========================================================= */
+document.addEventListener('DOMContentLoaded', function () {
+  var sliders = document.querySelectorAll('.ob-real-case-slider');
+
+  sliders.forEach(function (slider) {
+    var track = slider;
+    var cards = slider.querySelectorAll('article');
+    if (!track || cards.length <= 1) return;
+
+    var intervalMs = 5000;
+    var timer = null;
+
+    function getGap() {
+      var style = window.getComputedStyle(track);
+      return parseInt(style.columnGap || style.gap || '16', 10) || 16;
+    }
+
+    function getMoveWidth() {
+      return cards[0].offsetWidth + getGap();
+    }
+
+    function goNext() {
+      var maxScroll = track.scrollWidth - track.clientWidth;
+      var moveWidth = getMoveWidth();
+
+      if (track.scrollLeft >= maxScroll - 12) {
+        track.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        track.scrollBy({ left: moveWidth, behavior: 'smooth' });
+      }
+    }
+
+    function startAutoSlide() {
+      stopAutoSlide();
+      timer = window.setInterval(goNext, intervalMs);
+    }
+
+    function stopAutoSlide() {
+      if (timer) {
+        window.clearInterval(timer);
+        timer = null;
+      }
+    }
+
+    startAutoSlide();
+
+    track.addEventListener('mouseenter', stopAutoSlide);
+    track.addEventListener('mouseleave', startAutoSlide);
+    track.addEventListener('touchstart', stopAutoSlide, { passive: true });
+    track.addEventListener('touchend', startAutoSlide, { passive: true });
+    track.addEventListener('focusin', stopAutoSlide);
+    track.addEventListener('focusout', startAutoSlide);
+  });
+});
+</script>
+
 </body>
 </html>

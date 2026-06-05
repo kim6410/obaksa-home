@@ -953,13 +953,17 @@ button.button:active,
 
 
 /* =========================================================
-   실제 현장 사진: 기존 cases.html 슬라이드쇼 방식으로 통일
-   - article 블록을 추가하면 자동으로 좌우 슬라이드에 이어 붙음
-   - PC/모바일 모두 원본 크기 폭주 방지
+   실제 현장 사진 슬라이드 최종형
+   - 9:16 세로 사진 기준
+   - PC에서는 있는 사진이 여러 장 보이고, 모바일에서는 한 장씩 크게 보임
+   - article 블록을 추가하면 자동으로 슬라이드쇼에 포함됨
+   - 원본 이미지 폭주 방지 / object-fit: cover 고정
    ========================================================= */
 .ob-real-gallery {
   background: #f7faf8;
   overflow: hidden;
+  padding-top: 4rem !important;
+  padding-bottom: 3rem !important;
 }
 
 .ob-real-gallery .inner {
@@ -970,14 +974,41 @@ button.button:active,
 .ob-real-case-slider {
   width: 100% !important;
   margin-top: 1.6rem !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  gap: 16px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scroll-snap-type: x mandatory !important;
+  scroll-behavior: smooth !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: 0 24px 34px !important;
+}
+
+.ob-real-case-slider::-webkit-scrollbar {
+  height: 8px;
+}
+
+.ob-real-case-slider::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.06);
+  border-radius: 999px;
+}
+
+.ob-real-case-slider::-webkit-scrollbar-thumb {
+  background: rgba(7, 31, 74, 0.24);
+  border-radius: 999px;
 }
 
 .ob-real-case-slider article {
-  width: min(78vw, 1080px) !important;
-  height: 520px !important;
-  min-height: 520px !important;
+  position: relative !important;
+  flex: 0 0 calc((100vw - 96px) / 3) !important;
+  width: calc((100vw - 96px) / 3) !important;
+  height: 720px !important;
+  min-height: 720px !important;
+  max-height: 78vh !important;
   border-radius: 18px !important;
   overflow: hidden !important;
+  scroll-snap-align: center !important;
   box-shadow: 0 24px 58px rgba(15, 23, 42, 0.20) !important;
   border: 1px solid rgba(20, 83, 45, 0.18) !important;
   background: #ffffff !important;
@@ -986,72 +1017,111 @@ button.button:active,
 .ob-real-case-slider article .image,
 .ob-real-case-slider article .image img {
   width: 100% !important;
-  height: 520px !important;
-  min-height: 520px !important;
+  height: 100% !important;
+  min-height: 100% !important;
   display: block !important;
 }
 
 .ob-real-case-slider article .image img {
   object-fit: cover !important;
-  object-position: center !important;
+  object-position: center center !important;
 }
 
 .ob-real-case-slider article .caption {
-  background: rgba(15, 23, 42, 0.58) !important;
+  position: absolute !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: 28px !important;
+  top: auto !important;
+  transform: translateX(-50%) !important;
+  width: min(80%, 360px) !important;
+  min-height: auto !important;
+  padding: 14px 18px !important;
+  text-align: center !important;
+  background: rgba(15, 23, 42, 0.68) !important;
+  border-radius: 12px !important;
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
+  opacity: 1 !important;
 }
 
 .ob-real-case-slider article .caption h3 {
+  margin: 0 !important;
   color: #ffffff !important;
+  font-size: 1rem !important;
   font-weight: 900 !important;
+  line-height: 1.35 !important;
   text-shadow: 0 2px 10px rgba(0,0,0,.42) !important;
 }
 
+.ob-real-case-slider article .caption p {
+  margin: 0.35rem 0 0 !important;
+  color: #ffffff !important;
+  font-size: 0.86rem !important;
+  line-height: 1.45 !important;
+}
+
 @media screen and (max-width: 980px) {
-  .ob-real-case-slider article {
-    width: 88vw !important;
-    height: 430px !important;
-    min-height: 430px !important;
+  .ob-real-case-slider {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
   }
 
-  .ob-real-case-slider article .image,
-  .ob-real-case-slider article .image img {
-    height: 430px !important;
-    min-height: 430px !important;
+  .ob-real-case-slider article {
+    flex-basis: 72vw !important;
+    width: 72vw !important;
+    height: 760px !important;
+    min-height: 760px !important;
+    max-height: 82vh !important;
   }
 }
 
 @media screen and (max-width: 736px) {
+  .ob-real-gallery {
+    padding-top: 3rem !important;
+    padding-bottom: 2rem !important;
+  }
+
   .ob-real-gallery .inner {
     padding-left: 1.25rem !important;
     padding-right: 1.25rem !important;
   }
 
+  .ob-real-case-slider {
+    gap: 12px !important;
+    padding: 0 16px 26px !important;
+  }
+
   .ob-real-case-slider article {
-    width: 88vw !important;
-    height: 300px !important;
-    min-height: 300px !important;
+    flex: 0 0 86vw !important;
+    width: 86vw !important;
+    height: 680px !important;
+    min-height: 680px !important;
+    max-height: 78vh !important;
     border-radius: 15px !important;
   }
 
-  .ob-real-case-slider article .image,
-  .ob-real-case-slider article .image img {
-    height: 300px !important;
-    min-height: 300px !important;
+  .ob-real-case-slider article .caption {
+    bottom: 20px !important;
+    width: 82% !important;
+    padding: 12px 14px !important;
+  }
+
+  .ob-real-case-slider article .caption h3 {
+    font-size: 0.92rem !important;
+  }
+
+  .ob-real-case-slider article .caption p {
+    font-size: 0.8rem !important;
   }
 }
 
 @media screen and (max-width: 420px) {
   .ob-real-case-slider article {
-    width: 90vw !important;
-    height: 260px !important;
-    min-height: 260px !important;
-  }
-
-  .ob-real-case-slider article .image,
-  .ob-real-case-slider article .image img {
-    height: 260px !important;
-    min-height: 260px !important;
+    flex-basis: 88vw !important;
+    width: 88vw !important;
+    height: 640px !important;
+    min-height: 640px !important;
+    max-height: 76vh !important;
   }
 }

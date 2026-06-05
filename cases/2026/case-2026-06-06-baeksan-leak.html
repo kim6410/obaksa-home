@@ -22,7 +22,7 @@
     .case-wrap{width:min(1120px,calc(100% - 2rem));margin:0 auto;}
     .case-hero-grid{display:grid;grid-template-columns:1.02fr .98fr;gap:2rem;align-items:center;}
     .case-kicker{display:inline-flex;align-items:center;gap:.5rem;padding:.45rem .8rem;border-radius:999px;background:rgba(255,255,255,.14);color:#fff;font-size:.88rem;font-weight:700;letter-spacing:-.02em;}
-    .case-hero h1{margin:.9rem 0 1rem;color:#fff;font-size:clamp(2rem,4.2vw,4.25rem);line-height:1.08;letter-spacing:-.065em;font-weight:900;}
+    .case-hero h1{margin:.9rem 0 1rem;color:#fff;font-size:clamp(1.75rem,3.1vw,2.75rem);line-height:1.08;letter-spacing:-.065em;font-weight:900;}
     .case-hero p{color:rgba(255,255,255,.9);font-size:1.08rem;line-height:1.9;letter-spacing:-.03em;}
     .case-hero-card{background:#fff;border-radius:28px;box-shadow:0 28px 70px rgba(0,0,0,.28);overflow:hidden;border:1px solid rgba(255,255,255,.65);}
     .case-hero-card img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;}
@@ -87,7 +87,12 @@
     .breadcrumb a{color:#fff;border-bottom:1px solid rgba(255,255,255,.4);}
     .case-note{border-left:5px solid var(--ob-yellow);background:#fff8db;border-radius:16px;padding:1rem 1.15rem;margin:1.25rem 0;color:#4b3b00;font-weight:700;line-height:1.8;}
     @media screen and (max-width: 900px){.case-hero{padding:5.8rem 0 3rem;background:linear-gradient(180deg,#061b42 0%,#0d3476 58%,#fff 58%,#fff 100%)}.case-hero-grid,.case-two{grid-template-columns:1fr}.case-info{grid-template-columns:repeat(2,1fr)}.case-gallery{grid-template-columns:1fr 1fr}.case-hero-card img{aspect-ratio:16/12}.case-section{padding:3rem 0}}
-    @media screen and (max-width: 560px){.case-wrap{width:min(100% - 1.1rem,1120px)}.case-hero h1{font-size:2.05rem}.case-hero p,.case-section p{font-size:1rem;line-height:1.9}.case-info,.case-gallery{grid-template-columns:1fr}.case-card{padding:1.1rem}.case-actions a{width:100%;text-align:center}.case-badges span{font-size:.82rem}.case-section h2{font-size:1.55rem}.case-hero-card{border-radius:18px}.case-gallery figure,.case-webtoon-img{border-radius:16px}}
+    @media screen and (max-width: 560px){.case-wrap{width:min(100% - 1.1rem,1120px)}.case-hero h1{font-size:1.85rem}.case-hero p,.case-section p{font-size:1rem;line-height:1.9}.case-info,.case-gallery{grid-template-columns:1fr}.case-card{padding:1.1rem}.case-actions a{width:100%;text-align:center}.case-badges span{font-size:.82rem}.case-section h2{font-size:1.55rem}.case-hero-card{border-radius:18px}.case-gallery figure,.case-webtoon-img{border-radius:16px}}
+  
+    /* 상세 페이지 버튼/타이틀 최종 보정 */
+    .case-actions a.button{display:inline-flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;line-height:1.1!important;}
+    .case-page a.button.case-btn-white{background:#fff!important;color:#0b2e6d!important;text-shadow:none!important;}
+    .case-page a.button.case-btn-primary{color:#fff!important;text-shadow:none!important;}
   </style>
   <script type="application/ld+json">
   {

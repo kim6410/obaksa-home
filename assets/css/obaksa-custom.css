@@ -27,8 +27,8 @@ a { color: var(--ob-green); }
 .ob-nav a:hover::after { width: 60%; }
 .ob-call-mini { margin-left: .25rem; padding: .55rem .9rem; border-radius: 999px; background: var(--ob-green); color: white !important; text-decoration: none; font-weight: 800; white-space: nowrap; }
 .eyebrow { display: inline-block; margin: 0 0 1rem 0; padding: .45rem .8rem; border-radius: 999px; background: var(--ob-green-soft); color: #ffffff; font-size: .92rem; font-weight: 800; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.24); }
-.ob-hero h1 { font-size: 4.05rem; line-height: 1.05; margin-bottom: 1.2rem; }
-.ob-subhero h1 { font-size: 3.45rem; line-height: 1.08; }
+.ob-hero h1 { font-size: clamp(2rem, 3vw, 2.8rem); line-height: 1.16; margin-bottom: 1.1rem; }
+.ob-subhero h1 { font-size: clamp(1.9rem, 2.7vw, 2.55rem); line-height: 1.18; }
 .ob-hero .major, .ob-subhero .major { font-weight: 500; }
 .banner { position: relative; overflow: hidden; }
 .banner::before {
@@ -116,8 +116,8 @@ a { color: var(--ob-green); }
   .ob-nav { order: 3; width: 100%; overflow-x: auto; margin-left: 0; padding-bottom: .1rem; }
   .ob-nav a { flex: 0 0 auto; font-size: .86rem; padding: 0 .65rem; }
   .ob-call-mini { position: absolute; top: .65rem; right: 1rem; font-size: .86rem; }
-  .ob-hero h1 { font-size: 2.7rem; }
-  .ob-subhero h1 { font-size: 2.45rem; }
+  .ob-hero h1 { font-size: 2.25rem; }
+  .ob-subhero h1 { font-size: 2.05rem; }
   .banner::before { background: linear-gradient(rgba(6, 12, 24, 0.78), rgba(6, 12, 24, 0.78)); }
   .banner .actions .button, .button { width: 100%; padding: 1.1rem 1.2rem; min-height: 48px; }
   .ob-card-grid, .ob-card-grid.three { grid-template-columns: 1fr; }
@@ -126,7 +126,7 @@ a { color: var(--ob-green); }
   .ob-floating-call { left: 14px; right: 14px; text-align: center; bottom: 12px; }
 }
 @media screen and (max-width: 760px) {
-  .banner h1 { font-size: 2.25rem; line-height: 1.1; }
+  .banner h1 { font-size: 2rem; line-height: 1.18; }
   .banner .major { font-size: 1rem; }
   .banner .actions .button { min-height: 58px; padding: 1rem 1.25rem; }
   .ob-featured-work .items.style1 > * { padding: 1.15rem; }
@@ -1564,3 +1564,26 @@ button.button:active,
 .ob-feature-card { max-width: 1120px; margin: 0 auto 3rem; background: #fff; border-radius: 28px; overflow: hidden; box-shadow: 0 18px 48px rgba(15, 23, 42, 0.12); }
 .ob-feature-card .image img { object-fit: cover; }
 @media screen and (max-width: 736px) { .ob-feature-card { margin-left: 0.75rem; margin-right: 0.75rem; border-radius: 20px; } }
+
+
+/* =========================================================
+   히어로 타이틀 통일 패치 v2026-06-06
+   PC 기준 H1이 과하게 커지지 않도록 H2급 크기로 고정
+   ========================================================= */
+@media screen and (min-width: 761px) {
+  .ob-hero h1,
+  .ob-subhero h1,
+  .banner h1 {
+    font-size: clamp(1.9rem, 2.7vw, 2.65rem) !important;
+    line-height: 1.18 !important;
+    letter-spacing: -0.055em !important;
+  }
+}
+@media screen and (max-width: 760px) {
+  .ob-hero h1,
+  .ob-subhero h1,
+  .banner h1 {
+    font-size: 2rem !important;
+    line-height: 1.22 !important;
+  }
+}

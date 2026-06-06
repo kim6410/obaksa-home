@@ -3121,3 +3121,92 @@ button.button:active,
     padding:.15rem .72rem .74rem !important;
   }
 }
+
+/* =========================================================
+   index 시공 분야 아코디언 UX 개선 v2026-06-07
+   - 모바일에서도 눌러보고 싶은 역삼각형/삼각형 버튼 표시
+   - 제목바 색상은 유지하고, 펼친 내용만 밝은 청색 톤으로 구분
+   ========================================================= */
+#ob-service-accordion .ob-service-toggle{
+  position:relative !important;
+}
+#ob-service-accordion .ob-service-arrow{
+  display:inline-flex !important;
+  width:28px !important;
+  height:28px !important;
+  min-width:28px !important;
+  border-radius:999px !important;
+  align-items:center !important;
+  justify-content:center !important;
+  background:rgba(255,255,255,.14) !important;
+  border:1px solid rgba(255,255,255,.34) !important;
+  box-shadow:0 8px 20px rgba(0,0,0,.18) !important;
+  color:#fff !important;
+  transform:none !important;
+}
+#ob-service-accordion .ob-service-arrow::before{
+  content:"▼" !important;
+  width:auto !important;
+  height:auto !important;
+  border:0 !important;
+  transform:none !important;
+  color:#fff !important;
+  font-size:.86rem !important;
+  line-height:1 !important;
+  font-weight:900 !important;
+  text-shadow:0 2px 6px rgba(0,0,0,.42) !important;
+}
+#ob-service-accordion .ob-service-card.is-open .ob-service-arrow{
+  transform:none !important;
+  background:rgba(255,255,255,.22) !important;
+}
+#ob-service-accordion .ob-service-card.is-open .ob-service-arrow::before{
+  content:"▲" !important;
+}
+#ob-service-accordion .ob-service-card.is-open .ob-service-detail{
+  background:linear-gradient(180deg, rgba(210,232,255,.98), rgba(232,244,255,.96)) !important;
+  border-top-color:rgba(147,197,253,.9) !important;
+  color:#0b2e57 !important;
+}
+#ob-service-accordion .ob-service-card.is-open .ob-service-detail p,
+#ob-service-accordion .ob-service-card.is-open .ob-service-detail *{
+  color:#0b2e57 !important;
+  text-shadow:none !important;
+}
+@media screen and (max-width:736px){
+  #ob-service-accordion .ob-service-toggle{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) 30px !important;
+    gap:.5rem !important;
+    align-items:center !important;
+    justify-content:stretch !important;
+    min-height:46px !important;
+    padding:.56rem .72rem !important;
+  }
+  #ob-service-accordion .ob-service-icon{
+    display:none !important;
+  }
+  #ob-service-accordion .ob-service-arrow{
+    display:inline-flex !important;
+    width:28px !important;
+    height:28px !important;
+    min-width:28px !important;
+    opacity:1 !important;
+  }
+  #ob-service-accordion .ob-service-title{
+    font-size:1.02rem !important;
+    line-height:1.18 !important;
+    padding-right:.1rem !important;
+  }
+  #ob-service-accordion .ob-service-card.is-open .ob-service-detail{
+    max-height:280px !important;
+    opacity:1 !important;
+    padding:.62rem .78rem .78rem !important;
+    border-radius:0 0 12px 12px !important;
+  }
+}
+
+/* 자동 집계가 아닌 히어로 숫자 카드 숨김 v2026-06-07 */
+.case-board-hero .case-stats{
+  display:none !important;
+}

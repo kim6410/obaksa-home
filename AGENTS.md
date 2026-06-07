@@ -30,9 +30,9 @@
 
 `AGENTS.md`는 이 프로젝트의 절대적인 마스터 가이드라인이다.
 
-다른 문서, 예를 들어 `README.md`나 작업 메모와 내용이 충돌할 경우 반드시 `AGENTS.md`를 최우선 적용한다.
+다른 문서, 예를 들어 `SITE_UPDATE_GUIDE.md`, `README.md`, 작업 메모와 내용이 충돌할 경우 반드시 `AGENTS.md`를 최우선 적용한다.
 
-`SITE_UPDATE_GUIDE.md`는 현재 삭제 상태이므로 참고 문서로 사용하지 않는다.
+`SITE_UPDATE_GUIDE.md`는 참고용 문서로만 활용한다.
 
 새로운 파일이 추가되거나 파일 구조, 빌드 프로세스, 배포 방식이 변경될 경우 반드시 `AGENTS.md`를 먼저 갱신한 뒤 다음 작업을 진행한다.
 
@@ -384,7 +384,7 @@ obaksa-home/
 
 `make-chatgpt-package.bat`도 현재 루트에 없으므로 필수 파일이 아니다. 존재할 때만 관리한다.
 
-`SITE_UPDATE_GUIDE.md`는 현재 삭제 상태이므로 루트 기준 관리 파일에서 제외한다.
+`SITE_UPDATE_GUIDE.md`는 현재 루트에 존재하므로 참고 문서 및 보조 관리 문서로 유지한다.
 
 ---
 

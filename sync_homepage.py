@@ -41,6 +41,11 @@ PREVIEW_DIR = ROOT / "build_preview"
 CASES_INDEX_PATH = ROOT / "cases_index.json"
 CASES_INDEX_PREVIEW_PATH = PREVIEW_DIR / "cases_index.preview.json"
 APPLY_BACKUP_DIR = ROOT / "backups"
+FORCE_REGENERATE_DETAIL_PATHS = {
+    ROOT / "cases" / "2026" / "case-2026-04-30-door-fan-replacement-repair.html",
+    ROOT / "cases" / "2026" / "case-2026-04-30-replacement-repair.html",
+    ROOT / "cases" / "2026" / "case-2026-05-25-namoe-gate-door-door-frame.html",
+}
 
 
 @dataclass
@@ -434,11 +439,12 @@ def collect_missing_case_details(cases: list[CaseEntry]) -> list[CaseEntry]:
     return [case for case in cases if not case.detail_path.exists()]
 
 
-def write_missing_case_details(cases: list[CaseEntry]) -> list[Path]:
+def write_missing_case_details(cases: list[CaseEntry], overwrite_paths: set[Path] | None = None) -> list[Path]:
     created: list[Path] = []
+    overwrite_paths = overwrite_paths or set()
     for case in cases:
         detail_path = case.detail_path
-        if detail_path.exists():
+        if detail_path.exists() and detail_path not in overwrite_paths:
             continue
         detail_path.parent.mkdir(parents=True, exist_ok=True)
         images = gather_case_images(case)
@@ -822,7 +828,7 @@ def main() -> int:
                 print(f"- {error}")
             return 1
         backup_created, backup_path, backup_files = backup_and_apply_live_files()
-        created_case_details = write_missing_case_details(missing_case_details)
+        created_case_details = write_missing_case_details(merged_cases, FORCE_REGENERATE_DETAIL_PATHS)
         print(f"backup path: {backup_path.as_posix() if backup_path else ''}")
         if backup_files:
             print("backup files:")

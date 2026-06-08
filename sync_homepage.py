@@ -1010,6 +1010,87 @@ def write_missing_case_details(
     return created
 
 
+def normalize_case_dir_input(case_dir_input: str) -> Path:
+    case_dir = Path(str(case_dir_input).strip().strip('"').strip("'"))
+    if not case_dir.is_absolute():
+        case_dir = (ROOT / case_dir).resolve()
+    return case_dir
+
+
+def load_case_image_plan(case_dir: Path) -> list[dict[str, object]]:
+    manifest_path = case_dir / "image_manifest.json"
+    if not manifest_path.exists():
+        return []
+    try:
+        raw = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    if isinstance(raw, dict):
+        raw = raw.get("images") or raw.get("items") or []
+    return list(raw) if isinstance(raw, list) else []
+
+
+def case_entry_from_markdown_meta(case_dir: Path, meta: dict[str, str]) -> CaseEntry:
+    title = meta.get("title", "").strip() or case_dir.name
+    date = parse_case_date(meta.get("date", "").strip())
+    year = extract_year(date)
+    slug = normalize_slug(meta.get("slug", "").strip(), date, title)
+    category = meta.get("category", "").strip() or "시공사례"
+    summary = meta.get("description", "").strip() or meta.get("summary", "").strip() or title
+    source_url = meta.get("source_blog", "").strip() or meta.get("source_url", "").strip() or meta.get("source", "").strip()
+    instagram_url = meta.get("instagram", "").strip() or meta.get("instagram_url", "").strip()
+    thumb = f"cases/{year}/{slug}/thumb.jpg"
+    return CaseEntry(
+        date=date,
+        title=title,
+        summary=summary,
+        slug=slug,
+        category=category,
+        url=f"cases/{year}/{slug}/",
+        thumb=thumb,
+        source_url=source_url,
+        instagram_url=instagram_url,
+        highlight_image=thumb,
+    )
+
+
+def rebuild_case_from_folder(case_dir_input: str) -> tuple[CaseEntry, BlogData, str, list[Path]]:
+    case_dir = normalize_case_dir_input(case_dir_input)
+    markdown_path = case_dir / "index.md"
+    if not markdown_path.exists():
+        raise FileNotFoundError(f"missing index.md: {markdown_path.as_posix()}")
+    meta, markdown_body = parse_markdown_front_matter(read_text(markdown_path))
+    entry = case_entry_from_markdown_meta(case_dir, meta)
+    existing_cases, _ = load_cases_index()
+    matched_existing = next((case for case in existing_cases if case.case_url == entry.case_url), None)
+    if matched_existing:
+        entry.added_at = matched_existing.added_at
+        if not entry.source_url:
+            entry.source_url = matched_existing.source_url
+        if not entry.instagram_url:
+            entry.instagram_url = matched_existing.instagram_url
+    image_plan = load_case_image_plan(case_dir)
+    images = gather_case_images(entry)
+    blog = BlogData(
+        title=entry.title,
+        date=entry.date,
+        year=entry.year,
+        slug=entry.slug,
+        category=entry.category,
+        summary=entry.summary,
+        content=markdown_body,
+        source_url=entry.source_url,
+        instagram_url=entry.instagram_url,
+        image_plan=image_plan,
+        thumbnail=entry.thumb,
+        source_path=markdown_path,
+    )
+    detail_html = build_case_detail_html(entry, images, blog, entry.summary, markdown_body)
+    entry.detail_path.parent.mkdir(parents=True, exist_ok=True)
+    entry.detail_path.write_text(detail_html, encoding="utf-8")
+    return entry, blog, markdown_body, images
+
+
 def make_case_entry_from_blog(data: BlogData) -> CaseEntry:
     thumb = data.thumbnail or thumbnail_path_for(data)
     if thumb and not thumb.startswith("/"):
@@ -1324,9 +1405,10 @@ def parse_args() -> dict[str, object]:
     parser.add_argument("--preview", action="store_true", help="preview 결과를 생성")
     parser.add_argument("--write-index", action="store_true", help="preview 대신 cases_index.json을 실제로 갱신")
     parser.add_argument("--apply", action="store_true", help="preview 결과를 실제 운영 파일에 반영")
+    parser.add_argument("--rebuild-case", default="", help="지정한 case 폴더만 재빌드")
     parser.add_argument("--summary", default="", help="사용자가 직접 제공한 150~200자 요약문")
     args = parser.parse_args()
-    return {"preview": bool(args.preview), "write_index": bool(args.write_index), "apply": bool(args.apply), "summary": str(args.summary).strip()}
+    return {"preview": bool(args.preview), "write_index": bool(args.write_index), "apply": bool(args.apply), "rebuild_case": str(args.rebuild_case).strip(), "summary": str(args.summary).strip()}
 
 
 def inject_cases_pagination(html_text: str) -> str:
@@ -1446,7 +1528,9 @@ def preview_marker_block(name: str, path: Path, markers: Iterable[str]) -> None:
 
 def main() -> int:
     args = parse_args()
-    mode = "apply" if args["apply"] else ("write-index" if args["write_index"] else "preview")
+    mode = "rebuild-case" if args["rebuild_case"] else ("apply" if args["apply"] else ("write-index" if args["write_index"] else "preview"))
+    if args["rebuild_case"]:
+        return main_rebuild_case(str(args["rebuild_case"]))
     chosen_summary = args["summary"].strip()
     ok, data, source_path = load_blog_data()
     if not chosen_summary:
@@ -1571,6 +1655,52 @@ def main() -> int:
     return 0
 
 
+def main_rebuild_case(case_dir_input: str) -> int:
+    try:
+        entry, blog, markdown_body, images = rebuild_case_from_folder(case_dir_input)
+    except Exception as exc:
+        print(f"error: rebuild-case failed - {exc}")
+        return 1
+
+    existing_cases, data_source = load_cases_index()
+    merged_cases, duplicate_found, replaced = merge_cases(existing_cases, entry)
+    if any(case.case_url == entry.case_url for case in existing_cases):
+        merged_cases = sorted(merged_cases, key=lambda item: (item.date, item.added_at, item.slug), reverse=True)
+    preview_files = write_preview_files(blog, merged_cases)
+    preview_ok, preview_errors = validate_preview_outputs()
+    if not preview_ok:
+        print("완료 메시지: preview 검증 실패로 실제 반영 중단")
+        for error in preview_errors:
+            print(f"- {error}")
+        return 1
+
+    backup_created, backup_path, backup_files = backup_and_apply_live_files()
+    write_cases_index_file(merged_cases, CASES_INDEX_PATH)
+    _normalize_folder_case_html_outputs()
+    _ensure_case_build_bats()
+
+    print(f"mode: rebuild-case")
+    print(f"case_dir: {normalize_case_dir_input(case_dir_input).as_posix()}")
+    print(f"rebuild target: {entry.detail_path.as_posix()}")
+    print(f"기존 데이터 소스: {data_source}")
+    print(f"기존 사례 수: {len(existing_cases)}")
+    print(f"중복 갱신 여부: {'예' if replaced or duplicate_found else '아니오'}")
+    print(f"정렬 후 전체 사례 수: {len(merged_cases)}")
+    print(f"sitemap URL 수: {len({case.sitemap_url for case in merged_cases})}")
+    print(f"backup 생성 여부: {'예' if backup_created else '아니오'}")
+    if backup_path:
+        print(f"backup 파일: {backup_path.as_posix()}")
+    if backup_files:
+        print("backup files:")
+        for backup_file in backup_files:
+            print(backup_file.as_posix())
+    print(f"preview files:")
+    for preview_file in preview_files:
+        print(preview_file.as_posix())
+    print("완료 메시지: case 재빌드 및 운영 파일 반영 완료")
+    return 0
+
+
 _ORIGINAL_MAIN = main
 
 
@@ -1602,17 +1732,26 @@ def _ensure_case_build_bats() -> None:
     bat_template = """@echo off
 setlocal
 chcp 65001 >nul
-pushd "%~dp0..\\..\\.."
-set /p SUMMARY=Enter a 150-200 character summary: 
-if not defined SUMMARY (
-  echo Summary is required.
-  popd
-  pause
-  exit /b 1
-)
-python sync_homepage.py --apply --summary "%SUMMARY%"
+title 오박사 시공사례 재빌드
+
+set "CASE_DIR=%~dp0"
+set "PROJECT_ROOT=G:\\OneDrive\\01_울산오박사인테리어\\obaksa_site\\obaksa-home"
+
+echo.
+echo Current case folder:
+echo %CASE_DIR%
+echo.
+echo Rebuilding index.md and image_manifest.json into HTML...
+echo.
+
+pushd "%PROJECT_ROOT%"
+python sync_homepage.py --rebuild-case "%CASE_DIR%"
 set EXIT_CODE=%ERRORLEVEL%
 popd
+echo.
+echo Rebuild complete.
+echo Commit / push separately if you want to publish the change.
+echo.
 pause
 exit /b %EXIT_CODE%
 """

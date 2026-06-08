@@ -1,0 +1,85 @@
+{
+  "note": "이미지를 눈으로 확인한 뒤 order/use/alt/caption/reviewed 값을 확정한 최종 파일입니다.",
+  "images": [
+    {
+      "file": "01.jpg",
+      "order": 1,
+      "use": true,
+      "alt": "울산 북구 호계동 단독주택 수도계량기 누수 현장 외부 전경",
+      "caption": "울산 북구 호계동 단독주택 수도계량기 누수 현장 외부 전경",
+      "reviewed": true
+    },
+    {
+      "file": "02.jpg",
+      "order": 2,
+      "use": true,
+      "alt": "울산 북구 호계동 수도계량기함 내부 미세 누수와 부식 상태 확인",
+      "caption": "울산 북구 호계동 수도계량기함 내부 미세 누수와 부식 상태 확인",
+      "reviewed": true
+    },
+    {
+      "file": "03.jpg",
+      "order": 3,
+      "use": true,
+      "alt": "울산 북구 호계동 수도계량기함 내부 계량기와 연결 배관 상태 점검",
+      "caption": "울산 북구 호계동 수도계량기함 내부 계량기와 연결 배관 상태 점검",
+      "reviewed": true
+    },
+    {
+      "file": "04.jpg",
+      "order": 4,
+      "use": true,
+      "alt": "울산 호계동 수도계량기 상부 부동전과 연결부 노후 상태 확인",
+      "caption": "울산 호계동 수도계량기 상부 부동전과 연결부 노후 상태 확인",
+      "reviewed": true
+    },
+    {
+      "file": "05.jpg",
+      "order": 5,
+      "use": true,
+      "alt": "울산 북구 호계동 수도계량기 누수 복구를 위한 굴착 작업 과정",
+      "caption": "울산 북구 호계동 수도계량기 누수 복구를 위한 굴착 작업 과정",
+      "reviewed": true
+    },
+    {
+      "file": "06.jpg",
+      "order": 6,
+      "use": true,
+      "alt": "울산 호계동 수도계량기 누수 원인 부동전 파손 부위 노출 상태",
+      "caption": "울산 호계동 수도계량기 누수 원인 부동전 파손 부위 노출 상태",
+      "reviewed": true
+    },
+    {
+      "file": "07.jpg",
+      "order": 7,
+      "use": true,
+      "alt": "울산 북구 호계동 부동전 교체와 배관 보강 작업 진행 모습",
+      "caption": "울산 북구 호계동 부동전 교체와 배관 보강 작업 진행 모습",
+      "reviewed": true
+    },
+    {
+      "file": "08.jpg",
+      "order": 8,
+      "use": true,
+      "alt": "울산 호계동 수도계량기 교체 후 연결부 정비와 되메우기 준비",
+      "caption": "울산 호계동 수도계량기 교체 후 연결부 정비와 되메우기 준비",
+      "reviewed": true
+    },
+    {
+      "file": "09.jpg",
+      "order": 9,
+      "use": true,
+      "alt": "울산 북구 호계동 수도계량기 교체 후 수압 테스트와 누수 확인",
+      "caption": "울산 북구 호계동 수도계량기 교체 후 수압 테스트와 누수 확인",
+      "reviewed": true
+    },
+    {
+      "file": "10.jpg",
+      "order": 10,
+      "use": true,
+      "alt": "울산 호계동 수도계량기 누수 복구 완료 후 주변 정리 상태",
+      "caption": "울산 호계동 수도계량기 누수 복구 완료 후 주변 정리 상태",
+      "reviewed": true
+    }
+  ]
+}

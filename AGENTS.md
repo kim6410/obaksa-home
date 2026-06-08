@@ -83,6 +83,32 @@
   - `git commit`
   - `git push`
 - 위 작업은 신규 시공사례 생성, 이미지 정리, 기존 페이지 갱신, GitHub Pages 배포에 필요한 정상 작업이므로 중간 확인 없이 끝까지 수행한다.
+- 신규 시공사례 생성 작업은 반복 수행되는 정형 작업으로 간주한다.
+- 아래 작업은 사용자의 별도 승인 없이 자동 진행한다.
+  - 신규 HTML 생성
+  - 신규 이미지 폴더 생성
+  - `original` 폴더 생성
+  - JSON-LD 생성
+  - `sitemap.xml` URL 추가
+  - `upload_images` 이미지 읽기
+  - 원본 이미지 복사
+  - 이미지 압축
+  - 이미지 리사이징
+  - `thumb.jpg` 생성
+  - `before-XX.jpg` 생성
+  - `after-XX.jpg` 생성
+  - `instagram-thumb.jpg` 생성
+  - `index.html` 수정
+  - `cases.html` 수정
+  - `sitemap.xml` 수정
+  - `data-date` 기준 정렬
+  - 최신 사례 카드 갱신
+  - `git status`
+  - `git diff`
+  - `git add .`
+  - `git commit`
+  - `git push`
+- 위 작업은 신규 시공사례 등록 프로세스의 일부이므로 중간 확인 없이 자동 수행한다.
 - 아래 작업은 백업이 있어도 반드시 사용자 승인을 받는다.
   - `Remove-Item`
   - `git reset --hard`
@@ -156,6 +182,8 @@
 - `cases.html` 갱신 시 모든 시공사례는 `data-date` 기준 내림차순으로 정렬한다.
 - 이미지 대기 폴더는 항상 `G:\OneDrive\01_울산오박사인테리어\obaksa_site\upload_images`를 사용한다.
 - 작업 시작 시 해당 `upload_images` 폴더를 확인한다.
+- 승인 요청 금지 문구는 사용하지 않는다.
+- 예시: `계속 진행할까요?`, `파일 생성해도 될까요?`, `이미지를 복사해도 될까요?`, `git commit 해도 될까요?`, `git push 해도 될까요?`, `index.html 수정해도 될까요?`, `cases.html 갱신해도 될까요?`
 
 ---
 
@@ -164,3 +192,6 @@
 - 작업 완료 기준은 로컬 생성이 아니라 GitHub Pages 반영 준비 완료 상태다.
 - `git push` 완료 후 가능한 경우 GitHub Pages URL 접속 여부를 확인한다.
 - 완료 보고는 백업 폴더 경로, 생성 파일, 수정 파일, 삭제 파일 여부, `git commit` 메시지, `git push` 결과, GitHub Pages 반영 상태 중심으로 간단명료하게 한다.
+- 작업이 모두 끝난 뒤에만 결과를 보고한다.
+- 중간 진행 상황 보고는 하지 않는다.
+- 오류 발생 시에만 보고한다.

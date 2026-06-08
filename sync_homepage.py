@@ -331,38 +331,95 @@ def case_image_caption(entry: CaseEntry, index: int, total: int) -> str:
     return f"작업 과정 사진 {index + 1}"
 
 
-def build_case_story(blog: BlogData) -> str:
-    if not blog.content:
-        return (
-            f"<p>{blog.summary or blog.title} 현장은 현장 상태를 먼저 확인하고, "
-            "문제의 원인을 살핀 뒤 필요한 부분만 정리해 마무리했습니다.</p>"
-            f"<p>작업 전후의 차이가 분명하게 보이도록 사진과 함께 흐름을 정리했습니다.</p>"
-        )
-    lines = [re.sub(r"\s+", " ", line).strip() for line in blog.content.splitlines()]
-    lines = [line for line in lines if line and len(line) >= 12]
-    lines = [line for line in lines if not line.startswith("#")]
-    if not lines:
-        return (
-            f"<p>{blog.summary or blog.title} 현장은 현장 상태를 먼저 확인하고, "
-            "문제의 원인을 살핀 뒤 필요한 부분만 정리해 마무리했습니다.</p>"
-        )
-    selected: list[str] = []
-    for line in lines:
-        if line in selected:
+def _story_candidates(blog: BlogData) -> list[str]:
+    source = blog.content or ""
+    blocks = [re.sub(r"\s+", " ", line).strip() for line in source.splitlines()]
+    if len(blocks) < 4:
+        blocks = [
+            re.sub(r"\s+", " ", part).strip()
+            for part in re.split(r"(?<=[.!?。])\s+|\s{2,}", source)
+            if part and part.strip()
+        ]
+    title_tokens = [token for token in re.split(r"[\s,，.·/]+", blog.title or "") if len(token) >= 3]
+    candidates: list[str] = []
+    for line in blocks:
+        if not line or len(line) < 18 or line.startswith("#"):
             continue
-        selected.append(line)
-        if len(selected) >= 6:
-            break
-    if not selected:
-        selected = lines[:3]
-    paragraphs = []
-    if selected:
-        paragraphs.append(f"<p>{' '.join(selected[:3])}</p>")
-    if len(selected) > 3:
-        paragraphs.append(f"<p>{' '.join(selected[3:6])}</p>")
-    paragraphs.append(
-        f"<p>{blog.title} 현장은 이렇게 원인을 확인한 뒤 필요한 부분만 정확히 손보는 방식으로 마무리했습니다.</p>"
-    )
+        if blog.title and line == blog.title:
+            continue
+        if title_tokens:
+            overlap = sum(1 for token in title_tokens[:6] if token and token in line)
+            if overlap >= 3:
+                continue
+        if line not in candidates:
+            candidates.append(line)
+    return candidates
+
+
+def _pick_story_line(candidates: list[str], keywords: tuple[str, ...]) -> str:
+    for line in candidates:
+        if any(keyword in line for keyword in keywords):
+            return line
+    return ""
+
+
+def _trim_story_snippet(text: str, limit: int = 52) -> str:
+    text = re.sub(r"\s+", " ", text).strip()
+    text = text.strip("“”\"'<>")
+    if len(text) <= limit:
+        return text
+    return text[:limit].rstrip(" ,.·/:-") + "..."
+
+
+def build_case_story(blog: BlogData) -> str:
+    intro = blog.summary or blog.title or "현장 상황을 먼저 확인한 뒤 필요한 부분만 정리한 사례입니다."
+    candidates = _story_candidates(blog)
+    problem_line = _pick_story_line(candidates, ("떨어", "깨졌", "위기", "불안", "버티지", "흔들", "아슬아슬", "추락", "파손", "고장"))
+    work_line = _pick_story_line(candidates, ("고정", "보강", "마감", "피스", "코킹", "실리콘", "점검", "교체", "정리", "조정"))
+    result_line = _pick_story_line(list(reversed(candidates)), ("마무리", "안심", "안전", "다시", "흔들림", "정리", "확인", "안정"))
+    closing_line = _pick_story_line(list(reversed(candidates)), ("상담", "문의", "연락", "전화", "필요", "비슷", "관리", "재발"))
+
+    problem_text = _trim_story_snippet(problem_line)
+    work_text = _trim_story_snippet(work_line)
+    result_text = _trim_story_snippet(result_line)
+    closing_text = _trim_story_snippet(closing_line)
+
+    paragraphs = [
+        f"<p>{intro}</p>",
+        (
+            f"<p>현장에서는 {problem_text} "
+            if problem_text
+            else f"<p>{blog.title} 현장은 먼저 문제의 원인을 확인한 뒤, 불안한 부분부터 차근차근 점검했습니다."
+        )
+        + (
+            "이 부분을 그냥 두면 더 크게 번질 수 있어, 안전부터 먼저 살폈습니다.</p>"
+            if problem_text
+            else "</p>"
+        ),
+        (
+            f"<p>이후에는 {work_text} "
+            if work_text
+            else "<p>이후에는 필요한 부분만 정확하게 손보며, 과하지 않게 고정과 보강을 함께 진행했습니다."
+        )
+        + (
+            "현장 상황에 맞춰 순서대로 정리했습니다.</p>"
+            if work_text
+            else "</p>"
+        ),
+        (
+            f"<p>마무리 단계에서는 {result_text} "
+            if result_text
+            else "<p>마무리 단계에서는 흔들림이 남지 않았는지 다시 확인하고, 고객님이 안심하실 수 있도록 정리했습니다."
+        )
+        + (
+            "작업 후 상태까지 다시 점검해 안정감을 확인했습니다.</p>"
+            if result_text
+            else "</p>"
+        ),
+        (
+            f"<p>{closing_text or '비슷한 증상이 보이면 미루지 말고 빠르게 확인받는 것이 좋습니다.'}</p>"
+        ),
+    ]
     return "\n        ".join(paragraphs)
 
 
@@ -831,7 +888,9 @@ def main() -> int:
                 print(f"- {error}")
             return 1
         backup_created, backup_path, backup_files = backup_and_apply_live_files()
-        created_case_details = write_missing_case_details(merged_cases, FORCE_REGENERATE_DETAIL_PATHS, data)
+        overwrite_paths = set(FORCE_REGENERATE_DETAIL_PATHS)
+        overwrite_paths.add(new_case.detail_path)
+        created_case_details = write_missing_case_details(merged_cases, overwrite_paths, data)
         print(f"backup path: {backup_path.as_posix() if backup_path else ''}")
         if backup_files:
             print("backup files:")

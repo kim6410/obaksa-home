@@ -11,7 +11,7 @@ from typing import Iterable
 
 
 ROOT = Path(__file__).resolve().parent
-SITE_BASE_URL = os.getenv("SITE_BASE_URL", "https://obaksa-home.github.io")
+SITE_BASE_URL = os.getenv("SITE_BASE_URL", "https://kim6410.github.io/obaksa-home")
 BLOG_FETCH_CANDIDATES = [
     ROOT / "blog_fetch_result.json",
     ROOT.parent / "blog_fetch_result.json",
@@ -53,11 +53,7 @@ CASES_INDEX_PATH = ROOT / "cases_index.json"
 CASES_INDEX_PREVIEW_PATH = PREVIEW_DIR / "cases_index.preview.json"
 APPLY_BACKUP_DIR = ROOT / "backups"
 CASE_DETAIL_TEMPLATE_PATH = ROOT / "templates" / "case-detail-template.html"
-FORCE_REGENERATE_DETAIL_PATHS = {
-    ROOT / "cases" / "2026" / "case-2026-04-30-door-fan-replacement-repair.html",
-    ROOT / "cases" / "2026" / "case-2026-04-30-replacement-repair.html",
-    ROOT / "cases" / "2026" / "case-2026-05-25-namoe-gate-door-door-frame.html",
-}
+FORCE_REGENERATE_DETAIL_PATHS: set[Path] = set()
 
 
 @dataclass

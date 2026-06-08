@@ -1571,5 +1571,39 @@ def main() -> int:
     return 0
 
 
+_ORIGINAL_MAIN = main
+
+
+def _normalize_folder_case_html_outputs() -> None:
+    replacements = (
+        ('href="/assets/', 'href="../../../assets/'),
+        ('src="/assets/', 'src="../../../assets/'),
+        ('href="/index.html"', 'href="../../../index.html"'),
+        ('href="/about.html"', 'href="../../../about.html"'),
+        ('href="/services.html"', 'href="../../../services.html"'),
+        ('href="/cases.html"', 'href="../../../cases.html"'),
+        ('href="/community.html"', 'href="../../../community.html"'),
+        ('href="/contact.html"', 'href="../../../contact.html"'),
+        ('href="/cases/', 'href="../../../cases/'),
+        ('src="/cases/', 'src="../../../cases/'),
+    )
+    for html_path in ROOT.glob("cases/20??/case-*/index.html"):
+        text = html_path.read_text(encoding="utf-8")
+        if 'href="/assets/' not in text and 'src="/assets/' not in text and 'href="/index.html"' not in text and 'href="/cases.html"' not in text and 'href="/cases/' not in text and 'src="/cases/' not in text:
+            continue
+        updated = text
+        for old, new in replacements:
+            updated = updated.replace(old, new)
+        if updated != text:
+            html_path.write_text(updated, encoding="utf-8")
+
+
+def main(*args, **kwargs):  # type: ignore[override]
+    result = _ORIGINAL_MAIN(*args, **kwargs)
+    if result == 0:
+        _normalize_folder_case_html_outputs()
+    return result
+
+
 if __name__ == "__main__":
     raise SystemExit(main())

@@ -68,6 +68,7 @@ class BlogData:
     slug: str = ""
     category: str = ""
     summary: str = ""
+    content: str = ""
     source_url: str = ""
     instagram_url: str = ""
     images: list[str] | None = None
@@ -129,6 +130,7 @@ def load_blog_data() -> tuple[bool, BlogData, Path | None]:
                 slug=slug,
                 category=str(data.get("category", "")).strip(),
                 summary=str(data.get("summary", "")).strip(),
+                content=str(data.get("content", "")).strip(),
                 source_url=source_url,
                 instagram_url=str(data.get("instagram_url", "")).strip(),
                 images=list(data.get("images") or []),
@@ -329,11 +331,46 @@ def case_image_caption(entry: CaseEntry, index: int, total: int) -> str:
     return f"작업 과정 사진 {index + 1}"
 
 
+def build_case_story(blog: BlogData) -> str:
+    if not blog.content:
+        return (
+            f"<p>{blog.summary or blog.title} 현장은 현장 상태를 먼저 확인하고, "
+            "문제의 원인을 살핀 뒤 필요한 부분만 정리해 마무리했습니다.</p>"
+            f"<p>작업 전후의 차이가 분명하게 보이도록 사진과 함께 흐름을 정리했습니다.</p>"
+        )
+    lines = [re.sub(r"\s+", " ", line).strip() for line in blog.content.splitlines()]
+    lines = [line for line in lines if line and len(line) >= 12]
+    lines = [line for line in lines if not line.startswith("#")]
+    if not lines:
+        return (
+            f"<p>{blog.summary or blog.title} 현장은 현장 상태를 먼저 확인하고, "
+            "문제의 원인을 살핀 뒤 필요한 부분만 정리해 마무리했습니다.</p>"
+        )
+    selected: list[str] = []
+    for line in lines:
+        if line in selected:
+            continue
+        selected.append(line)
+        if len(selected) >= 6:
+            break
+    if not selected:
+        selected = lines[:3]
+    paragraphs = []
+    if selected:
+        paragraphs.append(f"<p>{' '.join(selected[:3])}</p>")
+    if len(selected) > 3:
+        paragraphs.append(f"<p>{' '.join(selected[3:6])}</p>")
+    paragraphs.append(
+        f"<p>{blog.title} 현장은 이렇게 원인을 확인한 뒤 필요한 부분만 정확히 손보는 방식으로 마무리했습니다.</p>"
+    )
+    return "\n        ".join(paragraphs)
+
+
 def detail_image_rel_path(entry: CaseEntry, image_path: Path) -> str:
     return f"../../assets/images/cases/{entry.year}/{entry.date[5:7]}/{entry.slug}/{image_path.name}"
 
 
-def render_case_detail_template(entry: CaseEntry, images: list[Path]) -> str:
+def render_case_detail_template(entry: CaseEntry, images: list[Path], blog: BlogData | None = None) -> str:
     template = read_text(CASE_DETAIL_TEMPLATE_PATH)
     hero_image = detail_image_rel_path(entry, images[0]) if images else (f"../../{entry.thumb}" if entry.thumb else "../../images/gallery/case_hero.jpg")
     gallery_items: list[str] = []
@@ -359,17 +396,20 @@ def render_case_detail_template(entry: CaseEntry, images: list[Path]) -> str:
             ])
         )
     instagram_button = ""
-    instagram_link_item = "<li>인스타그램: 없음</li>"
     if entry.instagram_url:
         instagram_button = f'<a class="button case-btn-white" href="{entry.instagram_url}" target="_blank" rel="noopener">인스타 보기</a>'
-        instagram_link_item = f'<li>인스타그램: <a href="{entry.instagram_url}" target="_blank" rel="noopener">{entry.instagram_url}</a></li>'
+    source_url = (blog.source_url if blog and blog.source_url else entry.source_url)
+    instagram_url = (blog.instagram_url if blog and blog.instagram_url else entry.instagram_url)
+    source_button = f'<a class="button case-btn-white" href="{source_url or "#"}" target="_blank" rel="noopener">블로그 원문 보기</a>' if source_url else ""
+    if instagram_url:
+        instagram_button = f'<a class="button case-btn-white" href="{instagram_url}" target="_blank" rel="noopener">인스타 보기</a>'
     replacements = {
         "{{TITLE}}": entry.title,
         "{{DATE}}": entry.date,
         "{{CATEGORY}}": entry.category or "시공사례",
         "{{SUMMARY}}": entry.summary or entry.title,
-        "{{SOURCE_URL}}": entry.source_url or "#",
-        "{{SOURCE_URL_TEXT}}": entry.source_url or "없음",
+        "{{SOURCE_URL}}": source_url or "#",
+        "{{SOURCE_BUTTON}}": source_button,
         "{{INSTAGRAM_BUTTON}}": instagram_button,
         "{{GALLERY_IMAGES}}": "\n        ".join(gallery_items),
         "{{BREADCRUMB_TITLE}}": entry.title,
@@ -381,7 +421,7 @@ def render_case_detail_template(entry: CaseEntry, images: list[Path]) -> str:
         "{{TAGS}}": ",".join(filter(None, [entry.category, entry.title, entry.slug.replace("-", ",")])),
         "{{SLUG}}": entry.slug,
         "{{CASE_URL}}": entry.case_url,
-        "{{INSTAGRAM_LINK_ITEM}}": instagram_link_item,
+        "{{CASE_STORY}}": build_case_story(blog or BlogData(title=entry.title, summary=entry.summary)),
     }
     rendered = template
     for key, value in replacements.items():
@@ -389,15 +429,19 @@ def render_case_detail_template(entry: CaseEntry, images: list[Path]) -> str:
     return rendered
 
 
-def build_case_detail_html(entry: CaseEntry, images: list[Path]) -> str:
-    return render_case_detail_template(entry, images)
+def build_case_detail_html(entry: CaseEntry, images: list[Path], blog: BlogData | None = None) -> str:
+    return render_case_detail_template(entry, images, blog)
 
 
 def collect_missing_case_details(cases: list[CaseEntry]) -> list[CaseEntry]:
     return [case for case in cases if not case.detail_path.exists()]
 
 
-def write_missing_case_details(cases: list[CaseEntry], overwrite_paths: set[Path] | None = None) -> list[Path]:
+def write_missing_case_details(
+    cases: list[CaseEntry],
+    overwrite_paths: set[Path] | None = None,
+    blog: BlogData | None = None,
+) -> list[Path]:
     created: list[Path] = []
     overwrite_paths = overwrite_paths or set()
     for case in cases:
@@ -406,7 +450,8 @@ def write_missing_case_details(cases: list[CaseEntry], overwrite_paths: set[Path
             continue
         detail_path.parent.mkdir(parents=True, exist_ok=True)
         images = gather_case_images(case)
-        detail_path.write_text(build_case_detail_html(case, images), encoding="utf-8")
+        current_blog = blog if blog and (case.slug == blog.slug or case.date == blog.date) else None
+        detail_path.write_text(build_case_detail_html(case, images, current_blog), encoding="utf-8")
         created.append(detail_path)
     return created
 
@@ -786,7 +831,7 @@ def main() -> int:
                 print(f"- {error}")
             return 1
         backup_created, backup_path, backup_files = backup_and_apply_live_files()
-        created_case_details = write_missing_case_details(merged_cases, FORCE_REGENERATE_DETAIL_PATHS)
+        created_case_details = write_missing_case_details(merged_cases, FORCE_REGENERATE_DETAIL_PATHS, data)
         print(f"backup path: {backup_path.as_posix() if backup_path else ''}")
         if backup_files:
             print("backup files:")

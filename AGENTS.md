@@ -90,13 +90,20 @@
 - 신규 시공사례 제목은 `[지역명/동네명] + [문제 상황] + [해결 방법]`을 따른다.
 - 블로그 URL이 제공되면 제목, 날짜, `slug`, 태그, 요약문을 자동 추출 또는 생성한다.
 - 네이버 블로그 URL은 `STYLE_GUIDE.md`의 PostView 본문 수집 규칙에 따라 실제 본문을 우선 추출한다.
+- 신규 시공사례 생성 시 블로그 URL이 제공되면 먼저 `python "G:\OneDrive\01_울산오박사인테리어\obaksa_site\go.py" "[블로그URL]"`를 실행해 본문을 수집한다.
+- 블로그 URL이 제공되면 항상 `G:\OneDrive\01_울산오박사인테리어\obaksa_site\go.py`를 실행한다.
+- 실행 형식은 `python go.py "[블로그 URL]"`로 고정한다.
+- 수집된 제목, 날짜, 본문을 기준으로 시공사례 HTML을 생성한다.
+- 본문 수집이 성공하면 사용자가 본문 원고를 별도로 제공하지 않아도 된다.
+- 본문 수집이 실패한 경우에만 사용자에게 원문 제공을 요청한다.
 - 사용자가 별도로 제목, 날짜, `slug`, 태그, 요약문을 제공하지 않아도 된다.
 - 신규 시공사례 HTML에는 `<article>` 최상위에 `data-title`, `data-date`, `data-category`, `data-tags`, `data-slug`, `data-summary`, `data-thumb`를 포함한다.
 - `index.html`에는 최신 시공사례 1개만 노출한다.
 - `cases.html` 상단 하이라이트 미리보기 카드는 최신 시공사례 2개만 노출한다.
 - 신규 게시물이 추가되면 기존 1번은 2번으로 밀리고, 기존 2번은 하단 전체 리스트로 내려간다.
 - `cases.html` 갱신 시 모든 시공사례는 `data-date` 기준 내림차순으로 정렬한다.
-- 작업 시작 시 `G:\OneDrive\01_울산오박사인테리어\obaksa_site\upload_images`를 확인한다.
+- 이미지 대기 폴더는 항상 `G:\OneDrive\01_울산오박사인테리어\obaksa_site\upload_images`를 사용한다.
+- 작업 시작 시 해당 `upload_images` 폴더를 확인한다.
 
 ---
 
@@ -105,4 +112,3 @@
 - 작업 완료 기준은 로컬 생성이 아니라 GitHub Pages 반영 준비 완료 상태다.
 - `git push` 완료 후 가능한 경우 GitHub Pages URL 접속 여부를 확인한다.
 - 완료 보고는 백업 폴더 경로, 생성 파일, 수정 파일, 삭제 파일 여부, `git commit` 메시지, `git push` 결과, GitHub Pages 반영 상태 중심으로 간단명료하게 한다.
-

@@ -41,6 +41,7 @@ PREVIEW_DIR = ROOT / "build_preview"
 CASES_INDEX_PATH = ROOT / "cases_index.json"
 CASES_INDEX_PREVIEW_PATH = PREVIEW_DIR / "cases_index.preview.json"
 APPLY_BACKUP_DIR = ROOT / "backups"
+CASE_DETAIL_TEMPLATE_PATH = ROOT / "templates" / "case-detail-template.html"
 FORCE_REGENERATE_DETAIL_PATHS = {
     ROOT / "cases" / "2026" / "case-2026-04-30-door-fan-replacement-repair.html",
     ROOT / "cases" / "2026" / "case-2026-04-30-replacement-repair.html",
@@ -296,10 +297,9 @@ def detail_image_rel_path(entry: CaseEntry, image_path: Path) -> str:
     return f"../../assets/images/cases/{entry.year}/{entry.date[5:7]}/{entry.slug}/{image_path.name}"
 
 
-def build_case_detail_html(entry: CaseEntry, images: list[Path]) -> str:
+def render_case_detail_template(entry: CaseEntry, images: list[Path]) -> str:
+    template = read_text(CASE_DETAIL_TEMPLATE_PATH)
     hero_image = detail_image_rel_path(entry, images[0]) if images else (f"../../{entry.thumb}" if entry.thumb else "../../images/gallery/case_hero.jpg")
-    og_image = hero_image
-    canonical = f"case-{entry.slug}.html"
     gallery_items: list[str] = []
     for idx, image_path in enumerate(images or []):
         rel = detail_image_rel_path(entry, image_path)
@@ -322,117 +322,38 @@ def build_case_detail_html(entry: CaseEntry, images: list[Path]) -> str:
             ])
         )
     instagram_button = ""
+    instagram_link_item = "<li>인스타그램: 없음</li>"
     if entry.instagram_url:
         instagram_button = f'<a class="button case-btn-white" href="{entry.instagram_url}" target="_blank" rel="noopener">인스타 보기</a>'
-    summary_block = entry.summary or entry.title
-    html = f"""<!DOCTYPE HTML>
-<html lang="ko">
-<head>
-  <title>{entry.title}</title>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <meta name="description" content="{summary_block}" />
-  <meta property="og:title" content="{entry.title}" />
-  <meta property="og:description" content="{summary_block}" />
-  <meta property="og:type" content="article" />
-  <meta property="og:image" content="{og_image}" />
-  <link rel="canonical" href="{canonical}" />
-  <link rel="stylesheet" href="../../assets/css/main.css" />
-  <link rel="stylesheet" href="../../assets/css/obaksa-custom.css" />
-  <noscript><link rel="stylesheet" href="../../assets/css/noscript.css" /></noscript>
-</head>
-<body class="is-preload case-page">
-<header id="site-header" class="ob-site-header">
-  <div class="ob-brand-line">
-    <a class="ob-logo" href="../../index.html">오박사만능인테리어</a>
-    <a class="ob-home-mini" href="../../index.html" aria-label="홈으로"><span class="icon solid fa-home" aria-hidden="true"></span></a>
-    <span class="ob-header-sep" aria-hidden="true">/</span>
-    <a class="ob-header-phone" href="tel:01082845584">010-8284-5584</a>
-  </div>
-  <nav class="ob-nav" aria-label="주요 메뉴">
-    <a href="../../about.html">오박사 소개</a>
-    <a href="../../services.html">서비스</a>
-    <a href="../../cases.html" class="is-active">시공사례</a>
-    <a href="../../community.html">STORY</a>
-    <a href="../../contact.html">예약/문의</a>
-  </nav>
-</header>
-<main>
-  <section class="case-hero">
-    <div class="case-wrap case-hero-grid">
-      <div>
-        <div class="breadcrumb"><a href="../../index.html">홈</a> / <a href="../../cases.html">시공사례</a> / {entry.title}</div>
-        <span class="case-kicker">{entry.date.replace('-', '.')} 실제 시공사례</span>
-        <h1>{entry.title}</h1>
-        <p>{entry.summary}</p>
-        <div class="case-badges">
-          <span>{entry.category or '시공사례'}</span>
-          <span>{entry.date}</span>
-          <span>{entry.slug}</span>
-        </div>
-        <div class="case-actions">
-          <a class="button case-btn-primary" href="tel:01082845584">전화 문의</a>
-          <a class="button case-btn-white" href="../../cases.html">전체 시공사례 보기</a>
-          {instagram_button}
-        </div>
-      </div>
-      <div class="case-hero-card">
-        <img src="{hero_image}" alt="{entry.title} 대표 이미지" />
-      </div>
-    </div>
-  </section>
-  <section class="case-section">
-    <div class="case-wrap">
-      <h2>현장 요약</h2>
-      <p class="case-lead">{entry.summary}</p>
-      <p>이 페이지는 cases_index.json을 바탕으로 자동 생성된 상세 페이지입니다. 기존 목록의 보기 링크와 실제 파일 경로가 일치하도록 구성했습니다.</p>
-      <div class="case-info">
-        <div><strong>제목</strong>{entry.title}</div>
-        <div><strong>날짜</strong>{entry.date}</div>
-        <div><strong>분류</strong>{entry.category or '기타'}</div>
-        <div><strong>상세 URL</strong>{entry.case_url}</div>
-      </div>
-    </div>
-  </section>
-  <section class="case-section">
-    <div class="case-wrap">
-      <h2>이미지 갤러리</h2>
-      <p>다운로드된 이미지가 있으면 순서대로 배치하고, 없으면 대표 이미지 한 장으로 대체합니다.</p>
-      <div class="case-gallery">
-        {' '.join(gallery_items)}
-      </div>
-    </div>
-  </section>
-  <section class="case-section">
-    <div class="case-wrap case-two">
-      <div class="case-card">
-        <h3>출처 안내</h3>
-        <p>블로그 원문과 인스타그램 링크를 함께 연결해 상세 내용을 바로 확인하실 수 있게 정리했습니다.</p>
-        <ul class="case-list">
-          {f'<li>블로그: <a href="{entry.source_url}" target="_blank" rel="noopener">{entry.source_url}</a></li>' if entry.source_url else '<li>블로그: 없음</li>'}
-          {f'<li>인스타그램: <a href="{entry.instagram_url}" target="_blank" rel="noopener">{entry.instagram_url}</a></li>' if entry.instagram_url else '<li>인스타그램: 없음</li>'}
-          <li>썸네일: {entry.thumb or '없음'}</li>
-        </ul>
-      </div>
-      <div class="case-card">
-        <h3>안내</h3>
-        <p>사례 목록으로 돌아가려면 전체 시공사례 보기를 이용하시면 됩니다.</p>
-        <p>누락된 상세 페이지는 sync_homepage.py --apply 실행 시 자동 생성됩니다.</p>
-      </div>
-    </div>
-  </section>
-</main>
-<footer class="wrapper style1 align-center ob-footer">
-  <div class="inner">
-    <h2>오박사만능인테리어</h2>
-    <p>울산 지역 집수리, 욕실수리, 누수, 방화문, 조명, 도배, 장판, 문수리 현장을 꼼꼼하게 정리합니다.</p>
-    <p class="ob-business-info"><span>오박사만능인테리어</span><span>전화 010-8284-5584</span><span>주소 울산광역시 북구 호계4길 7-1 1층</span></p>
-  </div>
-</footer>
-</body>
-</html>
-"""
-    return html
+        instagram_link_item = f'<li>인스타그램: <a href="{entry.instagram_url}" target="_blank" rel="noopener">{entry.instagram_url}</a></li>'
+    replacements = {
+        "{{TITLE}}": entry.title,
+        "{{DATE}}": entry.date,
+        "{{CATEGORY}}": entry.category or "시공사례",
+        "{{SUMMARY}}": entry.summary or entry.title,
+        "{{SOURCE_URL}}": entry.source_url or "#",
+        "{{SOURCE_URL_TEXT}}": entry.source_url or "없음",
+        "{{INSTAGRAM_BUTTON}}": instagram_button,
+        "{{GALLERY_IMAGES}}": "\n        ".join(gallery_items),
+        "{{BREADCRUMB_TITLE}}": entry.title,
+        "{{META_DESCRIPTION}}": entry.summary or entry.title,
+        "{{OG_IMAGE}}": hero_image,
+        "{{CANONICAL_URL}}": entry.case_url,
+        "{{THUMBNAIL}}": hero_image,
+        "{{THUMBNAIL_TEXT}}": entry.thumb or "없음",
+        "{{TAGS}}": ",".join(filter(None, [entry.category, entry.title, entry.slug.replace("-", ",")])),
+        "{{SLUG}}": entry.slug,
+        "{{CASE_URL}}": entry.case_url,
+        "{{INSTAGRAM_LINK_ITEM}}": instagram_link_item,
+    }
+    rendered = template
+    for key, value in replacements.items():
+        rendered = rendered.replace(key, value)
+    return rendered
+
+
+def build_case_detail_html(entry: CaseEntry, images: list[Path]) -> str:
+    return render_case_detail_template(entry, images)
 
 
 def collect_missing_case_details(cases: list[CaseEntry]) -> list[CaseEntry]:

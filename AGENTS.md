@@ -2,7 +2,7 @@
 
 오박사만능인테리어 정적 홈페이지 운영 최상위 기준서
 
-버전: v4.0
+버전: v4.1
 
 적용 대상: `obaksa-home` 프로젝트
 
@@ -174,13 +174,17 @@
 - 신규 시공사례 제목은 `[지역명/동네명] + [문제 상황] + [해결 방법]`을 따른다.
 - 블로그 URL이 제공되면 제목, 날짜, `slug`, 태그, 요약문을 자동 추출 또는 생성한다.
 - 네이버 블로그 URL은 `STYLE_GUIDE.md`의 PostView 본문 수집 규칙에 따라 실제 본문을 우선 추출한다.
-- 신규 시공사례 생성 시 블로그 URL이 제공되면 먼저 `python "G:\OneDrive\01_울산오박사인테리어\obaksa_site\go.py" "[블로그URL]"`를 실행해 본문을 수집한다.
-- 블로그 URL이 제공되면 항상 `G:\OneDrive\01_울산오박사인테리어\obaksa_site\go.py`를 실행한다.
-- 실행 형식은 `python go.py "[블로그 URL]"`로 고정한다.
+- 시공사례 자동등록의 현재 기준 실행 파일은 저장소 루트의 `go.py`다.
+- 외부 경로 `G:\OneDrive\01_울산오박사인테리어\obaksa_site\go.py`는 과거 경로로만 참고한다.
+- 실행 형식은 `python go.py "[블로그 URL]" "[인스타 URL]"`를 기본으로 한다.
+- 신규 시공사례 생성 시 블로그 URL과 인스타 URL이 제공되면 먼저 `python go.py "[블로그 URL]" "[인스타 URL]"`를 실행해 본문과 메타를 수집한다.
 - 수집된 제목, 날짜, 본문을 기준으로 시공사례 HTML을 생성한다.
 - 본문 수집이 성공하면 사용자가 본문 원고를 별도로 제공하지 않아도 된다.
 - 본문 수집이 실패한 경우에만 사용자에게 원문 제공을 요청한다.
 - 사용자가 별도로 제목, 날짜, `slug`, 태그, 요약문을 제공하지 않아도 된다.
+- 시공사례 목록의 단일 원본 데이터는 `cases_index.json`이다.
+- `index.html`, `cases.html`, `sitemap.xml` 생성과 갱신은 항상 `cases_index.json`을 기준으로 한다.
+- `cases.html` 파싱은 초기화 또는 fallback 용도로만 사용한다.
 - 신규 시공사례 HTML에는 `<article>` 최상위에 `data-title`, `data-date`, `data-category`, `data-tags`, `data-slug`, `data-summary`, `data-thumb`를 포함한다.
 - `index.html`에는 최신 시공사례 1개만 노출한다.
 - `cases.html` 상단 하이라이트 미리보기 카드는 최신 시공사례 2개만 노출한다.
@@ -190,6 +194,79 @@
 - 작업 시작 시 해당 `upload_images` 폴더를 확인한다.
 - 승인 요청 금지 문구는 사용하지 않는다.
 - 예시: `계속 진행할까요?`, `파일 생성해도 될까요?`, `이미지를 복사해도 될까요?`, `git commit 해도 될까요?`, `git push 해도 될까요?`, `index.html 수정해도 될까요?`, `cases.html 갱신해도 될까요?`
+
+### 08-1 시공사례 자동등록 검수
+
+- 오박사 자동등록은 `apply`, `commit`, `push` 전에 반드시 검수 단계를 거친다.
+- `go.py`가 수집한 제목, 요약, 이미지가 실제 시공사례용으로 적합한지 확인한 뒤에만 다음 단계로 진행한다.
+- 검수용 정보는 `blog_fetch_result.json`과 `sync_homepage.py`의 로그 또는 리포트에서만 사용하고, 고객에게 보이는 HTML 본문에는 남기지 않는다.
+- `blog_fetch_result.json`에는 검수용으로 아래 항목이 있으면 좋다.
+  - `title`
+  - `date`
+  - `category`
+  - `summary`
+  - `source_url`
+  - `instagram_url`
+  - `thumbnail`
+  - `images_raw_count`
+  - `images_used_count`
+  - `filtered_images`
+  - `rejected_images`
+- 이미지 필터링은 수집 단계와 렌더 단계에서 모두 한 번씩 점검한다.
+- 아래 성격의 이미지는 제외한다.
+  - 지도 캡처
+  - 캐릭터
+  - 스티커
+  - 로고
+  - 프로필
+  - 아이콘
+  - 너무 작은 이미지
+- 자동 생성 상세 페이지는 반드시 `templates/case-detail-template.html`을 사용하고, `sync_homepage.py` 내부에서 HTML 구조를 직접 생성하지 않는다.
+- 고객용 상세 페이지에는 아래 성격의 내부 문구를 절대 출력하지 않는다.
+  - `자동 생성된 페이지`
+  - `cases_index.json`
+  - `sync_homepage.py`
+  - `상세 URL`
+  - `썸네일 경로`
+  - `내부 시스템 안내`
+  - `개발용 안내문`
+- 위 문구가 고객용 페이지에 발견되면 `apply`, `commit`, `push`를 중단한다.
+- go.py로 수집한 이미지와 본문은 바로 최종본으로 쓰지 않고, 사람이 실제 시공 관련성, 해상도, 중복 여부, 지도/프로필/아이콘 제외 여부를 보고 선별한다.
+- 선별된 이미지에만 작업 전, 작업 중, 작업 후 흐름과 설명을 붙여 고객용 상세 페이지를 만든다.
+- 사용하지 않는 이미지는 최종 상세 페이지와 운영 산출물에서 제외한다.
+- 아래 키워드가 파일명이나 URL에 포함되면 제외한다.
+  - `map`
+  - `profile`
+  - `sticker`
+  - `emoji`
+  - `icon`
+  - `logo`
+  - `kakao`
+  - `naver_map`
+- `sync_homepage.py` preview 단계에서는 아래 항목을 보고할 수 있어야 한다.
+  - 제목
+  - 날짜
+  - 분류
+  - 요약
+  - 사용 이미지 수
+  - 제외 이미지 수
+  - `thumbnail`
+  - 생성 예정 상세 페이지
+  - 개발용 문구 포함 여부
+  - 빈 링크 여부
+  - sitemap 중복 여부
+- `--apply` 전 안전 조건은 다음과 같다.
+  - 사용 이미지가 1장 이상일 것
+  - `thumbnail`이 존재할 것
+  - 상세 페이지에 개발용 문구가 없을 것
+  - `cases_index.json`, `sync_homepage.py` 같은 내부 문구가 상세 페이지에 노출되지 않을 것
+  - `href=""`, `href="#"`, `src=""`, `undefined`, `null`이 없을 것
+  - sitemap 중복이 없을 것
+- 시공사례 자동등록의 기본 순서는 `preview → 검수 → apply → commit → push`다.
+- `preview` 단계에서는 자동 생성 결과와 검수 리포트만 확인하고, 실제 운영 파일은 수정하지 않는다.
+- `apply`는 검수를 통과한 경우에만 실행한다.
+- `commit`과 `push`는 `apply` 이후 검수 결과를 다시 확인한 뒤 진행한다.
+- 위 조건을 만족하지 않으면 `--apply`와 이후의 `git commit`, `git push`를 진행하지 않는다.
 
 ---
 

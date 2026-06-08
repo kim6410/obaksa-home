@@ -1,0 +1,88 @@
+{
+  "note": "이미지를 눈으로 확인한 뒤 order/use/alt/caption/reviewed 값을 확정한 최종 파일입니다.",
+  "images": [
+    {
+      "file": "01.jpg",
+      "order": 1,
+      "use": true,
+      "alt": "울산 중구 서동 태일그린빌라 베란다 빨래건조대 줄교체 현장 내부 전경",
+      "caption": "울산 중구 서동 태일그린빌라 베란다 빨래건조대 줄교체 현장 내부 전경",
+      "reviewed": true
+    },
+    {
+      "file": "02.jpg",
+      "order": 2,
+      "use": true,
+      "alt": "울산 중구 서동 태일그린빌라 베란다 빨래건조대 줄이 늘어지고 마모된 상태",
+      "caption": "울산 중구 서동 태일그린빌라 베란다 빨래건조대 줄이 늘어지고 마모된 상태",
+      "reviewed": true
+    },
+    {
+      "file": "03.jpg",
+      "order": 3,
+      "use": true,
+      "alt": "울산 서동 태일그린빌라 베란다 빨래건조대 도르래와 줄 연결부 점검",
+      "caption": "울산 서동 태일그린빌라 베란다 빨래건조대 도르래와 줄 연결부 점검",
+      "reviewed": true
+    },
+    {
+      "file": "04.jpg",
+      "order": 4,
+      "use": true,
+      "alt": "울산 중구 서동 태일그린빌라 베란다 천장형 건조대 프레임 확인",
+      "caption": "울산 중구 서동 태일그린빌라 베란다 천장형 건조대 프레임 확인",
+      "reviewed": true
+    },
+    {
+      "file": "05.jpg",
+      "order": 5,
+      "use": true,
+      "alt": "울산 서동 태일그린빌라 베란다 빨래건조대 외부 건물과 작업 위치 확인",
+      "caption": "울산 서동 태일그린빌라 베란다 빨래건조대 외부 건물과 작업 위치 확인",
+      "reviewed": true
+    },
+    {
+      "file": "06.jpg",
+      "order": 6,
+      "use": true,
+      "alt": "울산 중구 서동 태일그린빌라 베란다 건조대 상부 도르래와 장력 상태",
+      "caption": "울산 중구 서동 태일그린빌라 베란다 건조대 상부 도르래와 장력 상태",
+      "reviewed": true
+    },
+    {
+      "file": "07.jpg",
+      "order": 7,
+      "use": true,
+      "alt": "울산 중구 서동 태일그린빌라 베란다 빨래건조대 교체 후 외부 조망",
+      "caption": "울산 중구 서동 태일그린빌라 베란다 빨래건조대 교체 후 외부 조망",
+      "reviewed": true
+    },
+    {
+      "file": "08.jpg",
+      "order": 8,
+      "use": false,
+      "raw_alt": "네이버 집수리 예약",
+      "alt": "",
+      "caption": "네이버 집수리 예약",
+      "reviewed": true
+    },
+    {
+      "file": "09.jpg",
+      "order": 9,
+      "use": false,
+      "raw_alt": "모 프로블럼",
+      "alt": "",
+      "caption": "모 프로블럼",
+      "reviewed": true
+    },
+    {
+      "file": "10.jpg",
+      "order": 10,
+      "use": false,
+      "raw_alt": "캐릭터 이미지",
+      "alt": "",
+      "caption": "캐릭터 이미지",
+      "reviewed": true
+    }
+  ]
+}

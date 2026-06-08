@@ -433,7 +433,7 @@ def normalize_naver_url(url: str) -> str:
     return url
 
 
-def get_naver_blog_content(blog_url: str, delay: float = 1.2) -> dict[str, Any]:
+def get_naver_blog_content(blog_url: str, delay: float = 1.2, instagram_url: str = "") -> dict[str, Any]:
     session = requests.Session()
     session.headers.update(HEADERS)
 
@@ -453,6 +453,7 @@ def get_naver_blog_content(blog_url: str, delay: float = 1.2) -> dict[str, Any]:
         "tags": [],
         "images": [],
         "thumbnail": "",
+        "instagram_url": instagram_url or "",
         "content": "",
         "error": "",
         "fetched_at": datetime.now().isoformat(timespec="seconds"),
@@ -512,6 +513,7 @@ def get_naver_blog_content(blog_url: str, delay: float = 1.2) -> dict[str, Any]:
                 "tags": tags,
                 "images": downloaded_images,
                 "thumbnail": thumbnail,
+                "instagram_url": instagram_url or "",
                 "content": text,
             }
         )
@@ -548,6 +550,7 @@ def save_txt(data: dict[str, Any], path: Path) -> None:
         f"본문 선택자: {data.get('selector')}",
         f"카테고리: {data.get('category')}",
         f"slug: {data.get('slug')}",
+        f"instagram_url: {data.get('instagram_url')}",
         f"요약: {data.get('summary')}",
         f"태그: {', '.join(data.get('tags') or [])}",
         f"오류: {data.get('error')}",
@@ -562,6 +565,7 @@ def save_txt(data: dict[str, Any], path: Path) -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="네이버 블로그 본문 자동 추출기 v3")
     parser.add_argument("url", nargs="?", default="https://blog.naver.com/obarksa110/224294908335")
+    parser.add_argument("instagram_url", nargs="?", default="", help="선택 인스타그램 URL")
     parser.add_argument("--json", action="store_true", help="blog_fetch_result.json 저장")
     parser.add_argument("--txt", action="store_true", help="blog_fetch_result.txt 저장")
     parser.add_argument("--delay", type=float, default=1.2, help="요청 사이 지연 시간(초)")
@@ -577,7 +581,7 @@ def main() -> None:
     print("네이버 블로그 본문 자동 수집 시작")
     print("=" * 70)
 
-    data = get_naver_blog_content(args.url, delay=args.delay)
+    data = get_naver_blog_content(args.url, delay=args.delay, instagram_url=args.instagram_url)
 
     json_path = out_dir / "blog_fetch_result.json"
     txt_path = out_dir / "blog_fetch_result.txt"
@@ -596,6 +600,7 @@ def main() -> None:
     print(f"slug: {data['slug']}")
     print(f"요약: {data['summary']}")
     print(f"태그: {', '.join(data.get('tags') or [])}")
+    print(f"인스타그램 URL: {data.get('instagram_url')}")
 
     if data["error"]:
         print(f"오류: {data['error']}")

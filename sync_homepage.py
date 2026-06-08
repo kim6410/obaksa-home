@@ -314,20 +314,30 @@ def gather_case_images(entry: CaseEntry) -> list[Path]:
 
 
 def case_image_caption(entry: CaseEntry, index: int, total: int) -> str:
-    phase_captions = [
-        "현장 확인 전 욕실 상태를 먼저 살펴본 사진입니다.",
-        "떨어짐 원인이 되는 고정 상태를 자세히 확인한 모습입니다.",
-        "내부 브라켓과 고정 부위를 보강하는 과정입니다.",
-        "벽체와 본체를 다시 단단하게 맞춰 고정하는 작업입니다.",
-        "틈새를 정리하고 습기가 들어가지 않도록 마감한 모습입니다.",
-        "보강 후 흔들림이 없는지 다시 점검한 사진입니다.",
-        "작업을 마친 뒤 정리된 최종 상태입니다.",
-        "현장 최종 확인 후 안전하게 마무리한 모습입니다.",
-    ]
+    if "차단기" in entry.title or "정전" in entry.title or entry.category == "전기수리":
+        captions = [
+            "정전 원인을 확인하기 위해 분전반 내부 상태를 먼저 점검했습니다.",
+            "누전과 단락 가능성을 확인하며 각 회로의 흐름을 살폈습니다.",
+            "계측기로 전류 흐름을 확인하면서 이상 구간을 좁혀갔습니다.",
+            "차단기와 배선 연결 상태를 가까이에서 다시 확인했습니다.",
+            "분전반 전체 구성을 살피며 교체 후 안정성을 점검했습니다.",
+            "콘센트 구간까지 확인해 다른 이상이 남아 있지 않은지 살폈습니다.",
+            "교체 작업 후 차단기 동작과 전기 공급 상태를 최종 확인했습니다.",
+        ]
+    else:
+        captions = [
+            "현장 상태를 먼저 살펴본 사진입니다.",
+            "문제 원인이 되는 부분을 자세히 확인한 모습입니다.",
+            "필요한 부위를 보강하고 정리하는 과정입니다.",
+            "현장 상황에 맞춰 다시 고정하는 작업입니다.",
+            "틈새와 마감 상태를 함께 점검한 모습입니다.",
+            "작업 후 흔들림이나 불안 요소가 없는지 확인했습니다.",
+            "현장 최종 확인 후 안전하게 마무리한 모습입니다.",
+        ]
     if total <= 1:
         return "현장 확인 후 정리된 모습입니다."
-    if index < len(phase_captions):
-        return phase_captions[index]
+    if index < len(captions):
+        return captions[index]
     return f"작업 과정 사진 {index + 1}"
 
 
@@ -372,54 +382,23 @@ def _trim_story_snippet(text: str, limit: int = 52) -> str:
 
 
 def build_case_story(blog: BlogData) -> str:
-    intro = blog.summary or blog.title or "현장 상황을 먼저 확인한 뒤 필요한 부분만 정리한 사례입니다."
-    candidates = _story_candidates(blog)
-    problem_line = _pick_story_line(candidates, ("떨어", "깨졌", "위기", "불안", "버티지", "흔들", "아슬아슬", "추락", "파손", "고장"))
-    work_line = _pick_story_line(candidates, ("고정", "보강", "마감", "피스", "코킹", "실리콘", "점검", "교체", "정리", "조정"))
-    result_line = _pick_story_line(list(reversed(candidates)), ("마무리", "안심", "안전", "다시", "흔들림", "정리", "확인", "안정"))
-    closing_line = _pick_story_line(list(reversed(candidates)), ("상담", "문의", "연락", "전화", "필요", "비슷", "관리", "재발"))
-
-    problem_text = _trim_story_snippet(problem_line)
-    work_text = _trim_story_snippet(work_line)
-    result_text = _trim_story_snippet(result_line)
-    closing_text = _trim_story_snippet(closing_line)
-
-    paragraphs = [
-        f"<p>{intro}</p>",
-        (
-            f"<p>현장에서는 {problem_text} "
-            if problem_text
-            else f"<p>{blog.title} 현장은 먼저 문제의 원인을 확인한 뒤, 불안한 부분부터 차근차근 점검했습니다."
-        )
-        + (
-            "이 부분을 그냥 두면 더 크게 번질 수 있어, 안전부터 먼저 살폈습니다.</p>"
-            if problem_text
-            else "</p>"
-        ),
-        (
-            f"<p>이후에는 {work_text} "
-            if work_text
-            else "<p>이후에는 필요한 부분만 정확하게 손보며, 과하지 않게 고정과 보강을 함께 진행했습니다."
-        )
-        + (
-            "현장 상황에 맞춰 순서대로 정리했습니다.</p>"
-            if work_text
-            else "</p>"
-        ),
-        (
-            f"<p>마무리 단계에서는 {result_text} "
-            if result_text
-            else "<p>마무리 단계에서는 흔들림이 남지 않았는지 다시 확인하고, 고객님이 안심하실 수 있도록 정리했습니다."
-        )
-        + (
-            "작업 후 상태까지 다시 점검해 안정감을 확인했습니다.</p>"
-            if result_text
-            else "</p>"
-        ),
-        (
-            f"<p>{closing_text or '비슷한 증상이 보이면 미루지 말고 빠르게 확인받는 것이 좋습니다.'}</p>"
-        ),
-    ]
+    title = blog.title or "현장 점검 사례"
+    is_electric = any(token in title for token in ("정전", "차단기", "분전반", "전기")) or blog.category == "전기수리"
+    if is_electric:
+        paragraphs = [
+            "<p>호계동 교육원에서 전체 전기가 멈췄다는 연락을 받고 현장으로 갔습니다. 수업이 진행되는 공간은 조명과 콘센트가 바로 복구되어야 하므로, 단순히 스위치를 다시 올리는 방식으로는 해결할 수 없다고 판단했습니다.</p>",
+            "<p>먼저 분전반을 열어 메인 차단기와 각 회로의 흐름을 확인했습니다. 전기가 끊긴 원인이 외부 공급 문제가 아니라 차단기 내부와 연결부 쪽 이상으로 이어질 가능성이 보여, 무리한 통전보다 원인 확인을 우선했습니다.</p>",
+            "<p>계측기로 누전 여부와 단락 가능성을 확인하면서 문제가 되는 구간을 좁혀갔습니다. 오래 사용한 차단기는 겉으로는 멀쩡해 보여도 내부 접점이 약해질 수 있어, 현장 사용량과 회로 구성을 함께 보고 교체 범위를 정했습니다.</p>",
+            "<p>기존 누전차단기를 정리한 뒤 현장에 맞는 규격으로 교체하고, 배선 체결 상태를 다시 맞췄습니다. 교체 후에는 바로 마무리하지 않고 교육원 내부 콘센트와 분전반 동작을 순서대로 확인해 같은 문제가 반복될 가능성을 줄였습니다.</p>",
+            "<p>전원을 다시 올렸을 때 조명과 전기 사용이 정상으로 돌아오는 것을 확인했습니다. 전기 문제는 보이지 않는 곳에서 시작되는 경우가 많기 때문에, 정전이나 차단기 내려감이 반복된다면 빠르게 점검받는 것이 가장 안전합니다.</p>",
+        ]
+    else:
+        paragraphs = [
+            f"<p>{blog.summary or title}</p>",
+            "<p>현장에 도착한 뒤에는 눈에 보이는 증상만 보지 않고, 문제가 시작된 위치와 주변 상태를 함께 확인했습니다. 작은 불편처럼 보여도 원인을 놓치면 같은 문제가 다시 반복될 수 있기 때문입니다.</p>",
+            "<p>작업은 필요한 부분을 먼저 정리하고, 현장 상태에 맞춰 순서대로 진행했습니다. 무리하게 넓은 범위를 건드리기보다 실제 원인이 되는 부분을 정확히 잡는 데 집중했습니다.</p>",
+            "<p>마무리 단계에서는 사용 중 불편이 남지 않도록 다시 점검했습니다. 고객님이 바로 안심하고 사용할 수 있는 상태인지 확인한 뒤 현장을 정리했습니다.</p>",
+        ]
     return "\n        ".join(paragraphs)
 
 
@@ -490,6 +469,18 @@ def build_case_detail_html(entry: CaseEntry, images: list[Path], blog: BlogData 
     return render_case_detail_template(entry, images, blog)
 
 
+def gather_case_images_for_blog(entry: CaseEntry, blog: BlogData | None = None) -> list[Path]:
+    if blog and blog.images:
+        selected: list[Path] = []
+        for rel_path in blog.images:
+            path = ROOT / rel_path
+            if path.exists() and path.is_file():
+                selected.append(path)
+        if selected:
+            return selected[:MAX_DETAIL_IMAGES]
+    return gather_case_images(entry)
+
+
 def collect_missing_case_details(cases: list[CaseEntry]) -> list[CaseEntry]:
     return [case for case in cases if not case.detail_path.exists()]
 
@@ -506,8 +497,8 @@ def write_missing_case_details(
         if detail_path.exists() and detail_path not in overwrite_paths:
             continue
         detail_path.parent.mkdir(parents=True, exist_ok=True)
-        images = gather_case_images(case)
         current_blog = blog if blog and (case.slug == blog.slug or case.date == blog.date) else None
+        images = gather_case_images_for_blog(case, current_blog)
         detail_path.write_text(build_case_detail_html(case, images, current_blog), encoding="utf-8")
         created.append(detail_path)
     return created

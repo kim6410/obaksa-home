@@ -96,8 +96,8 @@ class CaseEntry:
     @property
     def case_url(self) -> str:
         if self.url:
-            return self.url
-        return f"/cases/{self.year}/case-{self.slug}.html"
+            return self.url.lstrip("/")
+        return f"cases/{self.year}/case-{self.slug}.html"
 
     @property
     def sitemap_url(self) -> str:
@@ -204,15 +204,15 @@ def case_folder_slug(data: BlogData) -> str:
 def case_url_for(data: BlogData) -> str:
     slug = case_folder_slug(data)
     year = data.year or extract_year(data.date)
-    return f"/cases/{year}/{slug}/"
+    return f"cases/{year}/{slug}/"
 
 
 def sitemap_url_for(data: BlogData) -> str:
-    return f"{SITE_BASE_URL.rstrip('/')}{case_url_for(data)}"
+    return f"{SITE_BASE_URL.rstrip('/')}/{case_url_for(data).lstrip('/')}"
 
 
 def thumbnail_path_for(data: BlogData) -> str:
-    return f"/cases/{data.year or extract_year(data.date)}/{case_folder_slug(data)}/thumb.jpg"
+    return f"cases/{data.year or extract_year(data.date)}/{case_folder_slug(data)}/thumb.jpg"
 
 
 def parse_case_date(raw: str) -> str:

@@ -1,1 +1,11 @@
 *.zip
+__pycache__/
+backups/
+build_preview/
+blog_fetch_result.json
+blog_fetch_result.txt
+*.pyc
+*.tmp
+*.log
+.DS_Store
+Thumbs.db

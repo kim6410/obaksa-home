@@ -855,6 +855,8 @@ def render_case_detail_template(
     markdown_body: str = "",
 ) -> str:
     template = read_text(CASE_DETAIL_TEMPLATE_PATH)
+    asset_prefix = "../../../" if entry.case_url.endswith("/") else ""
+    template = template.replace("{{ASSET_PREFIX}}", asset_prefix)
     chosen_summary = summary or (blog.summary if blog else "") or entry.summary or entry.title
     hero_image = detail_image_rel_path(entry, images[0]) if images else (entry.thumb if entry.thumb else "/images/gallery/case_hero.jpg")
     story_blog = blog or BlogData(title=entry.title, date=entry.date, year=entry.year, slug=entry.slug, category=entry.category, summary=chosen_summary, source_url=entry.source_url, instagram_url=entry.instagram_url)

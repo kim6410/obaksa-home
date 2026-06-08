@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 import json
 import os
 import re
@@ -69,6 +70,7 @@ class BlogData:
     source_url: str = ""
     instagram_url: str = ""
     images: list[str] | None = None
+    image_plan: list[dict[str, object]] | None = None
     thumbnail: str = ""
     source_path: Path | None = None
 
@@ -133,6 +135,14 @@ class CaseEntry:
         return self.case_folder / f"{self.slug}.jpg"
 
 
+@dataclass
+class ImageItem:
+    path: Path
+    alt: str
+    caption: str = ""
+    reviewed: bool = False
+
+
 def load_blog_data() -> tuple[bool, BlogData, Path | None]:
     for candidate in BLOG_FETCH_CANDIDATES:
         if candidate.exists():
@@ -153,6 +163,7 @@ def load_blog_data() -> tuple[bool, BlogData, Path | None]:
                 source_url=source_url,
                 instagram_url=str(data.get("instagram_url", "")).strip(),
                 images=list(data.get("images") or []),
+                image_plan=list(data.get("image_plan") or data.get("image_manifest") or data.get("image_alt_plan") or []),
                 thumbnail=str(data.get("thumbnail", "")).strip(),
                 source_path=candidate,
             ), candidate
@@ -424,10 +435,68 @@ def build_case_story(blog: BlogData) -> str:
     return "\n        ".join(paragraphs)
 
 
+def build_summary_markdown_body(entry: CaseEntry, blog: BlogData, summary: str, image_items: list[ImageItem]) -> str:
+    """사용자 요약문 중심으로 정리된 본문을 만든다.
+
+    블로그 원문은 참고 데이터일 뿐, 정리되지 않은 원문 덤프를 그대로 상세페이지에 넣지 않는다.
+    이미지 배열과 alt는 image_manifest.json 또는 blog_fetch_result.json의 image_plan을 우선한다.
+    """
+    lines: list[str] = [
+        f"# {entry.title}",
+        "",
+        "## 현장 요약",
+        summary,
+        "",
+    ]
+
+    if image_items:
+        first = image_items[0]
+        lines += [f"![{first.alt}](./{first.path.name})", ""]
+
+    lines += [
+        "## 현장 확인",
+        "현장에서는 눈에 보이는 증상만 확인하지 않고, 문제가 시작된 위치와 주변 상태를 함께 살폈습니다.",
+        "작은 불편처럼 보여도 원인을 놓치면 같은 문제가 다시 반복될 수 있기 때문입니다.",
+        "",
+    ]
+
+    if len(image_items) > 1:
+        second = image_items[1]
+        lines += [f"![{second.alt}](./{second.path.name})", ""]
+
+    lines += [
+        "## 작업 과정",
+        "작업은 필요한 부분을 먼저 정리하고, 현장 상태에 맞춰 순서대로 진행했습니다.",
+        "무리하게 넓은 범위를 건드리기보다 실제 원인이 되는 부분을 정확히 잡는 데 집중했습니다.",
+        "",
+    ]
+
+    for item in image_items[2:-1]:
+        lines += [f"![{item.alt}](./{item.path.name})", ""]
+
+    lines += [
+        "## 마무리 점검",
+        "마무리 단계에서는 사용 중 불편이 남지 않도록 다시 점검했습니다.",
+        "고객님이 바로 안심하고 사용할 수 있는 상태인지 확인한 뒤 현장을 정리했습니다.",
+        "",
+    ]
+
+    if len(image_items) > 2:
+        last = image_items[-1]
+        lines += [f"![{last.alt}](./{last.path.name})", ""]
+
+    lines += [
+        "## 상담 안내",
+        "비슷한 증상이나 확인이 필요한 부분이 있다면 전화로 바로 상담할 수 있습니다.",
+    ]
+    return "\n".join(lines).strip() + "\n"
+
+
 def build_case_markdown(entry: CaseEntry, blog: BlogData | None, summary: str, images: list[Path]) -> str:
     blog = blog or BlogData(title=entry.title, date=entry.date, year=entry.year, slug=entry.slug, category=entry.category, summary=summary)
     blog.summary = summary
-    markdown_images = [f"./{image.name}" for image in images]
+    image_items = build_image_items(entry, images, blog)
+    markdown_images = [f"./{item.path.name}" for item in image_items]
     tags = [
         "울산집수리",
         entry.category or "시공사례",
@@ -451,26 +520,15 @@ def build_case_markdown(entry: CaseEntry, blog: BlogData | None, summary: str, i
         front_matter.append(f'  - "{tag}"')
     front_matter.append("---")
 
-    if blog.content.strip():
-        body = blog.content.strip()
+    raw_content = (blog.content or "").strip()
+    if raw_content and is_curated_markdown_content(raw_content):
+        body, placeholder_errors = normalize_markdown_image_placeholders(raw_content, [item.path for item in image_items])
+        if placeholder_errors:
+            raise ValueError("; ".join(placeholder_errors))
     else:
-        body = "\n".join([
-            "# 현장 요약",
-            summary,
-            "",
-            build_case_story(blog),
-            "",
-            "## 이미지 갤러리",
-        ])
-        if markdown_images:
-            for idx, image in enumerate(markdown_images):
-                body += "\n\n" + f"![{entry.title} {idx + 1}]({image})"
-        else:
-            body += "\n\n작업 이미지는 현장 상황에 따라 별도 정리합니다."
-        body += "\n\n## 상담 안내\n비슷한 증상이나 확인이 필요한 부분이 있다면 전화로 바로 상담할 수 있습니다."
+        body = build_summary_markdown_body(entry, blog, summary, image_items)
 
     return "\n".join(front_matter + ["", body]).strip() + "\n"
-
 
 def parse_markdown_front_matter(markdown_text: str) -> tuple[dict[str, str], str]:
     text = markdown_text.strip()
@@ -506,78 +564,342 @@ def parse_markdown_front_matter(markdown_text: str) -> tuple[dict[str, str], str
     return meta, body
 
 
-def markdown_text_to_html(markdown_text: str) -> str:
-    paragraphs: list[str] = []
-    lines = markdown_text.splitlines()
-    buffer: list[str] = []
+def _html_escape(value: str) -> str:
+    return html.escape(str(value or ""), quote=True)
 
-    def flush_buffer() -> None:
-        if buffer:
-            paragraphs.append(f"<p>{' '.join(buffer).strip()}</p>")
-            buffer.clear()
+
+def _is_html_line(line: str) -> bool:
+    return bool(re.match(r"^</?(p|div|section|article|figure|img|ul|ol|li|h[1-6]|hr|br|blockquote|table|a|span)\b", line.strip(), re.I))
+
+
+def _image_filename(src: str) -> str:
+    src = (src or "").strip().split("?", 1)[0].split("#", 1)[0]
+    return Path(src).name
+
+
+def _image_sources_in_markdown(markdown_text: str) -> set[str]:
+    return {_image_filename(match.group(2)) for match in re.finditer(r"!\[(.*?)\]\((.*?)\)", markdown_text or "")}
+
+
+def is_curated_markdown_content(markdown_text: str) -> bool:
+    """사용자가 정리한 Markdown 원고인지, 블로그 원문 덤프인지 구분한다.
+
+    네이버 원문 수집 텍스트를 그대로 HTML에 밀어 넣으면 한 문단으로 뭉개지는 문제가 생긴다.
+    제목/소제목/이미지 마크다운이 있는 경우만 '정리된 원고'로 보고 그대로 사용한다.
+    """
+    text = markdown_text or ""
+    return bool(
+        re.search(r"(?m)^#{1,3}\s+", text)
+        or re.search(r"!\[.*?\]\(.*?\)", text)
+        or re.search(r"(?m)^![^\[\n].+?$", text)
+    )
+
+
+def image_manifest_path(entry: CaseEntry) -> Path:
+    return entry.case_folder / "image_manifest.json"
+
+
+def load_image_manifest(entry: CaseEntry, blog: BlogData | None = None) -> list[dict[str, object]]:
+    if blog and blog.image_plan:
+        return list(blog.image_plan)
+    path = image_manifest_path(entry)
+    if not path.exists():
+        return []
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    if isinstance(raw, dict):
+        raw = raw.get("images") or raw.get("items") or []
+    return list(raw) if isinstance(raw, list) else []
+
+
+def write_image_review_todo(entry: CaseEntry, images: list[Path]) -> Path | None:
+    """Codex/사용자가 눈으로 보고 순서와 alt를 확정할 수 있는 TODO 파일을 만든다."""
+    if not images:
+        return None
+    todo_path = entry.case_folder / "image_manifest.todo.json"
+    if todo_path.exists() or image_manifest_path(entry).exists():
+        return todo_path
+    todo_path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "note": "이미지를 눈으로 확인한 뒤 order/use/alt/caption/reviewed 값을 확정하고 파일명을 image_manifest.json으로 바꾸세요.",
+        "images": [
+            {
+                "file": image.name,
+                "order": idx + 1,
+                "use": idx < MAX_DETAIL_IMAGES,
+                "alt": _contextual_alt(entry, "", image.name),
+                "caption": _contextual_alt(entry, "", image.name),
+                "reviewed": False,
+            }
+            for idx, image in enumerate(images[:MAX_DETAIL_IMAGES])
+        ],
+    }
+    todo_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    return todo_path
+
+
+def build_image_items(entry: CaseEntry, images: list[Path], blog: BlogData | None = None) -> list[ImageItem]:
+    """이미지 순서와 alt를 만든다.
+
+    우선순위:
+    1. image_manifest.json 또는 blog_fetch_result.json의 image_plan
+    2. 파일명 순서 + 문맥형 자동 alt
+
+    실제 apply 품질은 1번을 권장한다. 자동 alt는 preview/초안용 안전망이다.
+    """
+    image_map = {image.name: image for image in images}
+    plan = load_image_manifest(entry, blog)
+    items: list[ImageItem] = []
+    if plan:
+        normalized_plan = []
+        for raw in plan:
+            if not isinstance(raw, dict):
+                continue
+            file_name = str(raw.get("file") or raw.get("name") or raw.get("src") or "").strip()
+            file_name = _image_filename(file_name)
+            if not file_name or file_name not in image_map:
+                continue
+            use = raw.get("use", True)
+            if str(use).lower() in {"false", "0", "no", "n"}:
+                continue
+            order = raw.get("order", 999)
+            try:
+                order_int = int(order)
+            except Exception:
+                order_int = 999
+            normalized_plan.append((order_int, raw, file_name))
+        for _, raw, file_name in sorted(normalized_plan, key=lambda item: item[0]):
+            path = image_map[file_name]
+            alt = str(raw.get("alt") or raw.get("caption") or "").strip()
+            caption = str(raw.get("caption") or alt).strip()
+            reviewed = bool(raw.get("reviewed") or raw.get("checked") or raw.get("confirmed"))
+            final_alt = _contextual_alt(entry, alt, path.name)
+            items.append(ImageItem(path=path, alt=final_alt, caption=caption or final_alt, reviewed=reviewed))
+        return items[:MAX_DETAIL_IMAGES]
+
+    write_image_review_todo(entry, images)
+    return [
+        ImageItem(
+            path=image,
+            alt=_contextual_alt(entry, "", image.name),
+            caption=_contextual_alt(entry, "", image.name),
+            reviewed=False,
+        )
+        for image in images[:MAX_DETAIL_IMAGES]
+    ]
+
+
+def has_reviewed_image_manifest(entry: CaseEntry, blog: BlogData | None, images: list[Path]) -> bool:
+    plan = load_image_manifest(entry, blog)
+    if not plan:
+        write_image_review_todo(entry, images)
+        return False
+    items = build_image_items(entry, images, blog)
+    if not items:
+        return False
+    for item in items:
+        alt = item.alt.strip()
+        if not item.reviewed:
+            return False
+        if len(alt) < 12:
+            return False
+        if re.match(r"작업 과정 사진 \d+", alt):
+            return False
+        if alt in {
+            "현장 상태를 먼저 살펴본 사진입니다.",
+            "문제 원인이 되는 부분을 자세히 확인한 모습입니다.",
+            "필요한 부위를 보강하고 정리하는 과정입니다.",
+        }:
+            return False
+    return True
+
+
+def _contextual_alt(entry: CaseEntry | None, raw_alt: str, src: str = "") -> str:
+    raw_alt = re.sub(r"\s+", " ", str(raw_alt or "")).strip()
+    generic = {
+        "",
+        "현장 상태를 먼저 살펴본 사진입니다.",
+        "문제 원인이 되는 부분을 자세히 확인한 모습입니다.",
+        "필요한 부위를 보강하고 정리하는 과정입니다.",
+        "현장 상황에 맞춰 다시 고정하는 작업입니다.",
+        "틈새와 마감 상태를 함께 점검한 모습입니다.",
+        "작업 후 흔들림이나 불안 요소가 없는지 확인했습니다.",
+        "현장 최종 확인 후 안전하게 마무리한 모습입니다.",
+    }
+    if raw_alt and raw_alt not in generic and not re.match(r"작업 과정 사진 \d+", raw_alt):
+        if entry and entry.title and raw_alt not in entry.title and len(raw_alt) < 28:
+            return f"{entry.title} {raw_alt}"
+        return raw_alt
+    if not entry:
+        return raw_alt or _image_filename(src) or "시공 사례 이미지"
+    title = entry.title or "오박사만능인테리어 시공 사례"
+    category = entry.category or "집수리"
+    name = _image_filename(src)
+    number_match = re.search(r"(\d+)", name)
+    number = int(number_match.group(1)) if number_match else 0
+    if number <= 1:
+        suffix = "현장 상태 확인"
+    elif number == 2:
+        suffix = "문제 원인 점검"
+    elif number == 3:
+        suffix = "작업 과정"
+    elif number == 4:
+        suffix = "보강 및 정리 과정"
+    elif number == 5:
+        suffix = "마감 상태 확인"
+    else:
+        suffix = "완료 후 최종 점검"
+    return f"{title} {category} {suffix}"
+
+
+def normalize_markdown_image_placeholders(markdown_text: str, images: list[Path] | None = None) -> tuple[str, list[str]]:
+    image_names = [f"./{image.name}" for image in (images or [])]
+    errors: list[str] = []
+    cursor = 0
+
+    def replace_line(match: re.Match[str]) -> str:
+        nonlocal cursor
+        alt = match.group(1).strip()
+        if cursor >= len(image_names):
+            errors.append(f"이미지 자리표시가 실제 이미지 수보다 많습니다: {alt}")
+            return match.group(0)
+        src = image_names[cursor]
+        cursor += 1
+        return f"![{alt}]({src})"
+
+    normalized = re.sub(r"(?m)^!([^\[\n].+?)\s*$", replace_line, markdown_text or "")
+    return normalized, errors
+
+
+def markdown_text_to_html(markdown_text: str, entry: CaseEntry | None = None) -> str:
+    output: list[str] = []
+    lines = (markdown_text or "").splitlines()
+    paragraph: list[str] = []
+    list_items: list[str] = []
+
+    def flush_paragraph() -> None:
+        if paragraph:
+            output.append(f"<p>{_html_escape(' '.join(paragraph).strip())}</p>")
+            paragraph.clear()
+
+    def flush_list() -> None:
+        if list_items:
+            output.append("<ul>")
+            for item in list_items:
+                output.append(f"  <li>{_html_escape(item)}</li>")
+            output.append("</ul>")
+            list_items.clear()
 
     for raw_line in lines:
         line = raw_line.strip()
         if not line:
-            flush_buffer()
+            flush_paragraph()
+            flush_list()
+            continue
+        if line == "---":
+            flush_paragraph()
+            flush_list()
+            output.append("<hr />")
+            continue
+        if _is_html_line(line):
+            flush_paragraph()
+            flush_list()
+            output.append(line)
             continue
         if line.startswith("### "):
-            flush_buffer()
-            paragraphs.append(f"<h3>{line[4:].strip()}</h3>")
+            flush_paragraph()
+            flush_list()
+            output.append(f"<h3>{_html_escape(line[4:].strip())}</h3>")
             continue
         if line.startswith("## "):
-            flush_buffer()
-            paragraphs.append(f"<h2>{line[3:].strip()}</h2>")
+            flush_paragraph()
+            flush_list()
+            output.append(f"<h2>{_html_escape(line[3:].strip())}</h2>")
             continue
         if line.startswith("# "):
-            flush_buffer()
-            paragraphs.append(f"<h1>{line[2:].strip()}</h1>")
+            flush_paragraph()
+            flush_list()
+            output.append(f"<h1>{_html_escape(line[2:].strip())}</h1>")
             continue
         if line.startswith("- "):
-            flush_buffer()
-            paragraphs.append(f"<ul><li>{line[2:].strip()}</li></ul>")
+            flush_paragraph()
+            list_items.append(line[2:].strip())
             continue
-        if line.startswith("![" ):
-            flush_buffer()
-            img_match = re.match(r"!\[(.*?)\]\((.*?)\)", line)
-            if img_match:
-                alt, src = img_match.groups()
-                paragraphs.append(f'<figure><img src="{src}" alt="{alt}" loading="lazy" /><figcaption>{alt}</figcaption></figure>')
+        img_match = re.match(r"!\[(.*?)\]\((.*?)\)", line)
+        if img_match:
+            flush_paragraph()
+            flush_list()
+            raw_alt, src = img_match.groups()
+            alt = _contextual_alt(entry, raw_alt, src)
+            output.append("<figure>")
+            output.append(f'  <img src="{_html_escape(src)}" alt="{_html_escape(alt)}" loading="lazy" />')
+            output.append(f"  <figcaption>{_html_escape(alt)}</figcaption>")
+            output.append("</figure>")
             continue
-        buffer.append(line)
-    flush_buffer()
-    return "\n".join(paragraphs)
+        paragraph.append(line)
+
+    flush_paragraph()
+    flush_list()
+    return "\n".join(output)
 
 
 def detail_image_rel_path(entry: CaseEntry, image_path: Path) -> str:
     return f"/cases/{entry.year}/{entry.slug}/{image_path.name}"
 
 
-def render_case_detail_template(entry: CaseEntry, images: list[Path], blog: BlogData | None = None, summary: str = "") -> str:
+def render_case_detail_template(
+    entry: CaseEntry,
+    images: list[Path],
+    blog: BlogData | None = None,
+    summary: str = "",
+    markdown_body: str = "",
+) -> str:
     template = read_text(CASE_DETAIL_TEMPLATE_PATH)
     chosen_summary = summary or (blog.summary if blog else "") or entry.summary or entry.title
     hero_image = detail_image_rel_path(entry, images[0]) if images else (entry.thumb if entry.thumb else "/images/gallery/case_hero.jpg")
     story_blog = blog or BlogData(title=entry.title, date=entry.date, year=entry.year, slug=entry.slug, category=entry.category, summary=chosen_summary, source_url=entry.source_url, instagram_url=entry.instagram_url)
     story_blog.summary = chosen_summary
+
+    image_items = build_image_items(entry, images, blog)
+
+    # index.md가 단일 원본이다. markdown_body가 있으면 그것을 우선 렌더링한다.
+    source_markdown = (markdown_body or "").strip()
+    if not source_markdown:
+        raw_content = (blog.content or "").strip() if blog else ""
+        if raw_content and is_curated_markdown_content(raw_content):
+            source_markdown, placeholder_errors = normalize_markdown_image_placeholders(raw_content, [item.path for item in image_items])
+            if placeholder_errors:
+                raise ValueError("; ".join(placeholder_errors))
+        else:
+            source_markdown = build_summary_markdown_body(entry, story_blog, chosen_summary, image_items)
+
+    content_image_names = _image_sources_in_markdown(source_markdown)
+    has_inline_images = bool(content_image_names)
+    case_story_html = markdown_text_to_html(source_markdown, entry)
+
     gallery_items: list[str] = []
-    total_images = len(images or [])
-    for idx, image_path in enumerate(images or []):
-        rel = detail_image_rel_path(entry, image_path)
-        label = case_image_caption(entry, idx, total_images)
+    # 본문에 이미지가 들어가 있으면 같은 이미지를 하단 갤러리에 중복 출력하지 않는다.
+    gallery_candidates = [] if has_inline_images else image_items
+    for item in gallery_candidates:
+        rel = detail_image_rel_path(entry, item.path)
+        label = item.caption or item.alt
         gallery_items.append(
             "\n".join([
                 "<figure>",
-                f'  <img src="{rel}" alt="{label}" loading="lazy" />',
-                f"  <figcaption>{label}</figcaption>",
+                f'  <img src="{_html_escape(rel)}" alt="{_html_escape(item.alt)}" loading="lazy" />',
+                f"  <figcaption>{_html_escape(label)}</figcaption>",
                 "</figure>",
             ])
         )
-    if not gallery_items:
+    if not gallery_items and not has_inline_images:
+        label = _contextual_alt(entry, f"{entry.title} 대표 이미지", hero_image)
         gallery_items.append(
             "\n".join([
                 "<figure>",
-                f'  <img src="{hero_image}" alt="{entry.title} 대표 이미지" loading="lazy" />',
-                f"  <figcaption>{entry.title}</figcaption>",
+                f'  <img src="{_html_escape(hero_image)}" alt="{_html_escape(label)}" loading="lazy" />',
+                f"  <figcaption>{_html_escape(label)}</figcaption>",
                 "</figure>",
             ])
         )
@@ -591,7 +913,6 @@ def render_case_detail_template(entry: CaseEntry, images: list[Path], blog: Blog
         instagram_button = f'<a class="button case-btn-white" href="{instagram_url}" target="_blank" rel="noopener">인스타 보기</a>'
     absolute_canonical = entry.sitemap_url
     absolute_og_image = f"{SITE_BASE_URL.rstrip('/')}{hero_image}" if hero_image.startswith("/") else f"{SITE_BASE_URL.rstrip('/')}/{hero_image.lstrip('/')}"
-    case_story_html = markdown_text_to_html((blog.content or "").strip()) if blog and blog.content.strip() else markdown_text_to_html(build_case_story(story_blog))
     replacements = {
         "{{TITLE}}": entry.title,
         "{{DATE}}": entry.date,
@@ -611,15 +932,15 @@ def render_case_detail_template(entry: CaseEntry, images: list[Path], blog: Blog
         "{{SLUG}}": entry.slug,
         "{{CASE_URL}}": entry.case_url,
         "{{CASE_STORY}}": case_story_html,
+        "{{GALLERY_SECTION}}": "",
     }
     rendered = template
     for key, value in replacements.items():
         rendered = rendered.replace(key, value)
     return rendered
 
-
-def build_case_detail_html(entry: CaseEntry, images: list[Path], blog: BlogData | None = None, summary: str = "") -> str:
-    return render_case_detail_template(entry, images, blog, summary)
+def build_case_detail_html(entry: CaseEntry, images: list[Path], blog: BlogData | None = None, summary: str = "", markdown_body: str = "") -> str:
+    return render_case_detail_template(entry, images, blog, summary, markdown_body)
 
 
 def gather_case_images_for_blog(entry: CaseEntry, blog: BlogData | None = None) -> list[Path]:
@@ -682,8 +1003,9 @@ def write_missing_case_details(
         images = gather_case_images_for_blog(case, current_blog)
         chosen_summary = summary or (current_blog.summary if current_blog else "") or case.summary or case.title
         ensure_case_thumbnail(case, images)
-        write_case_markdown(case, current_blog, chosen_summary, images)
-        detail_path.write_text(build_case_detail_html(case, images, current_blog, chosen_summary), encoding="utf-8")
+        markdown_path = write_case_markdown(case, current_blog, chosen_summary, images)
+        _, markdown_body = parse_markdown_front_matter(read_text(markdown_path))
+        detail_path.write_text(build_case_detail_html(case, images, current_blog, chosen_summary, markdown_body), encoding="utf-8")
         created.append(detail_path)
     return created
 
@@ -961,6 +1283,40 @@ def backup_and_apply_live_files() -> tuple[bool, Path | None, list[Path]]:
     return True, backup_dir, backup_files
 
 
+def validate_blog_data_for_generation(data: BlogData, summary: str) -> list[str]:
+    errors: list[str] = []
+    required_text = {
+        "title": data.title,
+        "date": data.date,
+        "slug": data.slug,
+        "category": data.category,
+        "summary": summary,
+        "source_url": data.source_url,
+    }
+    for key, value in required_text.items():
+        if not str(value or "").strip():
+            errors.append(f"error: blog_fetch_result.json 필수값 누락 - {key}")
+    if not data.images:
+        errors.append("error: blog_fetch_result.json 필수값 누락 - images")
+    if not str(data.thumbnail or "").strip():
+        errors.append("error: blog_fetch_result.json 필수값 누락 - thumbnail")
+    return errors
+
+
+def preview_image_review_report(entry: CaseEntry, blog: BlogData | None, images: list[Path]) -> list[str]:
+    items = build_image_items(entry, images, blog)
+    manifest = image_manifest_path(entry)
+    todo = entry.case_folder / "image_manifest.todo.json"
+    lines = [
+        f"본문/갤러리 후보 이미지 수: {len(items)}",
+        f"image_manifest.json 존재 여부: {'예' if manifest.exists() else '아니오'}",
+        f"image_manifest.todo.json 경로: {todo.as_posix() if todo.exists() else '없음'}",
+    ]
+    for idx, item in enumerate(items, start=1):
+        lines.append(f"- {idx:02d}. {item.path.name} | alt={item.alt} | reviewed={'예' if item.reviewed else '아니오'}")
+    return lines
+
+
 def parse_args() -> dict[str, object]:
     import argparse
 
@@ -1017,6 +1373,12 @@ def main() -> int:
         print("error: --summary가 필요합니다. 150~200자 요약문을 제공해 주세요.")
         return 1
     data.summary = chosen_summary
+    validation_errors = validate_blog_data_for_generation(data, chosen_summary)
+    if validation_errors:
+        for error in validation_errors:
+            print(error)
+        print("완료 메시지: 필수값 누락으로 preview/apply 중단")
+        return 1
     print(f"mode: {mode}")
     print(f"blog_fetch_result.json load success: {ok}")
     if source_path:
@@ -1056,6 +1418,15 @@ def main() -> int:
 
     existing_cases, data_source = load_cases_index()
     new_case = make_case_entry_from_blog(data)
+    new_case_images = gather_case_images_for_blog(new_case, data)
+    print("[image review]")
+    for line in preview_image_review_report(new_case, data, new_case_images):
+        print(line)
+    if args["apply"] and not has_reviewed_image_manifest(new_case, data, new_case_images):
+        print("error: image_manifest.json 또는 blog_fetch_result.json image_plan 기준의 이미지 순서/alt 검수 정보가 필요합니다.")
+        print("error: 이미지를 눈으로 확인한 뒤 image_manifest.todo.json을 image_manifest.json으로 정리하고 다시 실행하세요.")
+        print("완료 메시지: 이미지 배열/alt 검수 누락으로 실제 반영 중단")
+        return 1
     merged_cases, duplicate_found, replaced = merge_cases(existing_cases, new_case)
     preview_files = write_preview_files(data, merged_cases)
     thumbnail_used = bool(data.thumbnail)

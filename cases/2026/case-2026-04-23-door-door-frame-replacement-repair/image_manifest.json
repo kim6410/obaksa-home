@@ -1,0 +1,85 @@
+{
+  "note": "이미지 검수 완료본입니다.",
+  "images": [
+    {
+      "file": "01.jpg",
+      "order": 1,
+      "use": true,
+      "alt": "울산 북구 신천동 신천엠코타운 아파트 외부 전경",
+      "caption": "울산 북구 신천동 신천엠코타운 아파트 외부 전경",
+      "reviewed": true
+    },
+    {
+      "file": "02.jpg",
+      "order": 2,
+      "use": true,
+      "alt": "신천엠코타운 아파트 진입 동선과 현장 접근 모습",
+      "caption": "신천엠코타운 아파트 진입 동선과 현장 접근 모습",
+      "reviewed": true
+    },
+    {
+      "file": "03.jpg",
+      "order": 3,
+      "use": true,
+      "alt": "울산 북구 신천동 신천엠코타운 아파트 동 외관",
+      "caption": "울산 북구 신천동 신천엠코타운 아파트 동 외관",
+      "reviewed": true
+    },
+    {
+      "file": "04.jpg",
+      "order": 4,
+      "use": true,
+      "alt": "방문 손잡이 파손 현장, 그라인더로 실린더 절단 작업",
+      "caption": "방문 손잡이 파손 현장, 그라인더로 실린더 절단 작업",
+      "reviewed": true
+    },
+    {
+      "file": "05.jpg",
+      "order": 5,
+      "use": true,
+      "alt": "문틀과 손잡이 부속을 보존하며 파괴 개문을 준비하는 모습",
+      "caption": "문틀과 손잡이 부속을 보존하며 파괴 개문을 준비하는 모습",
+      "reviewed": true
+    },
+    {
+      "file": "06.jpg",
+      "order": 6,
+      "use": true,
+      "alt": "방문 손잡이 고장 부위에 절단 공구를 대고 작업하는 모습",
+      "caption": "방문 손잡이 고장 부위에 절단 공구를 대고 작업하는 모습",
+      "reviewed": true
+    },
+    {
+      "file": "07.jpg",
+      "order": 7,
+      "use": true,
+      "alt": "야간 긴급 개문 중 문틀 손상 없이 손잡이를 분리하는 작업",
+      "caption": "야간 긴급 개문 중 문틀 손상 없이 손잡이를 분리하는 작업",
+      "reviewed": true
+    },
+    {
+      "file": "08.jpg",
+      "order": 8,
+      "use": true,
+      "alt": "파손된 방문 손잡이 실린더를 정밀 절단하는 장면",
+      "caption": "파손된 방문 손잡이 실린더를 정밀 절단하는 장면",
+      "reviewed": true
+    },
+    {
+      "file": "09.jpg",
+      "order": 9,
+      "use": true,
+      "alt": "문이 열리기 전 손잡이 부속을 최종 절단하는 모습",
+      "caption": "문이 열리기 전 손잡이 부속을 최종 절단하는 모습",
+      "reviewed": true
+    },
+    {
+      "file": "10.jpg",
+      "order": 10,
+      "use": true,
+      "alt": "방문 잠김 개문 작업 완료 후 내부 손잡이 상태 확인",
+      "caption": "방문 잠김 개문 작업 완료 후 내부 손잡이 상태 확인",
+      "reviewed": true
+    }
+  ]
+}

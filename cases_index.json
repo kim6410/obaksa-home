@@ -11,12 +11,12 @@
     "instagram_url": ""
   },
   {
-    "title": "울산 북구 백산아파트 누수 복구 사례",
+    "title": "울산 북구 신천동 세면대 붕괴 긴다리 세면대 교체",
     "date": "2026-06-06",
-    "slug": "2026-06-06-baeksan-leak",
-    "category": "누수복구",
-    "summary": "욕실과 주변 벽체의 누수 원인을 확인하고 복구한 현장입니다.",
-    "case_url": "cases/2026/case-2026-06-06-baeksan-leak.html",
+    "slug": "2026-06-06-sink-collapse",
+    "category": "욕실수리",
+    "summary": "통째로 내려앉은 세면대를 안전하게 교체해 욕실 사용성을 회복한 사례입니다.",
+    "case_url": "cases/2026/case-2026-06-06-sink-collapse.html",
     "thumbnail": "",
     "source_url": "",
     "instagram_url": ""
@@ -33,23 +33,12 @@
     "instagram_url": ""
   },
   {
-    "title": "울산 북구 신천동 세면대 붕괴 긴다리 세면대 교체",
+    "title": "울산 북구 백산아파트 누수 복구 사례",
     "date": "2026-06-06",
-    "slug": "2026-06-06-sink-collapse",
-    "category": "욕실수리",
-    "summary": "통째로 내려앉은 세면대를 안전하게 교체해 욕실 사용성을 회복한 사례입니다.",
-    "case_url": "cases/2026/case-2026-06-06-sink-collapse.html",
-    "thumbnail": "",
-    "source_url": "",
-    "instagram_url": ""
-  },
-  {
-    "title": "울산 북구 매곡동 에일린의뜰 욕실 수전 누수 해바라기 샤워기 철거 후 일반 수전 교체",
-    "date": "2026-06-05",
-    "slug": "2026-06-05-aileen-shower-repair",
-    "category": "욕실수리",
-    "summary": "누수 원인이 된 해바라기 샤워기를 철거하고 일반 수전으로 바꾼 현장입니다.",
-    "case_url": "cases/2026/case-2026-06-05-aileen-shower-repair.html",
+    "slug": "2026-06-06-baeksan-leak",
+    "category": "누수복구",
+    "summary": "욕실과 주변 벽체의 누수 원인을 확인하고 복구한 현장입니다.",
+    "case_url": "cases/2026/case-2026-06-06-baeksan-leak.html",
     "thumbnail": "",
     "source_url": "",
     "instagram_url": ""
@@ -61,6 +50,17 @@
     "category": "욕실수리",
     "summary": "붕괴된 세면대를 긴다리 세면대로 바꿔 욕실을 안정적으로 복구했습니다.",
     "case_url": "cases/2026/case-2026-06-05-sink-collapse.html",
+    "thumbnail": "",
+    "source_url": "",
+    "instagram_url": ""
+  },
+  {
+    "title": "울산 북구 매곡동 에일린의뜰 욕실 수전 누수 해바라기 샤워기 철거 후 일반 수전 교체",
+    "date": "2026-06-05",
+    "slug": "2026-06-05-aileen-shower-repair",
+    "category": "욕실수리",
+    "summary": "누수 원인이 된 해바라기 샤워기를 철거하고 일반 수전으로 바꾼 현장입니다.",
+    "case_url": "cases/2026/case-2026-06-05-aileen-shower-repair.html",
     "thumbnail": "",
     "source_url": "",
     "instagram_url": ""
@@ -79,23 +79,23 @@
   {
     "title": "울산 중구 남외동 대문수리 후기, 내려앉은 문짝과 방문 틀어짐 해결 현장",
     "date": "2026-05-25",
-    "slug": "2026-05-25-daemun-sagging-repair",
-    "category": "집수리",
-    "summary": "대문이 내려앉고 방문이 틀어진 오래된 주택의 구조를 다시 맞춘 사례입니다.",
-    "case_url": "cases/2026/case-2026-05-25-daemun-sagging-repair.html",
-    "thumbnail": "",
-    "source_url": "",
-    "instagram_url": ""
-  },
-  {
-    "title": "울산 중구 남외동 대문수리 후기, 내려앉은 문짝과 방문 틀어짐 해결 현장",
-    "date": "2026-05-25",
     "slug": "2026-05-25-namoe-gate-door-door-frame",
     "category": "집수리",
     "summary": "오래된 집은 참 신기합니다. 한 군데가 불편해지기 시작하면, 그동안 참고 쓰던 문제들이 같이 드러나기 시작합니다. 이번 울산 중구 남외동 현장도 그랬습니다.",
     "case_url": "cases/2026/case-2026-05-25-namoe-gate-door-door-frame.html",
     "thumbnail": "assets/images/cases/2026/05/2026-05-25-namoe-gate-door-door-frame/01.jpg",
     "source_url": "https://blog.naver.com/obarksa110/224294908335",
+    "instagram_url": ""
+  },
+  {
+    "title": "울산 중구 남외동 대문수리 후기, 내려앉은 문짝과 방문 틀어짐 해결 현장",
+    "date": "2026-05-25",
+    "slug": "2026-05-25-daemun-sagging-repair",
+    "category": "집수리",
+    "summary": "대문이 내려앉고 방문이 틀어진 오래된 주택의 구조를 다시 맞춘 사례입니다.",
+    "case_url": "cases/2026/case-2026-05-25-daemun-sagging-repair.html",
+    "thumbnail": "",
+    "source_url": "",
     "instagram_url": ""
   },
   {
@@ -132,6 +132,18 @@
     "instagram_url": ""
   },
   {
+    "title": "울산 남구 삼산동 원상복구 비용 고민, 빌라 부분수리로 해결한 실제 사례",
+    "date": "2026-04-30",
+    "slug": "2026-04-30-replacement-repair",
+    "category": "집수리",
+    "summary": "마음이 무거워지는 부담되는 순간이 있습니다. 짐 정리는 끝났는데 집 상태를 보니 이대로 나가도 될지 고민이 되는 순간입니다. 울산 남구 삼산동 한 빌라에서",
+    "case_url": "cases/2026/case-2026-04-30-replacement-repair.html",
+    "thumbnail": "assets/images/cases/2026/04/2026-04-30-replacement-repair/01.jpg",
+    "source_url": "https://blog.naver.com/obarksa110/224269836114",
+    "instagram_url": "https://www.instagram.com/reel/DXuJYY-jtc_/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==",
+    "added_at": "2026-06-08T12:17:56"
+  },
+  {
     "title": "울산 남구 신정동 지웰아파트 욕실 타일 파손 수리와 환풍기 교체, 한 번에 해결한 실제 후기",
     "date": "2026-04-30",
     "slug": "2026-04-30-door-fan-replacement-repair",
@@ -141,16 +153,5 @@
     "thumbnail": "assets/images/cases/2026/04/2026-04-30-door-fan-replacement-repair/01.jpg",
     "source_url": "https://blog.naver.com/obarksa110/224271007570",
     "instagram_url": "https://www.instagram.com/reel/DXwkbi5OL11/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA=="
-  },
-  {
-    "title": "울산 남구 삼산동 원상복구 비용 고민, 빌라 부분수리로 해결한 실제 사례",
-    "date": "2026-04-30",
-    "slug": "2026-04-30-replacement-repair",
-    "category": "집수리",
-    "summary": "마음이 무거워지는 부담되는 순간이 있습니다. 짐 정리는 끝났는데 집 상태를 보니 이대로 나가도 될지 고민이 되는 순간입니다. 울산 남구 삼산동 한 빌라에서",
-    "case_url": "cases/2026/case-2026-04-30-replacement-repair.html",
-    "thumbnail": "assets/images/cases/2026/04/2026-04-30-replacement-repair/01.jpg",
-    "source_url": "https://blog.naver.com/obarksa110/224269836114",
-    "instagram_url": "https://www.instagram.com/reel/DXuJYY-jtc_/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA=="
   }
 ]

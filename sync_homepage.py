@@ -69,6 +69,7 @@ class CaseEntry:
     source_url: str = ""
     instagram_url: str = ""
     highlight_image: str = ""
+    added_at: str = ""
 
     @property
     def year(self) -> str:
@@ -223,7 +224,7 @@ def merge_cases(existing: list[CaseEntry], new_case: CaseEntry) -> tuple[list[Ca
     put(new_case, is_new=True)
     ordered = sorted(
         merged.values(),
-        key=lambda item: (item.date, item.slug == new_case.slug),
+        key=lambda item: (item.date, item.added_at, item.slug),
         reverse=True,
     )
     return ordered, duplicate, replaced
@@ -269,6 +270,7 @@ def build_sitemap_entry(entry: CaseEntry) -> str:
 def make_case_entry_from_blog(data: BlogData) -> CaseEntry:
     return CaseEntry(
         date=data.date or datetime.now().strftime("%Y-%m-%d"),
+        added_at=datetime.now().isoformat(timespec="seconds"),
         title=data.title,
         summary=data.summary,
         slug=case_folder_slug(data),
@@ -281,7 +283,7 @@ def make_case_entry_from_blog(data: BlogData) -> CaseEntry:
 
 
 def case_entry_to_dict(entry: CaseEntry) -> dict[str, str]:
-    return {
+    record = {
         "title": entry.title,
         "date": entry.date,
         "slug": entry.slug,
@@ -292,6 +294,9 @@ def case_entry_to_dict(entry: CaseEntry) -> dict[str, str]:
         "source_url": entry.source_url,
         "instagram_url": entry.instagram_url,
     }
+    if entry.added_at:
+        record["added_at"] = entry.added_at
+    return record
 
 
 def load_cases_index() -> tuple[list[CaseEntry], str]:
@@ -314,6 +319,7 @@ def load_cases_index() -> tuple[list[CaseEntry], str]:
             entries.append(
                 CaseEntry(
                     date=date,
+                    added_at=str(item.get("added_at", "")).strip(),
                     title=title,
                     summary=summary,
                     slug=slug,

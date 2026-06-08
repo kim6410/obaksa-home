@@ -1327,6 +1327,86 @@ def parse_args() -> dict[str, object]:
     return {"preview": bool(args.preview), "write_index": bool(args.write_index), "apply": bool(args.apply), "summary": str(args.summary).strip()}
 
 
+def inject_cases_pagination(html_text: str) -> str:
+    pager_html = """
+<div class="case-pagination" aria-label="시공사례 페이지 이동">
+  <button type="button" class="case-page-btn" data-page-action="prev">이전</button>
+  <div class="case-page-info" data-page-info>1 / 1</div>
+  <button type="button" class="case-page-btn" data-page-action="next">다음</button>
+</div>
+""".strip()
+    script_html = """
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var PAGE_SIZE = 10;
+  var allRows = Array.prototype.slice.call(document.querySelectorAll('.case-row[data-category]'));
+  var filterButtons = Array.prototype.slice.call(document.querySelectorAll('.case-filter button'));
+  var pageInfo = document.querySelector('[data-page-info]');
+  var prevBtn = document.querySelector('[data-page-action="prev"]');
+  var nextBtn = document.querySelector('[data-page-action="next"]');
+  var activeFilter = 'all';
+  var currentPage = 1;
+
+  function filteredRows(){
+    return allRows.filter(function(row){
+      var cats = row.getAttribute('data-category') || '';
+      return activeFilter === 'all' || cats.indexOf(activeFilter) > -1;
+    });
+  }
+
+  function totalPages(rows){
+    return Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  }
+
+  function syncPager(rows){
+    var pages = totalPages(rows);
+    if(currentPage > pages) currentPage = pages;
+    if(currentPage < 1) currentPage = 1;
+    var start = (currentPage - 1) * PAGE_SIZE;
+    var end = start + PAGE_SIZE;
+    allRows.forEach(function(row){ row.style.display = 'none'; });
+    rows.forEach(function(row, idx){ row.style.display = (idx >= start && idx < end) ? 'grid' : 'none'; });
+    if(pageInfo) pageInfo.textContent = currentPage + ' / ' + pages;
+    if(prevBtn) prevBtn.disabled = currentPage <= 1;
+    if(nextBtn) nextBtn.disabled = currentPage >= pages;
+  }
+
+  filterButtons.forEach(function(btn){
+    btn.addEventListener('click',function(){
+      filterButtons.forEach(function(b){ b.classList.remove('is-active'); });
+      btn.classList.add('is-active');
+      activeFilter = btn.getAttribute('data-filter') || 'all';
+      currentPage = 1;
+      syncPager(filteredRows());
+    });
+  });
+
+  if(prevBtn){
+    prevBtn.addEventListener('click', function(){
+      currentPage -= 1;
+      syncPager(filteredRows());
+    });
+  }
+  if(nextBtn){
+    nextBtn.addEventListener('click', function(){
+      currentPage += 1;
+      syncPager(filteredRows());
+    });
+  }
+
+  syncPager(filteredRows());
+});
+</script>
+""".strip()
+    if pager_html not in html_text:
+        html_text = html_text.replace("<!-- AUTO:CASE_LIST_END -->", f"<!-- AUTO:CASE_LIST_END -->\n{pager_html}", 1)
+    if "data-page-action=\"prev\"" not in html_text:
+        html_text = html_text.replace("</body></html>", f"{script_html}\n</body></html>", 1)
+    else:
+        html_text = re.sub(r"<script>\s*document\.querySelectorAll\\\('\\.case-filter button'\\\).*?</script>", script_html, html_text, flags=re.S)
+    return html_text
+
+
 def write_preview_files(data: BlogData, cases: list[CaseEntry]) -> list[Path]:
     PREVIEW_DIR.mkdir(parents=True, exist_ok=True)
     index_path = PREVIEW_DIR / "index.preview.html"
@@ -1334,7 +1414,7 @@ def write_preview_files(data: BlogData, cases: list[CaseEntry]) -> list[Path]:
     sitemap_path = PREVIEW_DIR / "sitemap.preview.xml"
     index_json_path = CASES_INDEX_PREVIEW_PATH
     index_path.write_text(render_index_preview(data, cases[0] if cases else CaseEntry(date=data.date, title=data.title, summary=data.summary, slug=case_folder_slug(data), category=data.category, thumb=data.thumbnail, source_url=data.source_url, instagram_url=data.instagram_url)), encoding="utf-8")
-    cases_path.write_text(render_cases_preview(cases), encoding="utf-8")
+    cases_path.write_text(inject_cases_pagination(render_cases_preview(cases)), encoding="utf-8")
     sitemap_path.write_text(render_sitemap_preview(cases), encoding="utf-8")
     index_json_path.write_text(json.dumps([case_entry_to_dict(case) for case in cases], ensure_ascii=False, indent=2), encoding="utf-8")
     return [index_json_path, index_path, cases_path, sitemap_path]

@@ -75,7 +75,7 @@
       <span class="case-kicker">{{DATE}} 실제 시공사례</span>
       <h1>{{TITLE}}</h1>
       <p>{{SUMMARY}}</p>
-      <div class="case-badges"><span>{{CATEGORY}}</span><span>{{DATE}}</span><span>{{SLUG}}</span></div>
+      <div class="case-badges"><span>{{CATEGORY}}</span><span>{{DATE}}</span></div>
       <div class="case-actions">
         <a class="button case-btn-primary" href="tel:01082845584">전화 문의</a>
         <a class="button case-btn-white" href="../../cases.html">전체 시공사례 보기</a>
@@ -90,19 +90,18 @@
     <div class="case-wrap">
       <h2>현장 요약</h2>
       <p class="case-lead">{{SUMMARY}}</p>
-      <p>이 페이지는 cases_index.json을 바탕으로 자동 생성된 상세 페이지입니다. 기존 목록의 보기 링크와 실제 파일 경로가 일치하도록 구성했습니다.</p>
+      <p>현장에서 확인한 상태를 바탕으로 필요한 내용만 정리했습니다. 사진은 순서에 따라 확인하시면 작업 전후 흐름이 자연스럽게 이어집니다.</p>
       <div class="case-info">
         <div><strong>제목</strong>{{TITLE}}</div>
         <div><strong>날짜</strong>{{DATE}}</div>
         <div><strong>분류</strong>{{CATEGORY}}</div>
-        <div><strong>상세 URL</strong>{{CASE_URL}}</div>
       </div>
     </div>
   </section>
   <section class="case-section">
     <div class="case-wrap">
       <h2>이미지 갤러리</h2>
-      <p>다운로드된 이미지가 있으면 순서대로 배치하고, 없으면 대표 이미지 한 장으로 대체합니다.</p>
+      <p>현장 확인, 작업 과정, 마무리 순서로 사진을 정리했습니다.</p>
       <div class="case-gallery">
         {{GALLERY_IMAGES}}
       </div>
@@ -111,18 +110,17 @@
   <section class="case-section">
     <div class="case-wrap case-two">
       <div class="case-card">
-        <h3>출처 안내</h3>
-        <p>블로그 원문과 인스타그램 링크를 함께 연결해 상세 내용을 바로 확인하실 수 있게 정리했습니다.</p>
+        <h3>원문 보기</h3>
+        <p>현장 전체 흐름이 궁금하시면 원문과 릴스도 함께 확인해 보실 수 있습니다.</p>
         <ul class="case-list">
-          <li>블로그: <a href="{{SOURCE_URL}}" target="_blank" rel="noopener">{{SOURCE_URL_TEXT}}</a></li>
+          <li>블로그 원문: <a href="{{SOURCE_URL}}" target="_blank" rel="noopener">블로그에서 전체 보기</a></li>
           {{INSTAGRAM_LINK_ITEM}}
-          <li>썸네일: {{THUMBNAIL_TEXT}}</li>
         </ul>
       </div>
       <div class="case-card">
-        <h3>안내</h3>
-        <p>사례 목록으로 돌아가려면 전체 시공사례 보기를 이용하시면 됩니다.</p>
-        <p>누락된 상세 페이지는 sync_homepage.py --apply 실행 시 자동 생성됩니다.</p>
+        <h3>상담 안내</h3>
+        <p>비슷한 문제가 보이거나 확인이 필요하시면 언제든 전화로 상담해 주세요.</p>
+        <p>전체 시공사례로 돌아가 다른 현장도 함께 살펴보실 수 있습니다.</p>
       </div>
     </div>
   </section>

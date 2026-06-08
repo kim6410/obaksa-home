@@ -19,6 +19,17 @@ BLOG_FETCH_CANDIDATES = [
     ROOT / "data" / "blog_fetch_result.json",
     ROOT / "tmp" / "blog_fetch_result.json",
 ]
+MAX_DETAIL_IMAGES = 8
+IMAGE_REJECT_KEYWORDS = {
+    "map",
+    "profile",
+    "sticker",
+    "emoji",
+    "icon",
+    "logo",
+    "kakao",
+    "naver_map",
+}
 
 MARKERS = {
     "index.html": (
@@ -289,8 +300,33 @@ def gather_case_images(entry: CaseEntry) -> list[Path]:
     if not entry.image_folder.exists():
         return []
     allowed = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
-    images = [path for path in sorted(entry.image_folder.iterdir()) if path.is_file() and path.suffix.lower() in allowed]
-    return images
+    images = []
+    for path in sorted(entry.image_folder.iterdir()):
+        if not path.is_file() or path.suffix.lower() not in allowed:
+            continue
+        lower = path.name.lower()
+        if any(keyword in lower for keyword in IMAGE_REJECT_KEYWORDS):
+            continue
+        images.append(path)
+    return images[:MAX_DETAIL_IMAGES]
+
+
+def case_image_caption(entry: CaseEntry, index: int, total: int) -> str:
+    phase_captions = [
+        "현장 확인 전 욕실 상태를 먼저 살펴본 사진입니다.",
+        "떨어짐 원인이 되는 고정 상태를 자세히 확인한 모습입니다.",
+        "내부 브라켓과 고정 부위를 보강하는 과정입니다.",
+        "벽체와 본체를 다시 단단하게 맞춰 고정하는 작업입니다.",
+        "틈새를 정리하고 습기가 들어가지 않도록 마감한 모습입니다.",
+        "보강 후 흔들림이 없는지 다시 점검한 사진입니다.",
+        "작업을 마친 뒤 정리된 최종 상태입니다.",
+        "현장 최종 확인 후 안전하게 마무리한 모습입니다.",
+    ]
+    if total <= 1:
+        return "현장 확인 후 정리된 모습입니다."
+    if index < len(phase_captions):
+        return phase_captions[index]
+    return f"작업 과정 사진 {index + 1}"
 
 
 def detail_image_rel_path(entry: CaseEntry, image_path: Path) -> str:
@@ -301,9 +337,10 @@ def render_case_detail_template(entry: CaseEntry, images: list[Path]) -> str:
     template = read_text(CASE_DETAIL_TEMPLATE_PATH)
     hero_image = detail_image_rel_path(entry, images[0]) if images else (f"../../{entry.thumb}" if entry.thumb else "../../images/gallery/case_hero.jpg")
     gallery_items: list[str] = []
+    total_images = len(images or [])
     for idx, image_path in enumerate(images or []):
         rel = detail_image_rel_path(entry, image_path)
-        label = f"{entry.title} 사진 {idx + 1}"
+        label = case_image_caption(entry, idx, total_images)
         gallery_items.append(
             "\n".join([
                 "<figure>",

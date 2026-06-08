@@ -441,28 +441,16 @@ def build_summary_markdown_body(entry: CaseEntry, blog: BlogData, summary: str, 
     블로그 원문은 참고 데이터일 뿐, 정리되지 않은 원문 덤프를 그대로 상세페이지에 넣지 않는다.
     이미지 배열과 alt는 image_manifest.json 또는 blog_fetch_result.json의 image_plan을 우선한다.
     """
-    lines: list[str] = [
-        f"# {entry.title}",
-        "",
-        "## 현장 요약",
-        summary,
-        "",
-    ]
-
-    if image_items:
-        first = image_items[0]
-        lines += [f"![{first.alt}](./{first.path.name})", ""]
-
+    lines: list[str] = []
     lines += [
         "## 현장 확인",
         "현장에서는 눈에 보이는 증상만 확인하지 않고, 문제가 시작된 위치와 주변 상태를 함께 살폈습니다.",
         "작은 불편처럼 보여도 원인을 놓치면 같은 문제가 다시 반복될 수 있기 때문입니다.",
         "",
     ]
-
-    if len(image_items) > 1:
-        second = image_items[1]
-        lines += [f"![{second.alt}](./{second.path.name})", ""]
+    if image_items:
+        first = image_items[0]
+        lines += [f"![{first.alt}](./{first.path.name})", ""]
 
     lines += [
         "## 작업 과정",
@@ -470,6 +458,9 @@ def build_summary_markdown_body(entry: CaseEntry, blog: BlogData, summary: str, 
         "무리하게 넓은 범위를 건드리기보다 실제 원인이 되는 부분을 정확히 잡는 데 집중했습니다.",
         "",
     ]
+    if len(image_items) > 1:
+        second = image_items[1]
+        lines += [f"![{second.alt}](./{second.path.name})", ""]
 
     for item in image_items[2:-1]:
         lines += [f"![{item.alt}](./{item.path.name})", ""]
@@ -478,12 +469,11 @@ def build_summary_markdown_body(entry: CaseEntry, blog: BlogData, summary: str, 
         "## 마무리 점검",
         "마무리 단계에서는 사용 중 불편이 남지 않도록 다시 점검했습니다.",
         "고객님이 바로 안심하고 사용할 수 있는 상태인지 확인한 뒤 현장을 정리했습니다.",
-        "",
     ]
 
     if len(image_items) > 2:
         last = image_items[-1]
-        lines += [f"![{last.alt}](./{last.path.name})", ""]
+        lines += ["", f"![{last.alt}](./{last.path.name})", ""]
 
     lines += [
         "## 상담 안내",
@@ -527,6 +517,12 @@ def build_case_markdown(entry: CaseEntry, blog: BlogData | None, summary: str, i
             raise ValueError("; ".join(placeholder_errors))
     else:
         body = build_summary_markdown_body(entry, blog, summary, image_items)
+
+    body = re.sub(
+        r"(?ms)^## 현장 요약\s+.*?(?=^## 현장 확인\b)",
+        "",
+        body,
+    )
 
     return "\n".join(front_matter + ["", body]).strip() + "\n"
 
@@ -778,6 +774,7 @@ def markdown_text_to_html(markdown_text: str, entry: CaseEntry | None = None) ->
     lines = (markdown_text or "").splitlines()
     paragraph: list[str] = []
     list_items: list[str] = []
+    skipped_leading_title = False
 
     def flush_paragraph() -> None:
         if paragraph:
@@ -821,7 +818,8 @@ def markdown_text_to_html(markdown_text: str, entry: CaseEntry | None = None) ->
         if line.startswith("# "):
             flush_paragraph()
             flush_list()
-            output.append(f"<h1>{_html_escape(line[2:].strip())}</h1>")
+            skipped_leading_title = True
+            continue
             continue
         if line.startswith("- "):
             flush_paragraph()

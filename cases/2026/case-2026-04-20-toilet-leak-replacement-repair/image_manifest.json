@@ -1,0 +1,85 @@
+{
+  "note": "이미지 검수 완료본입니다.",
+  "images": [
+    {
+      "file": "01.jpg",
+      "order": 1,
+      "use": true,
+      "alt": "울산 천곡동 새마을금고 변기 누수 현장 상태 확인",
+      "caption": "울산 천곡동 새마을금고 변기 누수 현장 상태 확인",
+      "reviewed": true
+    },
+    {
+      "file": "02.jpg",
+      "order": 2,
+      "use": true,
+      "alt": "울산 천곡동 변기 내부 부속 문제 원인 점검",
+      "caption": "울산 천곡동 변기 내부 부속 문제 원인 점검",
+      "reviewed": true
+    },
+    {
+      "file": "03.jpg",
+      "order": 3,
+      "use": true,
+      "alt": "울산 북구 천곡동 변기부속교체 작업 과정",
+      "caption": "울산 북구 천곡동 변기부속교체 작업 과정",
+      "reviewed": true
+    },
+    {
+      "file": "04.jpg",
+      "order": 4,
+      "use": true,
+      "alt": "울산 천곡동 변기 부속 분해와 보강 정리 과정",
+      "caption": "울산 천곡동 변기 부속 분해와 보강 정리 과정",
+      "reviewed": true
+    },
+    {
+      "file": "05.jpg",
+      "order": 5,
+      "use": true,
+      "alt": "울산 북구 천곡동 변기 누수 해결 후 마감 상태 확인",
+      "caption": "울산 북구 천곡동 변기 누수 해결 후 마감 상태 확인",
+      "reviewed": true
+    },
+    {
+      "file": "06.jpg",
+      "order": 6,
+      "use": true,
+      "alt": "울산 천곡동 변기 재조립 후 수평과 잠금 점검",
+      "caption": "울산 천곡동 변기 재조립 후 수평과 잠금 점검",
+      "reviewed": true
+    },
+    {
+      "file": "07.jpg",
+      "order": 7,
+      "use": true,
+      "alt": "울산 북구 천곡동 새마을금고 변기 누수 현장, 노후 부속 분해 작업",
+      "caption": "울산 북구 천곡동 새마을금고 변기 누수 현장, 노후 부속 분해 작업",
+      "reviewed": true
+    },
+    {
+      "file": "08.jpg",
+      "order": 8,
+      "use": true,
+      "alt": "울산 천곡동 변기 내부 부속과 수조 주변 정리 과정",
+      "caption": "울산 천곡동 변기 내부 부속과 수조 주변 정리 과정",
+      "reviewed": true
+    },
+    {
+      "file": "09.jpg",
+      "order": 9,
+      "use": true,
+      "alt": "울산 북구 천곡동 변기부속교체 후 재조립과 누수 점검",
+      "caption": "울산 북구 천곡동 변기부속교체 후 재조립과 누수 점검",
+      "reviewed": true
+    },
+    {
+      "file": "10.jpg",
+      "order": 10,
+      "use": true,
+      "alt": "울산 천곡동 샤워건 수도꼭지 교체 후 누수 테스트",
+      "caption": "울산 천곡동 샤워건 수도꼭지 교체 후 누수 테스트",
+      "reviewed": true
+    }
+  ]
+}

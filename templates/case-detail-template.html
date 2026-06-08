@@ -33,10 +33,10 @@
     .case-page a.button.case-btn-primary{background:var(--ob-yellow)!important;color:#111!important;border:1px solid var(--ob-yellow)!important;box-shadow:0 14px 30px rgba(255,213,58,.28)!important;text-shadow:none!important;}
     .case-page a.button.case-btn-primary:hover{background:#ffe36a!important;color:#111!important;border-color:#ffe36a!important;}
     .case-page a.button.case-btn-white{background:#fff!important;color:#0b2e6d!important;border:1px solid rgba(255,255,255,.95)!important;box-shadow:0 14px 30px rgba(2,6,23,.18)!important;text-shadow:none!important;}
-    .case-section{padding:4.25rem 0;border-bottom:1px solid var(--ob-line);}
-    .case-section h2{font-size:clamp(1.55rem,3vw,2.45rem);line-height:1.25;letter-spacing:-.055em;color:#13233a;font-weight:900;margin:0 0 1rem;}
-    .case-section h3{font-size:1.25rem;letter-spacing:-.04em;font-weight:900;color:#0b2e6d;margin:0 0 .8rem;}
-    .case-section p{font-size:1.03rem;line-height:2;letter-spacing:-.035em;margin:.65rem 0;}
+    .case-section{padding:4.6rem 0;border-bottom:1px solid var(--ob-line);}
+    .case-section h2{font-size:clamp(1.55rem,3vw,2.45rem);line-height:1.25;letter-spacing:-.055em;color:#13233a;font-weight:900;margin:0 0 1.15rem;padding-top:.15rem;}
+    .case-section h3{font-size:1.25rem;letter-spacing:-.04em;font-weight:900;color:#0b2e6d;margin:1.6rem 0 .85rem;}
+    .case-section p{font-size:1.03rem;line-height:1.95;letter-spacing:-.035em;margin:.9rem 0;}
     .case-lead{font-size:1.15rem!important;color:#4b5563;}
     .case-info{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1.5rem;}
     .case-info div{background:var(--ob-soft);border:1px solid var(--ob-line);border-radius:20px;padding:1.1rem;line-height:1.7;}
@@ -46,6 +46,17 @@
     .case-list{padding-left:1.1rem;margin:.5rem 0 0;line-height:2;letter-spacing:-.03em;}
     .case-note{border-left:5px solid var(--ob-yellow);background:#fff8db;border-radius:16px;padding:1rem 1.15rem;margin:1.25rem 0;color:#4b3b00;font-weight:800;line-height:1.8;}
     .case-alert{border-left:5px solid var(--ob-red);background:#fff2f0;border-radius:16px;padding:1rem 1.15rem;margin:1.25rem 0;color:#5f1712;font-weight:800;line-height:1.8;}
+    .case-story{display:flex;flex-direction:column;gap:.25rem;margin-top:1.4rem;}
+    .case-story > h1,.case-story > h2,.case-story > h3{scroll-margin-top:8rem;}
+    .case-story > h2{margin-top:2rem;}
+    .case-story > h3{margin-top:1.35rem;}
+    .case-story > p{max-width:72ch;}
+    .case-story > ul{margin:.45rem 0 1.1rem 1.25rem;line-height:1.9;letter-spacing:-.03em;}
+    .case-story figure{margin:32px auto;max-width:720px;background:#fff;border:1px solid var(--ob-line);border-radius:24px;overflow:hidden;box-shadow:0 14px 34px rgba(15,23,42,.09);}
+    .case-story figure img{display:block;width:100%;height:auto;object-fit:contain;}
+    .case-story figure figcaption{padding:1rem 1.1rem 1.05rem;font-weight:800;letter-spacing:-.03em;color:#334155;line-height:1.6;background:linear-gradient(180deg,#fff 0%,#fbfcfe 100%);}
+    .case-story figure + p,.case-story p + figure,.case-story h2 + p,.case-story h3 + p{margin-top:.75rem;}
+    .case-story p + h2,.case-story p + h3,.case-story figure + h2,.case-story figure + h3{margin-top:2rem;}
     .case-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.7rem;}
     .case-gallery figure{margin:0;background:#fff;border:1px solid var(--ob-line);border-radius:22px;overflow:hidden;box-shadow:0 10px 28px rgba(15,23,42,.08);}
     .case-gallery img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;}
@@ -55,8 +66,8 @@
     .case-cta{background:linear-gradient(135deg,#071f4a,#0b367b);color:#fff;text-align:center;}
     .case-cta h2,.case-cta p{color:#fff;}
     .case-cta .phone{font-size:clamp(1.8rem,4vw,3rem);font-weight:900;color:var(--ob-yellow);letter-spacing:-.03em;margin:.5rem 0 1rem;}
-    @media screen and (max-width:900px){.case-hero{padding:5.8rem 0 3rem;background:linear-gradient(180deg,#061b42 0%,#0d3476 58%,#fff 58%,#fff 100%)}.case-hero-grid,.case-two{grid-template-columns:1fr}.case-info{grid-template-columns:repeat(2,1fr)}.case-gallery{grid-template-columns:1fr 1fr}.case-hero-card img{aspect-ratio:16/12}.case-section{padding:3rem 0}}
-    @media screen and (max-width:560px){.case-wrap{width:min(100% - 1.1rem,1120px)}.case-hero h1{font-size:1.82rem}.case-hero p,.case-section p{font-size:1rem;line-height:1.9}.case-info,.case-gallery{grid-template-columns:1fr}.case-card{padding:1.1rem}.case-actions a{width:100%;text-align:center}.case-badges span{font-size:.82rem}.case-section h2{font-size:1.55rem}.case-hero-card{border-radius:18px}.case-gallery figure,.case-webtoon-img{border-radius:16px}}
+    @media screen and (max-width:900px){.case-hero{padding:5.8rem 0 3rem;background:linear-gradient(180deg,#061b42 0%,#0d3476 58%,#fff 58%,#fff 100%)}.case-hero-grid,.case-two{grid-template-columns:1fr}.case-info{grid-template-columns:repeat(2,1fr)}.case-gallery{grid-template-columns:1fr 1fr}.case-hero-card img{aspect-ratio:16/12}.case-section{padding:3.35rem 0}.case-story figure img{max-height:760px}}
+    @media screen and (max-width:560px){.case-wrap{width:min(100% - 1.1rem,1120px)}.case-hero h1{font-size:1.82rem}.case-hero p,.case-section p{font-size:1rem;line-height:1.82}.case-info,.case-gallery{grid-template-columns:1fr}.case-card{padding:1.1rem}.case-actions a{width:100%;text-align:center}.case-badges span{font-size:.82rem}.case-section h2{font-size:1.55rem}.case-hero-card{border-radius:18px}.case-gallery figure,.case-webtoon-img,.case-story figure{border-radius:16px}.case-story > p{max-width:none}}
   </style>
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Article","headline":"{{TITLE}}","description":"{{META_DESCRIPTION}}","datePublished":"{{DATE}}","dateModified":"{{DATE}}","author":{"@type":"Organization","name":"오박사만능인테리어"},"publisher":{"@type":"Organization","name":"오박사만능인테리어"},"mainEntityOfPage":"{{CANONICAL_URL}}","image":"{{OG_IMAGE}}"}

@@ -16,6 +16,7 @@ import re
 import sys
 import time
 import os
+import shutil
 import unicodedata
 from datetime import datetime
 from pathlib import Path
@@ -24,6 +25,11 @@ from urllib.parse import urljoin, urlparse
 
 import requests
 from bs4 import BeautifulSoup
+
+try:
+    from PIL import Image
+except Exception:
+    Image = None
 
 
 HEADERS = {
@@ -39,8 +45,12 @@ HEADERS = {
 }
 
 DOWNLOAD_IMAGES = True
-MAX_IMAGES = 12
-IMAGE_BASE_DIR = Path("assets/images/cases")
+MAX_IMAGES = 10
+IMAGE_BASE_DIR = Path("cases")
+ORIGINAL_IMAGE_BASE_DIR = Path(r"G:\OneDrive\01_울산오박사인테리어\original_images")
+MAX_PUBLISHED_IMAGES = 10
+MAX_PUBLISHED_WIDTH = 1600
+JPEG_QUALITY = 82
 
 
 CONTENT_SELECTORS = [
@@ -196,7 +206,7 @@ def make_slug(title: str, date_iso: str, content: str = "") -> str:
 
     base = "-".join(words[:4])
     date_part = date_iso if re.match(r"20\d{2}-\d{2}-\d{2}", date_iso or "") else datetime.now().strftime("%Y-%m-%d")
-    slug = f"{date_part}-{base}"
+    slug = f"case-{date_part}-{base}"
     slug = re.sub(r"[^a-z0-9\-]", "", slug.lower())
     slug = re.sub(r"-+", "-", slug).strip("-")
     return slug
@@ -333,50 +343,89 @@ def extract_image_urls(soup: BeautifulSoup) -> list[str]:
 
 
 def guess_image_extension(url: str, content_type: str | None) -> str:
-    lowered = url.lower()
-    if ".png" in lowered:
-        return ".png"
-    if ".gif" in lowered:
-        return ".gif"
-    if ".webp" in lowered:
-        return ".webp"
-    if content_type:
-        content_type = content_type.lower()
-        if "png" in content_type:
-            return ".png"
-        if "gif" in content_type:
-            return ".gif"
-        if "webp" in content_type:
-            return ".webp"
     return ".jpg"
+
+
+def _safe_slug_dir(slug: str) -> str:
+    cleaned = re.sub(r"[^a-z0-9\-]", "-", slug.lower())
+    cleaned = re.sub(r"-+", "-", cleaned).strip("-")
+    return cleaned or "case"
+
+
+def _open_image_bytes(raw_bytes: bytes):
+    if Image is None:
+        return None
+    from io import BytesIO
+
+    try:
+        return Image.open(BytesIO(raw_bytes))
+    except Exception:
+        return None
+
+
+def _save_jpeg(image_obj, target_path: Path) -> None:
+    if Image is None or image_obj is None:
+        return
+    if image_obj.mode not in ("RGB", "L"):
+        image_obj = image_obj.convert("RGB")
+    else:
+        image_obj = image_obj.copy()
+    width, height = image_obj.size
+    if width > MAX_PUBLISHED_WIDTH:
+        new_height = int(height * (MAX_PUBLISHED_WIDTH / float(width)))
+        image_obj = image_obj.resize((MAX_PUBLISHED_WIDTH, new_height), Image.LANCZOS)
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    image_obj.save(target_path, format="JPEG", quality=JPEG_QUALITY, optimize=True)
 
 
 def download_images(session: requests.Session, image_urls: list[str], out_dir: Path, slug: str, date_iso: str) -> tuple[list[str], str]:
     if not DOWNLOAD_IMAGES or not image_urls:
         return [], ""
 
-    year, month = extract_date_parts(date_iso)
-    target_dir = out_dir / IMAGE_BASE_DIR / year / month / slug
+    year, _month = extract_date_parts(date_iso)
+    case_slug = _safe_slug_dir(slug)
+    original_dir = ORIGINAL_IMAGE_BASE_DIR / year / case_slug
+    target_dir = out_dir / IMAGE_BASE_DIR / year / case_slug
+    original_dir.mkdir(parents=True, exist_ok=True)
     target_dir.mkdir(parents=True, exist_ok=True)
 
     downloaded: list[str] = []
-    thumbnail = ""
 
     for index, image_url in enumerate(image_urls[:MAX_IMAGES], start=1):
         try:
             response = session.get(image_url, timeout=20, headers=HEADERS)
             response.raise_for_status()
-            ext = guess_image_extension(image_url, response.headers.get("Content-Type"))
-            file_path = target_dir / f"{index:02d}{ext}"
-            if file_path.exists():
-                print(f"경고: 기존 이미지 덮어쓰기 예정 - {file_path}")
-            file_path.write_bytes(response.content)
-            rel_path = file_path.relative_to(Path.cwd()).as_posix()
+            raw_path = original_dir / f"{index:02d}.jpg"
+            raw_path.write_bytes(response.content)
+
+            processed_path = target_dir / f"{index:02d}.jpg"
+            if processed_path.exists():
+                print(f"경고: 기존 이미지 덮어쓰기 예정 - {processed_path}")
+
+            image_obj = _open_image_bytes(response.content)
+            if image_obj is not None:
+                _save_jpeg(image_obj, processed_path)
+            else:
+                processed_path.write_bytes(response.content)
+
+            rel_path = processed_path.relative_to(Path.cwd()).as_posix()
             downloaded.append(rel_path)
-            if not thumbnail:
-                thumbnail = rel_path
         except Exception as e:
             print(f"경고: 이미지 다운로드 실패 - {image_url} ({e})")
+
+    thumbnail = ""
+    if downloaded:
+        first_image = Path(downloaded[0])
+        thumb_path = target_dir / "thumb.jpg"
+        try:
+            if Image is not None:
+                image_obj = Image.open(first_image)
+                _save_jpeg(image_obj, thumb_path)
+            else:
+                shutil.copyfile(first_image, thumb_path)
+        except Exception:
+            thumb_path.write_bytes(first_image.read_bytes())
+        thumbnail = thumb_path.relative_to(Path.cwd()).as_posix()
 
     return downloaded, thumbnail
 

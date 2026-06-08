@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 import unicodedata
 from dataclasses import dataclass
 from datetime import datetime
@@ -19,7 +20,7 @@ BLOG_FETCH_CANDIDATES = [
     ROOT / "data" / "blog_fetch_result.json",
     ROOT / "tmp" / "blog_fetch_result.json",
 ]
-MAX_DETAIL_IMAGES = 8
+MAX_DETAIL_IMAGES = 10
 IMAGE_REJECT_KEYWORDS = {
     "map",
     "profile",
@@ -79,6 +80,7 @@ class CaseEntry:
     summary: str
     slug: str
     category: str = ""
+    url: str = ""
     thumb: str = ""
     source_url: str = ""
     instagram_url: str = ""
@@ -91,23 +93,44 @@ class CaseEntry:
 
     @property
     def case_url(self) -> str:
-        return f"cases/{self.year}/case-{self.slug}.html"
+        if self.url:
+            return self.url
+        return f"/cases/{self.year}/case-{self.slug}.html"
 
     @property
     def sitemap_url(self) -> str:
-        return f"{SITE_BASE_URL}/{self.case_url}"
+        relative = self.case_url.lstrip("/")
+        return f"{SITE_BASE_URL.rstrip('/')}/{relative}"
 
     @property
     def image_folder(self) -> Path:
+        if self.url.endswith("/"):
+            return ROOT / "cases" / self.year / self.slug
         return ROOT / "assets" / "images" / "cases" / self.year / self.date[5:7] / self.slug
 
     @property
     def case_folder(self) -> Path:
+        if self.url.endswith("/"):
+            return ROOT / "cases" / self.year / self.slug
         return ROOT / "cases" / self.year
 
     @property
     def detail_path(self) -> Path:
+        if self.url.endswith("/"):
+            return self.case_folder / "index.html"
         return self.case_folder / f"case-{self.slug}.html"
+
+    @property
+    def markdown_path(self) -> Path:
+        if self.url.endswith("/"):
+            return self.case_folder / "index.md"
+        return self.case_folder / f"case-{self.slug}.md"
+
+    @property
+    def thumbnail_path(self) -> Path:
+        if self.url.endswith("/"):
+            return self.case_folder / "thumb.jpg"
+        return self.case_folder / f"{self.slug}.jpg"
 
 
 def load_blog_data() -> tuple[bool, BlogData, Path | None]:
@@ -148,7 +171,9 @@ def extract_year(date_text: str) -> str:
 
 def normalize_slug(existing_slug: str, date_text: str, title: str) -> str:
     if existing_slug:
-        return existing_slug
+        if existing_slug.startswith("case-"):
+            return existing_slug
+        return f"case-{existing_slug}"
     base = title or "new-case"
     cleaned = unicodedata.normalize("NFKD", base).encode("ascii", "ignore").decode("ascii")
     cleaned = cleaned.lower()
@@ -157,26 +182,26 @@ def normalize_slug(existing_slug: str, date_text: str, title: str) -> str:
     cleaned = cleaned[:48].strip("-")
     year = extract_year(date_text)
     if cleaned:
-        return f"{year}-{cleaned}"
-    return f"{year}-new-case"
+        return f"case-{year}-{cleaned}"
+    return f"case-{year}-new-case"
 
 
 def case_folder_slug(data: BlogData) -> str:
-    return data.slug or normalize_slug("", data.date, data.title)
+    return normalize_slug(data.slug, data.date, data.title)
 
 
 def case_url_for(data: BlogData) -> str:
     slug = case_folder_slug(data)
     year = data.year or extract_year(data.date)
-    return f"cases/{year}/case-{slug}.html"
+    return f"/cases/{year}/{slug}/"
 
 
 def sitemap_url_for(data: BlogData) -> str:
-    return f"{SITE_BASE_URL}/{case_url_for(data)}"
+    return f"{SITE_BASE_URL.rstrip('/')}{case_url_for(data)}"
 
 
 def thumbnail_path_for(data: BlogData) -> str:
-    return f"images/cases/{case_folder_slug(data)}/thumb.jpg"
+    return f"/cases/{data.year or extract_year(data.date)}/{case_folder_slug(data)}/thumb.jpg"
 
 
 def parse_case_date(raw: str) -> str:
@@ -201,7 +226,7 @@ def parse_case_entries_from_text(text: str) -> list[CaseEntry]:
     )
     for m in row_pattern.finditer(text):
         href = m.group("href").strip()
-        slug_match = re.search(r"case-([a-z0-9\-]+)\.html", href)
+        slug_match = re.search(r"case-([a-z0-9\-]+)(?:\.html|/)", href)
         if not slug_match:
             continue
         slug = slug_match.group(1)
@@ -215,6 +240,7 @@ def parse_case_entries_from_text(text: str) -> list[CaseEntry]:
                 summary=m.group("summary").strip(),
                 slug=slug,
                 category=m.group("category").strip(),
+                url=href if href.startswith("/") else f"/{href.lstrip('/')}",
                 thumb="",
             )
         )
@@ -258,7 +284,7 @@ def merge_cases(existing: list[CaseEntry], new_case: CaseEntry) -> tuple[list[Ca
 
 
 def build_case_feature_card(entry: CaseEntry, is_latest: bool = False) -> str:
-    img = entry.highlight_image or entry.thumb or "images/gallery/case_hero.jpg"
+    img = entry.highlight_image or entry.thumb or "/images/gallery/case_hero.jpg"
     link_block = [f'      <a href="{entry.case_url}">상세보기</a>']
     if entry.instagram_url:
         link_block.append(f'      <a href="{entry.instagram_url}" target="_blank" rel="noopener">Instagram</a>')
@@ -398,13 +424,141 @@ def build_case_story(blog: BlogData) -> str:
     return "\n        ".join(paragraphs)
 
 
+def build_case_markdown(entry: CaseEntry, blog: BlogData | None, summary: str, images: list[Path]) -> str:
+    blog = blog or BlogData(title=entry.title, date=entry.date, year=entry.year, slug=entry.slug, category=entry.category, summary=summary)
+    blog.summary = summary
+    markdown_images = [f"./{image.name}" for image in images]
+    tags = [
+        "울산집수리",
+        entry.category or "시공사례",
+        "오박사만능인테리어",
+    ]
+    front_matter = [
+        "---",
+        f'title: "{entry.title}"',
+        f'description: "{summary}"',
+        f'date: "{entry.date}"',
+        f'category: "{entry.category or "시공사례"}"',
+        f'slug: "{entry.slug}"',
+        f'canonical: "{entry.sitemap_url}"',
+        'thumbnail: "./thumb.jpg"',
+        "images:",
+    ]
+    for image in markdown_images:
+        front_matter.append(f"  - \"{image}\"")
+    front_matter.append("tags:")
+    for tag in tags:
+        front_matter.append(f'  - "{tag}"')
+    front_matter.append("---")
+
+    if blog.content.strip():
+        body = blog.content.strip()
+    else:
+        body = "\n".join([
+            "# 현장 요약",
+            summary,
+            "",
+            build_case_story(blog),
+            "",
+            "## 이미지 갤러리",
+        ])
+        if markdown_images:
+            for idx, image in enumerate(markdown_images):
+                body += "\n\n" + f"![{entry.title} {idx + 1}]({image})"
+        else:
+            body += "\n\n작업 이미지는 현장 상황에 따라 별도 정리합니다."
+        body += "\n\n## 상담 안내\n비슷한 증상이나 확인이 필요한 부분이 있다면 전화로 바로 상담할 수 있습니다."
+
+    return "\n".join(front_matter + ["", body]).strip() + "\n"
+
+
+def parse_markdown_front_matter(markdown_text: str) -> tuple[dict[str, str], str]:
+    text = markdown_text.strip()
+    if not text.startswith("---"):
+        return {}, markdown_text
+    parts = text.split("---", 2)
+    if len(parts) < 3:
+        return {}, markdown_text
+    header = parts[1].strip().splitlines()
+    body = parts[2].lstrip("\n")
+    meta: dict[str, str] = {}
+    current_key = ""
+    list_key = ""
+    for line in header:
+        if not line.strip():
+            continue
+        if line.startswith("  - "):
+            value = line[4:].strip().strip('"')
+            if list_key:
+                meta.setdefault(list_key, "")
+                meta[list_key] += ("\n" if meta[list_key] else "") + value
+            continue
+        if ":" in line:
+            key, value = line.split(":", 1)
+            key = key.strip()
+            value = value.strip().strip('"')
+            current_key = key
+            list_key = key if value == "" else ""
+            if value:
+                meta[key] = value
+            else:
+                meta[key] = ""
+    return meta, body
+
+
+def markdown_text_to_html(markdown_text: str) -> str:
+    paragraphs: list[str] = []
+    lines = markdown_text.splitlines()
+    buffer: list[str] = []
+
+    def flush_buffer() -> None:
+        if buffer:
+            paragraphs.append(f"<p>{' '.join(buffer).strip()}</p>")
+            buffer.clear()
+
+    for raw_line in lines:
+        line = raw_line.strip()
+        if not line:
+            flush_buffer()
+            continue
+        if line.startswith("### "):
+            flush_buffer()
+            paragraphs.append(f"<h3>{line[4:].strip()}</h3>")
+            continue
+        if line.startswith("## "):
+            flush_buffer()
+            paragraphs.append(f"<h2>{line[3:].strip()}</h2>")
+            continue
+        if line.startswith("# "):
+            flush_buffer()
+            paragraphs.append(f"<h1>{line[2:].strip()}</h1>")
+            continue
+        if line.startswith("- "):
+            flush_buffer()
+            paragraphs.append(f"<ul><li>{line[2:].strip()}</li></ul>")
+            continue
+        if line.startswith("![" ):
+            flush_buffer()
+            img_match = re.match(r"!\[(.*?)\]\((.*?)\)", line)
+            if img_match:
+                alt, src = img_match.groups()
+                paragraphs.append(f'<figure><img src="{src}" alt="{alt}" loading="lazy" /><figcaption>{alt}</figcaption></figure>')
+            continue
+        buffer.append(line)
+    flush_buffer()
+    return "\n".join(paragraphs)
+
+
 def detail_image_rel_path(entry: CaseEntry, image_path: Path) -> str:
-    return f"../../assets/images/cases/{entry.year}/{entry.date[5:7]}/{entry.slug}/{image_path.name}"
+    return f"/cases/{entry.year}/{entry.slug}/{image_path.name}"
 
 
-def render_case_detail_template(entry: CaseEntry, images: list[Path], blog: BlogData | None = None) -> str:
+def render_case_detail_template(entry: CaseEntry, images: list[Path], blog: BlogData | None = None, summary: str = "") -> str:
     template = read_text(CASE_DETAIL_TEMPLATE_PATH)
-    hero_image = detail_image_rel_path(entry, images[0]) if images else (f"../../{entry.thumb}" if entry.thumb else "../../images/gallery/case_hero.jpg")
+    chosen_summary = summary or (blog.summary if blog else "") or entry.summary or entry.title
+    hero_image = detail_image_rel_path(entry, images[0]) if images else (entry.thumb if entry.thumb else "/images/gallery/case_hero.jpg")
+    story_blog = blog or BlogData(title=entry.title, date=entry.date, year=entry.year, slug=entry.slug, category=entry.category, summary=chosen_summary, source_url=entry.source_url, instagram_url=entry.instagram_url)
+    story_blog.summary = chosen_summary
     gallery_items: list[str] = []
     total_images = len(images or [])
     for idx, image_path in enumerate(images or []):
@@ -435,25 +589,28 @@ def render_case_detail_template(entry: CaseEntry, images: list[Path], blog: Blog
     source_button = f'<a class="button case-btn-white" href="{source_url or "#"}" target="_blank" rel="noopener">블로그 원문 보기</a>' if source_url else ""
     if instagram_url:
         instagram_button = f'<a class="button case-btn-white" href="{instagram_url}" target="_blank" rel="noopener">인스타 보기</a>'
+    absolute_canonical = entry.sitemap_url
+    absolute_og_image = f"{SITE_BASE_URL.rstrip('/')}{hero_image}" if hero_image.startswith("/") else f"{SITE_BASE_URL.rstrip('/')}/{hero_image.lstrip('/')}"
+    case_story_html = markdown_text_to_html((blog.content or "").strip()) if blog and blog.content.strip() else markdown_text_to_html(build_case_story(story_blog))
     replacements = {
         "{{TITLE}}": entry.title,
         "{{DATE}}": entry.date,
         "{{CATEGORY}}": entry.category or "시공사례",
-        "{{SUMMARY}}": entry.summary or entry.title,
+        "{{SUMMARY}}": chosen_summary,
         "{{SOURCE_URL}}": source_url or "#",
         "{{SOURCE_BUTTON}}": source_button,
         "{{INSTAGRAM_BUTTON}}": instagram_button,
         "{{GALLERY_IMAGES}}": "\n        ".join(gallery_items),
         "{{BREADCRUMB_TITLE}}": entry.title,
-        "{{META_DESCRIPTION}}": entry.summary or entry.title,
-        "{{OG_IMAGE}}": hero_image,
-        "{{CANONICAL_URL}}": entry.case_url,
+        "{{META_DESCRIPTION}}": chosen_summary,
+        "{{OG_IMAGE}}": absolute_og_image,
+        "{{CANONICAL_URL}}": absolute_canonical,
         "{{THUMBNAIL}}": hero_image,
         "{{THUMBNAIL_TEXT}}": entry.thumb or "없음",
         "{{TAGS}}": ",".join(filter(None, [entry.category, entry.title, entry.slug.replace("-", ",")])),
         "{{SLUG}}": entry.slug,
         "{{CASE_URL}}": entry.case_url,
-        "{{CASE_STORY}}": build_case_story(blog or BlogData(title=entry.title, summary=entry.summary)),
+        "{{CASE_STORY}}": case_story_html,
     }
     rendered = template
     for key, value in replacements.items():
@@ -461,15 +618,16 @@ def render_case_detail_template(entry: CaseEntry, images: list[Path], blog: Blog
     return rendered
 
 
-def build_case_detail_html(entry: CaseEntry, images: list[Path], blog: BlogData | None = None) -> str:
-    return render_case_detail_template(entry, images, blog)
+def build_case_detail_html(entry: CaseEntry, images: list[Path], blog: BlogData | None = None, summary: str = "") -> str:
+    return render_case_detail_template(entry, images, blog, summary)
 
 
 def gather_case_images_for_blog(entry: CaseEntry, blog: BlogData | None = None) -> list[Path]:
     if blog and blog.images:
         selected: list[Path] = []
         for rel_path in blog.images:
-            path = ROOT / rel_path
+            normalized = str(rel_path).lstrip("/\\")
+            path = ROOT / normalized
             if path.exists() and path.is_file():
                 selected.append(path)
         if selected:
@@ -478,29 +636,62 @@ def gather_case_images_for_blog(entry: CaseEntry, blog: BlogData | None = None) 
 
 
 def collect_missing_case_details(cases: list[CaseEntry]) -> list[CaseEntry]:
-    return [case for case in cases if not case.detail_path.exists()]
+    return [
+        case
+        for case in cases
+        if case.case_url.endswith("/") and (not case.detail_path.exists() or not case.markdown_path.exists())
+    ]
+
+
+def ensure_case_thumbnail(entry: CaseEntry, images: list[Path]) -> None:
+    if not images:
+        return
+    thumb_path = entry.thumbnail_path
+    thumb_path.parent.mkdir(parents=True, exist_ok=True)
+    if thumb_path.exists():
+        return
+    first_image = images[0]
+    shutil.copyfile(first_image, thumb_path)
+
+
+def write_case_markdown(entry: CaseEntry, blog: BlogData | None, summary: str, images: list[Path]) -> Path:
+    markdown_path = entry.markdown_path
+    markdown_path.parent.mkdir(parents=True, exist_ok=True)
+    markdown_text = build_case_markdown(entry, blog, summary, images)
+    markdown_path.write_text(markdown_text, encoding="utf-8")
+    return markdown_path
 
 
 def write_missing_case_details(
     cases: list[CaseEntry],
     overwrite_paths: set[Path] | None = None,
     blog: BlogData | None = None,
+    summary: str = "",
 ) -> list[Path]:
     created: list[Path] = []
     overwrite_paths = overwrite_paths or set()
     for case in cases:
+        if not case.case_url.endswith("/"):
+            continue
         detail_path = case.detail_path
-        if detail_path.exists() and detail_path not in overwrite_paths:
+        markdown_path = case.markdown_path
+        if detail_path.exists() and markdown_path.exists() and detail_path not in overwrite_paths:
             continue
         detail_path.parent.mkdir(parents=True, exist_ok=True)
         current_blog = blog if blog and (case.slug == blog.slug or case.date == blog.date) else None
         images = gather_case_images_for_blog(case, current_blog)
-        detail_path.write_text(build_case_detail_html(case, images, current_blog), encoding="utf-8")
+        chosen_summary = summary or (current_blog.summary if current_blog else "") or case.summary or case.title
+        ensure_case_thumbnail(case, images)
+        write_case_markdown(case, current_blog, chosen_summary, images)
+        detail_path.write_text(build_case_detail_html(case, images, current_blog, chosen_summary), encoding="utf-8")
         created.append(detail_path)
     return created
 
 
 def make_case_entry_from_blog(data: BlogData) -> CaseEntry:
+    thumb = data.thumbnail or thumbnail_path_for(data)
+    if thumb and not thumb.startswith("/"):
+        thumb = f"/{thumb.lstrip('/')}"
     return CaseEntry(
         date=data.date or datetime.now().strftime("%Y-%m-%d"),
         added_at=datetime.now().isoformat(timespec="seconds"),
@@ -508,10 +699,11 @@ def make_case_entry_from_blog(data: BlogData) -> CaseEntry:
         summary=data.summary,
         slug=case_folder_slug(data),
         category=data.category,
-        thumb=data.thumbnail or thumbnail_path_for(data),
+        url=case_url_for(data),
+        thumb=thumb,
         source_url=data.source_url,
         instagram_url=data.instagram_url,
-        highlight_image=data.thumbnail or thumbnail_path_for(data),
+        highlight_image=thumb,
     )
 
 
@@ -522,8 +714,10 @@ def case_entry_to_dict(entry: CaseEntry) -> dict[str, str]:
         "slug": entry.slug,
         "category": entry.category,
         "summary": entry.summary,
+        "url": entry.case_url,
         "case_url": entry.case_url,
         "thumbnail": entry.thumb,
+        "thumb": entry.thumb,
         "source_url": entry.source_url,
         "instagram_url": entry.instagram_url,
     }
@@ -542,9 +736,9 @@ def load_cases_index() -> tuple[list[CaseEntry], str]:
             title = str(item.get("title", "")).strip()
             summary = str(item.get("summary", "")).strip()
             category = str(item.get("category", "")).strip()
-            case_url = str(item.get("case_url", "")).strip()
+            case_url = str(item.get("url") or item.get("case_url") or "").strip()
             if not slug and case_url:
-                m = re.search(r"case-([a-z0-9\-]+)\.html", case_url)
+                m = re.search(r"case-([a-z0-9\-]+)(?:\.html|/)", case_url)
                 if m:
                     slug = m.group(1)
             if not slug:
@@ -557,6 +751,7 @@ def load_cases_index() -> tuple[list[CaseEntry], str]:
                     summary=summary,
                     slug=slug,
                     category=category,
+                    url=case_url,
                     thumb=str(item.get("thumbnail", "")).strip(),
                     source_url=str(item.get("source_url", "")).strip(),
                     instagram_url=str(item.get("instagram_url", "")).strip(),
@@ -678,7 +873,7 @@ def render_index_preview(data: BlogData, latest_case: CaseEntry) -> str:
 
 def render_cases_preview(cases: list[CaseEntry]) -> str:
     source = read_text(ROOT / "cases.html")
-    highlights = "\n".join(build_case_feature_card(entry, is_latest=(idx == 0)) for idx, entry in enumerate(cases[:3]))
+    highlights = "\n".join(build_case_feature_card(entry, is_latest=(idx == 0)) for idx, entry in enumerate(cases[:2]))
     case_list = "\n".join(build_case_row(entry) for entry in cases)
     rendered, _ = replace_between_markers(source, MARKERS["cases.html"][0], MARKERS["cases.html"][1], highlights)
     rendered, _ = replace_between_markers(rendered, MARKERS["cases.html"][2], MARKERS["cases.html"][3], case_list)
@@ -766,14 +961,16 @@ def backup_and_apply_live_files() -> tuple[bool, Path | None, list[Path]]:
     return True, backup_dir, backup_files
 
 
-def parse_args() -> dict[str, bool]:
+def parse_args() -> dict[str, object]:
     import argparse
 
     parser = argparse.ArgumentParser(description="오박사 홈페이지 preview/인덱스 동기화")
+    parser.add_argument("--preview", action="store_true", help="preview 결과를 생성")
     parser.add_argument("--write-index", action="store_true", help="preview 대신 cases_index.json을 실제로 갱신")
     parser.add_argument("--apply", action="store_true", help="preview 결과를 실제 운영 파일에 반영")
+    parser.add_argument("--summary", default="", help="사용자가 직접 제공한 150~200자 요약문")
     args = parser.parse_args()
-    return {"write_index": bool(args.write_index), "apply": bool(args.apply)}
+    return {"preview": bool(args.preview), "write_index": bool(args.write_index), "apply": bool(args.apply), "summary": str(args.summary).strip()}
 
 
 def write_preview_files(data: BlogData, cases: list[CaseEntry]) -> list[Path]:
@@ -814,7 +1011,12 @@ def preview_marker_block(name: str, path: Path, markers: Iterable[str]) -> None:
 def main() -> int:
     args = parse_args()
     mode = "apply" if args["apply"] else ("write-index" if args["write_index"] else "preview")
+    chosen_summary = args["summary"].strip()
     ok, data, source_path = load_blog_data()
+    if not chosen_summary:
+        print("error: --summary가 필요합니다. 150~200자 요약문을 제공해 주세요.")
+        return 1
+    data.summary = chosen_summary
     print(f"mode: {mode}")
     print(f"blog_fetch_result.json load success: {ok}")
     if source_path:
@@ -877,7 +1079,7 @@ def main() -> int:
         backup_created, backup_path, backup_files = backup_and_apply_live_files()
         overwrite_paths = set(FORCE_REGENERATE_DETAIL_PATHS)
         overwrite_paths.add(new_case.detail_path)
-        created_case_details = write_missing_case_details(merged_cases, overwrite_paths, data)
+        created_case_details = write_missing_case_details(merged_cases, overwrite_paths, data, chosen_summary)
         print(f"backup path: {backup_path.as_posix() if backup_path else ''}")
         if backup_files:
             print("backup files:")
@@ -891,7 +1093,7 @@ def main() -> int:
     print(f"신규 사례 추가 여부: {'예' if new_case.case_url not in {case.case_url for case in existing_cases} else '아니오'}")
     print(f"중복 갱신 여부: {'예' if replaced or duplicate_found else '아니오'}")
     print(f"정렬 후 전체 사례 수: {len(merged_cases)}")
-    print(f"하이라이트 사례 수: {min(3, len(merged_cases))}")
+    print(f"하이라이트 사례 수: {min(2, len(merged_cases))}")
     print(f"sitemap URL 수: {len({case.sitemap_url for case in merged_cases})}")
     print(f"thumbnail 사용 여부: {'예' if thumbnail_used else '아니오'}")
     print(f"backup 생성 여부: {'예' if backup_created else '아니오'}")

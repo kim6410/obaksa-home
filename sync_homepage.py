@@ -221,7 +221,11 @@ def merge_cases(existing: list[CaseEntry], new_case: CaseEntry) -> tuple[list[Ca
     for entry in existing:
         put(entry)
     put(new_case, is_new=True)
-    ordered = sorted(merged.values(), key=lambda item: item.date, reverse=True)
+    ordered = sorted(
+        merged.values(),
+        key=lambda item: (item.date, item.slug == new_case.slug),
+        reverse=True,
+    )
     return ordered, duplicate, replaced
 
 

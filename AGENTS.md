@@ -50,6 +50,59 @@
 
 ---
 
+## 04-1 중간 승인 최소화 규칙
+
+- 작업 시작 전 백업이 완료된 경우, 일반 홈페이지 운영 작업은 중간 승인 없이 자동 진행한다.
+- 아래 작업은 안전 작업으로 간주하며 사용자에게 반복 확인하지 않는다.
+  - `Get-Item`
+  - `Get-ChildItem`
+  - `Get-Content`
+  - `Select-String`
+  - `Test-Path`
+  - `New-Item`
+  - `Copy-Item`
+  - `Move-Item`
+  - `Set-Content`
+  - `Add-Content`
+  - HTML 파일 생성
+  - CSS 파일 수정
+  - JS 파일 수정
+  - 이미지 복사
+  - 이미지 압축
+  - 이미지 리사이징
+  - 원본 이미지를 `original` 폴더에 복사
+  - `thumb.jpg` 생성
+  - `before/after` 이미지 생성
+  - `index.html` 갱신
+  - `cases.html` 갱신
+  - `sitemap.xml` 갱신
+  - JSON-LD 생성
+  - `git status`
+  - `git diff`
+  - `git add`
+  - `git commit`
+  - `git push`
+- 위 작업은 신규 시공사례 생성, 이미지 정리, 기존 페이지 갱신, GitHub Pages 배포에 필요한 정상 작업이므로 중간 확인 없이 끝까지 수행한다.
+- 아래 작업은 백업이 있어도 반드시 사용자 승인을 받는다.
+  - `Remove-Item`
+  - `git reset --hard`
+  - `git clean -fd`
+  - `git push -f`
+  - `.git` 폴더 삭제
+  - 프로젝트 루트 삭제
+  - `images` 폴더 전체 삭제
+  - `images/gallery` 전체 삭제
+  - `images/cases` 전체 삭제
+  - `cases` 폴더 전체 삭제
+  - 대량 파일 삭제
+  - 원격 저장소 주소 변경
+  - 브랜치 삭제
+  - GitHub 저장소 삭제
+- 위험 작업이 아닌 일반 운영 작업은 사용자의 중간 컨펌을 기다리지 말고 자동으로 진행한다.
+- 작업 완료 후에만 결과를 보고한다.
+
+---
+
 ## 05 백업 정책
 
 - 여러 파일을 동시에 수정하거나 공통 CSS/JS를 건드릴 때는 백업을 수행한다.
@@ -59,7 +112,6 @@
 - 백업 제외 대상은 `.git`, `node_modules`, 기존 ZIP 파일, `*.bak`, `*.tmp`, `*.log`, `__MACOSX`, `.DS_Store`다.
 - 백업이 완료되면 최종 보고서에 백업 폴더 절대 경로를 기록한다.
 - 작업 도중 깨짐, 구문 오류, 파일 유실, 레이아웃 붕괴, 검증 실패가 발생하면 즉시 추가 작업을 중단한다.
-- 신규 시공사례 생성, 이미지 정리, `index.html` 갱신, `cases.html` 갱신, `sitemap.xml` 갱신 같은 정해진 홈페이지 운영 작업은 안전 백업이 끝나면 중간 확인 없이 끝까지 자동 진행한다.
 
 ---
 

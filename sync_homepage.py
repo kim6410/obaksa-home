@@ -1598,10 +1598,38 @@ def _normalize_folder_case_html_outputs() -> None:
             html_path.write_text(updated, encoding="utf-8")
 
 
+def _ensure_case_build_bats() -> None:
+    bat_template = """@echo off
+setlocal
+pushd "%~dp0..\\..\\.."
+set /p SUMMARY=150~200자 요약문을 입력하세요: 
+if not defined SUMMARY (
+  echo 요약문이 필요합니다.
+  popd
+  pause
+  exit /b 1
+)
+python sync_homepage.py --apply --summary "%SUMMARY%"
+set EXIT_CODE=%ERRORLEVEL%
+popd
+pause
+exit /b %EXIT_CODE%
+"""
+    for html_path in ROOT.glob("cases/20??/case-*/index.html"):
+        folder = html_path.parent
+        if not folder.exists():
+            continue
+        bat_path = folder / "build.bat"
+        if bat_path.exists() and bat_path.read_text(encoding="utf-8", errors="ignore") == bat_template:
+            continue
+        bat_path.write_text(bat_template, encoding="utf-8")
+
+
 def main(*args, **kwargs):  # type: ignore[override]
     result = _ORIGINAL_MAIN(*args, **kwargs)
     if result == 0:
         _normalize_folder_case_html_outputs()
+        _ensure_case_build_bats()
     return result
 
 

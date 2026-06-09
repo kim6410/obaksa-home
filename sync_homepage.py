@@ -215,8 +215,40 @@ def thumbnail_path_for(data: BlogData) -> str:
     return f"cases/{data.year or extract_year(data.date)}/{case_folder_slug(data)}/thumb.jpg"
 
 
+def seo_alt_base(title: str) -> str:
+    text = re.sub(r"\s+", " ", (title or "")).strip()
+    if " 원인과 " in text:
+        text = text.split(" 원인과 ", 1)[0].strip()
+    text = re.sub(r"\s+(후기|사례|현장|작업)$", "", text).strip()
+    if len(text) > 40:
+        text = text[:40].rstrip(" ,·-/")
+    return text
+
+
+def seo_case_image_alt(title: str, index: int) -> str:
+    suffixes = [
+        " 현장 점검",
+        " 분해 전 상태",
+        " 철거 중 배선 확인",
+        " 교체 전 커버 제거 과정",
+        " 부품 상태 확인",
+        " 교체 중 설치",
+        " 덕트 밀봉 마감 점검",
+        " 흡입력 시험 완료",
+        " 문제 해결 후 점검",
+        " 최종 완료 확인",
+        " 추가 상세 확인",
+    ]
+    base = seo_alt_base(title)
+    suffix = suffixes[min(index, len(suffixes) - 1)]
+    alt = f"{base}{suffix}" if base else suffix.strip()
+    return alt[:60].rstrip()
+
+
 def parse_case_date(raw: str) -> str:
     raw = (raw or "").strip()
+    # Naver/Instagram often expose relative dates like "14분 전".
+    # Normalize those to today so the newest case stays at the top.
     if re.match(r"20\d{2}\.\d{2}\.\d{2}", raw):
         return raw.replace(".", "-")
     if re.match(r"20\d{2}-\d{2}-\d{2}", raw):
@@ -288,6 +320,8 @@ def merge_cases(existing: list[CaseEntry], new_case: CaseEntry) -> tuple[list[Ca
     for entry in existing:
         put(entry)
     put(new_case, is_new=True)
+    # Keep the case board and homepage in newest-first order.
+    # Date is the primary sort key, then added_at, then slug for stability.
     ordered = sorted(
         merged.values(),
         key=lambda item: (item.date, item.added_at, item.slug),
@@ -303,7 +337,7 @@ def build_case_feature_card(entry: CaseEntry, is_latest: bool = False) -> str:
         link_block.append(f'      <a href="{entry.instagram_url}" target="_blank" rel="noopener">Instagram</a>')
     return "\n".join([
         '<article class="case-feature-card">',
-        f'  <img src="{img}" alt="{entry.title}">',
+        f'  <img src="{img}" alt="{seo_alt_base(entry.title)} 대표 이미지">',
         "  <div>",
         f"    <h2>{entry.title}</h2>",
         f"    <p>{entry.summary}</p>",
@@ -726,30 +760,12 @@ def _contextual_alt(entry: CaseEntry | None, raw_alt: str, src: str = "") -> str
         "작업 후 흔들림이나 불안 요소가 없는지 확인했습니다.",
         "현장 최종 확인 후 안전하게 마무리한 모습입니다.",
     }
-    if raw_alt and raw_alt not in generic and not re.match(r"작업 과정 사진 \d+", raw_alt):
-        if entry and entry.title and raw_alt not in entry.title and len(raw_alt) < 28:
-            return f"{entry.title} {raw_alt}"
-        return raw_alt
     if not entry:
         return raw_alt or _image_filename(src) or "시공 사례 이미지"
-    title = entry.title or "오박사만능인테리어 시공 사례"
-    category = entry.category or "집수리"
     name = _image_filename(src)
     number_match = re.search(r"(\d+)", name)
-    number = int(number_match.group(1)) if number_match else 0
-    if number <= 1:
-        suffix = "현장 상태 확인"
-    elif number == 2:
-        suffix = "문제 원인 점검"
-    elif number == 3:
-        suffix = "작업 과정"
-    elif number == 4:
-        suffix = "보강 및 정리 과정"
-    elif number == 5:
-        suffix = "마감 상태 확인"
-    else:
-        suffix = "완료 후 최종 점검"
-    return f"{title} {category} {suffix}"
+    number = int(number_match.group(1)) - 1 if number_match else 0
+    return seo_case_image_alt(entry.title or "오박사만능인테리어 시공 사례", max(number, 0))
 
 
 def normalize_markdown_image_placeholders(markdown_text: str, images: list[Path] | None = None) -> tuple[str, list[str]]:
@@ -1195,7 +1211,7 @@ def build_latest_case_html(data: BlogData) -> str:
         f"    <p>{data.summary}</p>",
         '    <div class="ob-latest-case-card">',
         f'      <a class="ob-latest-case-img" href="{case_url}" aria-label="{data.title} 상세보기">',
-        f'        <img src="{thumb}" alt="{data.title} 썸네일" loading="lazy" />',
+        f'        <img src="{thumb}" alt="{seo_alt_base(data.title)} 대표 현장 이미지" loading="lazy" />',
         "      </a>",
         '      <div class="ob-latest-case-text">',
         f"        <span>{data.category}</span>",
@@ -1506,6 +1522,55 @@ def write_preview_files(data: BlogData, cases: list[CaseEntry]) -> list[Path]:
     return [index_json_path, index_path, cases_path, sitemap_path]
 
 
+def refresh_live_case_alt_texts() -> list[Path]:
+    updated_paths: list[Path] = []
+    case_paths = sorted(ROOT.glob("cases/20??/case-*/index.html"))
+    for html_path in case_paths:
+        try:
+            text = read_text(html_path)
+        except Exception:
+            continue
+        title_match = re.search(r'<h1>([^<]+)</h1>', text)
+        if not title_match:
+            title_match = re.search(r'<title>([^<]+)</title>', text)
+        if not title_match:
+            continue
+        base_title = seo_alt_base(html.unescape(title_match.group(1)))
+        pattern = re.compile(r'(<img\b[^>]*\bsrc="[^"]+"[^>]*\balt=")[^"]*(")', re.I)
+        img_index = 0
+
+        def repl(match: re.Match[str]) -> str:
+            nonlocal img_index
+            alt = seo_case_image_alt(base_title, img_index)
+            img_index += 1
+            return f"{match.group(1)}{alt}{match.group(2)}"
+
+        updated = pattern.sub(repl, text)
+        if updated != text:
+            html_path.write_text(updated, encoding="utf-8")
+            updated_paths.append(html_path)
+
+    live_pages = [ROOT / "index.html", ROOT / "cases.html"]
+    for html_path in live_pages:
+        if not html_path.exists():
+            continue
+        text = read_text(html_path)
+        updated = text
+        if html_path.name == "index.html":
+            m = re.search(r'<h2>([^<]+)</h2>\s*<p>([^<]+)</p>\s*<div class="ob-latest-case-card">.*?<img src="([^"]+)" alt="[^"]*" loading="lazy" />', text, re.S)
+            if m:
+                title = html.unescape(m.group(1))
+                alt = f"{seo_alt_base(title)} 대표 현장 이미지"[:60].rstrip()
+                updated = re.sub(r'(<div class="ob-latest-case-card">.*?<img src="[^"]+" alt=")[^"]*(" loading="lazy" />)', r"\1" + alt + r"\2", text, count=1, flags=re.S)
+        else:
+            updated = re.sub(r'(<article class="case-feature-card">\s*<img src="[^"]+" alt=")[^"]*(">)', lambda m: f"{m.group(1)}{seo_alt_base(re.search(r'<h2>([^<]+)</h2>', m.group(0)).group(1) if re.search(r'<h2>([^<]+)</h2>', m.group(0)) else '')} 대표 이미지{m.group(2)}", text, flags=re.S)
+        if updated != text:
+            html_path.write_text(updated, encoding="utf-8")
+            updated_paths.append(html_path)
+
+    return updated_paths
+
+
 def preview_marker_block(name: str, path: Path, markers: Iterable[str]) -> None:
     text = read_text(path)
     print(f"[{name}] marker checks")
@@ -1617,6 +1682,7 @@ def main() -> int:
         overwrite_paths = set(FORCE_REGENERATE_DETAIL_PATHS)
         overwrite_paths.add(new_case.detail_path)
         created_case_details = write_missing_case_details(merged_cases, overwrite_paths, data, chosen_summary)
+        refresh_live_case_alt_texts()
         print(f"backup path: {backup_path.as_posix() if backup_path else ''}")
         if backup_files:
             print("backup files:")
@@ -1680,6 +1746,7 @@ def main_rebuild_case(case_dir_input: str) -> int:
     write_cases_index_file(merged_cases, CASES_INDEX_PATH)
     _normalize_folder_case_html_outputs()
     _ensure_case_build_bats()
+    refresh_live_case_alt_texts()
 
     print(f"mode: rebuild-case")
     print(f"case_dir: {normalize_case_dir_input(case_dir_input).as_posix()}")

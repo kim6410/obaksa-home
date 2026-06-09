@@ -1859,6 +1859,8 @@ def main() -> int:
         overwrite_paths = set(FORCE_REGENERATE_DETAIL_PATHS)
         overwrite_paths.add(new_case.detail_path)
         created_case_details = write_missing_case_details(merged_cases, overwrite_paths, data, chosen_summary)
+        FORCE_REGENERATE_DETAIL_PATHS.add(new_case.detail_path)
+        FORCE_REGENERATE_DETAIL_PATHS.update(created_case_details)
         refresh_live_case_alt_texts()
         print(f"backup path: {backup_path.as_posix() if backup_path else ''}")
         if backup_files:
@@ -1923,6 +1925,7 @@ def main_rebuild_case(case_dir_input: str) -> int:
     write_cases_index_file(merged_cases, CASES_INDEX_PATH)
     _normalize_folder_case_html_outputs()
     _ensure_case_build_bats()
+    FORCE_REGENERATE_DETAIL_PATHS.add(entry.detail_path)
     refresh_live_case_alt_texts()
 
     print(f"mode: rebuild-case")
@@ -2017,6 +2020,306 @@ def main(*args, **kwargs):  # type: ignore[override]
         _normalize_folder_case_html_outputs()
         _ensure_case_build_bats()
     return result
+
+
+ALT_MIN_LENGTH = 20
+ALT_MAX_LENGTH = 60
+ALT_STAGE_LABELS = [
+    "현장 점검",
+    "분해 전 상태",
+    "철거 중 배선 확인",
+    "교체 전 커버 제거",
+    "부품 상태 확인",
+    "교체 중 설치",
+    "덕트 밀봉 마감",
+    "흡입력 시험",
+    "문제 해결 후 점검",
+    "최종 완료 확인",
+]
+
+
+def _normalize_alt_spacing(text: str) -> str:
+    return re.sub(r"\s+", " ", str(text or "")).strip()
+
+
+def _trim_alt_noise(text: str) -> str:
+    text = _normalize_alt_spacing(text)
+    text = text.replace("사진", "").replace("이미지", "").replace("모습", "")
+    return _normalize_alt_spacing(text)
+
+
+def _alt_stage_label(index: int) -> str:
+    if index < 0:
+        index = 0
+    if index >= len(ALT_STAGE_LABELS):
+        return ALT_STAGE_LABELS[-1]
+    return ALT_STAGE_LABELS[index]
+
+
+def _fit_alt_length(title: str, alt: str, index: int = 0, include_place: bool = True) -> str:
+    alt = _trim_alt_noise(alt)
+    location = _extract_case_location(title)
+    place = _extract_case_place(title) if include_place else ""
+    work = _extract_case_work(title)
+    issue = _extract_case_issue(title)
+    stage = _alt_stage_label(index)
+
+    candidates = []
+    for parts in [
+        [location, place, work, issue, stage],
+        [location, work, issue, stage],
+        [location, work, stage],
+        [location, issue, stage],
+        [location, place, work, stage],
+        [location, work],
+        [location, stage],
+    ]:
+        candidate = _trim_alt_noise(_normalize_alt_spacing(" ".join(part for part in parts if part)))
+        if candidate and candidate not in candidates:
+            candidates.append(candidate)
+
+    if alt and alt not in candidates:
+        candidates.insert(0, alt)
+
+    for candidate in candidates:
+        if ALT_MIN_LENGTH <= len(candidate) <= ALT_MAX_LENGTH:
+            return candidate
+
+    for candidate in candidates:
+        if len(candidate) > ALT_MAX_LENGTH:
+            shortened = candidate
+            for token in [place, "현장", "점검", "최종", "완료", "확인", "문제 해결 후", "교체", "설치"]:
+                if token:
+                    shortened = shortened.replace(token, "")
+            shortened = _normalize_alt_spacing(shortened)
+            if len(shortened) > ALT_MAX_LENGTH:
+                shortened = shortened[:ALT_MAX_LENGTH].rstrip(" ,.-/")
+            if len(shortened) >= ALT_MIN_LENGTH:
+                return shortened
+
+    base = candidates[0] if candidates else _normalize_alt_spacing(f"{location or '울산'} {work or '집수리'} {stage}")
+    if len(base) < ALT_MIN_LENGTH:
+        base = _normalize_alt_spacing(f"{location or '울산'} {place or ''} {work or '집수리'} {stage}")
+    if len(base) > ALT_MAX_LENGTH:
+        base = base[:ALT_MAX_LENGTH].rstrip(" ,.-/")
+    return base
+
+
+def seo_case_cover_alt(title: str) -> str:
+    title = _normalize_alt_spacing(title)
+    base = _normalize_alt_spacing(
+        " ".join(
+            part
+            for part in [
+                _extract_case_location(title),
+                _extract_case_place(title),
+                _extract_case_work(title),
+                _extract_case_issue(title),
+                "문제 해결 완료",
+            ]
+            if part
+        )
+    )
+    return _fit_alt_length(title, base, 0, include_place=True)
+
+
+def seo_case_image_alt(title: str, index: int) -> str:
+    title = _normalize_alt_spacing(title)
+    base = _normalize_alt_spacing(
+        " ".join(
+            part
+            for part in [
+                _extract_case_location(title),
+                _extract_case_place(title),
+                _extract_case_work(title),
+                _extract_case_issue(title),
+                _alt_stage_label(index),
+            ]
+            if part
+        )
+    )
+    if not base:
+        base = _normalize_alt_spacing(f"울산 집수리 {_alt_stage_label(index)}")
+    return _fit_alt_length(title, base, index=index, include_place=True)
+
+
+def _contextual_alt(entry: CaseEntry | None, raw_alt: str, src: str = "") -> str:
+    if not entry:
+        fallback = raw_alt or _image_filename(src) or "울산 집수리 점검"
+        return _fit_alt_length("", fallback, 0, include_place=True)
+    name = _image_filename(src)
+    match = re.search(r"(\d+)", name)
+    index = max(int(match.group(1)) - 1, 0) if match else 0
+    return seo_case_image_alt(entry.title or "울산 집수리", index)
+
+
+def build_image_items(entry: CaseEntry, images: list[Path], blog: BlogData | None = None) -> list[ImageItem]:
+    image_map = {image.name: image for image in images}
+    plan = load_image_manifest(entry, blog)
+    items: list[ImageItem] = []
+    if plan:
+        normalized_plan = []
+        for raw in plan:
+            if not isinstance(raw, dict):
+                continue
+            file_name = str(raw.get("file") or raw.get("name") or raw.get("src") or "").strip()
+            file_name = _image_filename(file_name)
+            if not file_name or file_name not in image_map:
+                continue
+            use = raw.get("use", True)
+            if str(use).lower() in {"false", "0", "no", "n"}:
+                continue
+            order = raw.get("order", 999)
+            try:
+                order_int = int(order)
+            except Exception:
+                order_int = 999
+            normalized_plan.append((order_int, file_name))
+        for order_int, file_name in sorted(normalized_plan, key=lambda item: item[0]):
+            path = image_map[file_name]
+            index = max(order_int - 1, 0)
+            alt = seo_case_image_alt(entry.title or "울산 집수리", index)
+            items.append(ImageItem(path=path, alt=alt, caption=alt, reviewed=bool(order_int)))
+        return items[:MAX_DETAIL_IMAGES]
+
+    write_image_review_todo(entry, images)
+    return [
+        ImageItem(
+            path=image,
+            alt=seo_case_image_alt(entry.title or "울산 집수리", idx),
+            caption=seo_case_image_alt(entry.title or "울산 집수리", idx),
+            reviewed=False,
+        )
+        for idx, image in enumerate(images[:MAX_DETAIL_IMAGES])
+    ]
+
+
+def markdown_text_to_html(markdown_text: str, entry: CaseEntry | None = None) -> str:
+    output: list[str] = []
+    lines = (markdown_text or "").splitlines()
+    paragraph: list[str] = []
+    list_items: list[str] = []
+
+    def flush_paragraph() -> None:
+        if paragraph:
+            output.append(f"<p>{_html_escape(' '.join(paragraph).strip())}</p>")
+            paragraph.clear()
+
+    def flush_list() -> None:
+        if list_items:
+            output.append("<ul>")
+            for item in list_items:
+                output.append(f"  <li>{_html_escape(item)}</li>")
+            output.append("</ul>")
+            list_items.clear()
+
+    for raw_line in lines:
+        line = raw_line.strip()
+        if not line:
+            flush_paragraph()
+            flush_list()
+            continue
+        if line == "---":
+            flush_paragraph()
+            flush_list()
+            output.append("<hr />")
+            continue
+        if _is_html_line(line):
+            flush_paragraph()
+            flush_list()
+            output.append(line)
+            continue
+        if line.startswith("### "):
+            flush_paragraph()
+            flush_list()
+            output.append(f"<h3>{_html_escape(line[4:].strip())}</h3>")
+            continue
+        if line.startswith("## "):
+            flush_paragraph()
+            flush_list()
+            output.append(f"<h2>{_html_escape(line[3:].strip())}</h2>")
+            continue
+        if line.startswith("# "):
+            flush_paragraph()
+            flush_list()
+            continue
+        if line.startswith("- "):
+            flush_paragraph()
+            list_items.append(line[2:].strip())
+            continue
+        img_match = re.match(r"!\[(.*?)\]\((.*?)\)", line)
+        if img_match:
+            flush_paragraph()
+            flush_list()
+            raw_alt, src = img_match.groups()
+            alt = _contextual_alt(entry, raw_alt, src)
+            output.append("<figure>")
+            output.append(f'  <img src="{_html_escape(src)}" alt="{_html_escape(alt)}" data-alt-source="auto" loading="lazy" />')
+            output.append(f"  <figcaption>{_html_escape(alt)}</figcaption>")
+            output.append("</figure>")
+            continue
+        paragraph.append(line)
+
+    flush_paragraph()
+    flush_list()
+    return "\n".join(output)
+
+
+def _extract_case_title_from_html(text: str, fallback: str = "") -> str:
+    patterns = [
+        r"<h1[^>]*>(.*?)</h1>",
+        r'<meta\s+property="og:title"\s+content="([^"]+)"',
+        r"<title>(.*?)</title>",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, text, re.I | re.S)
+        if not match:
+            continue
+        title = re.sub(r"<[^>]+>", "", match.group(1))
+        title = html.unescape(title)
+        title = _normalize_alt_spacing(title)
+        if title:
+            return title
+    return fallback
+
+
+def refresh_live_case_alt_texts() -> None:
+    targets = sorted({path for path in FORCE_REGENERATE_DETAIL_PATHS if path and path.suffix.lower() == ".html"})
+    if not targets:
+        return
+
+    for html_path in targets:
+        if not html_path.exists():
+            continue
+        original = html_path.read_text(encoding="utf-8")
+        title = _extract_case_title_from_html(original, html_path.stem)
+        if not title:
+            continue
+
+        image_index = 0
+
+        def replace_img(match: re.Match[str]) -> str:
+            nonlocal image_index
+            tag = match.group(0)
+            if 'data-alt-source="manual"' in tag.lower():
+                return tag
+            alt = seo_case_image_alt(title, image_index)
+            image_index += 1
+            if re.search(r'data-alt-source="[^"]*"', tag, flags=re.I):
+                tag = re.sub(r'data-alt-source="[^"]*"', 'data-alt-source="auto"', tag, count=1, flags=re.I)
+            else:
+                tag = tag.replace("<img ", '<img data-alt-source="auto" ', 1)
+            if re.search(r'alt="[^"]*"', tag, flags=re.I):
+                tag = re.sub(r'alt="[^"]*"', f'alt="{_html_escape(alt)}"', tag, count=1, flags=re.I)
+            else:
+                tag = tag[:-1] + f' alt="{_html_escape(alt)}">'
+            return tag
+
+        updated = re.sub(r"<img\b[^>]*>", replace_img, original, flags=re.I | re.S)
+        if updated != original:
+            html_path.write_text(updated, encoding="utf-8")
+
+    FORCE_REGENERATE_DETAIL_PATHS.clear()
 
 
 if __name__ == "__main__":

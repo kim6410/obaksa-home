@@ -1,0 +1,85 @@
+{
+  "note": "울산 북구 상가 창고 휴게실 변신 현장 이미지 검수 완료",
+  "images": [
+    {
+      "file": "01.jpg",
+      "order": 1,
+      "use": true,
+      "alt": "울산 북구 호계동 상가 창고 휴게실 변신 현장",
+      "caption": "울산 북구 호계동 상가 창고 휴게실 변신 현장",
+      "reviewed": true
+    },
+    {
+      "file": "02.jpg",
+      "order": 2,
+      "use": true,
+      "alt": "울산 북구 호계동 상가 창고 철거 전 상태",
+      "caption": "울산 북구 호계동 상가 창고 철거 전 상태",
+      "reviewed": true
+    },
+    {
+      "file": "03.jpg",
+      "order": 3,
+      "use": true,
+      "alt": "울산 북구 호계동 상가 창고 철거 중 배선 확인",
+      "caption": "울산 북구 호계동 상가 창고 철거 중 배선 확인",
+      "reviewed": true
+    },
+    {
+      "file": "04.jpg",
+      "order": 4,
+      "use": true,
+      "alt": "울산 북구 호계동 상가 창고 구조물 제거 과정",
+      "caption": "울산 북구 호계동 상가 창고 구조물 제거 과정",
+      "reviewed": true
+    },
+    {
+      "file": "05.jpg",
+      "order": 5,
+      "use": true,
+      "alt": "울산 북구 호계동 상가 창고 내부 부품과 마감 상태",
+      "caption": "울산 북구 호계동 상가 창고 내부 부품과 마감 상태",
+      "reviewed": true
+    },
+    {
+      "file": "06.jpg",
+      "order": 6,
+      "use": true,
+      "alt": "울산 북구 호계동 상가 창고 휴게실로 교체 중인 모습",
+      "caption": "울산 북구 호계동 상가 창고 휴게실로 교체 중인 모습",
+      "reviewed": true
+    },
+    {
+      "file": "07.jpg",
+      "order": 7,
+      "use": true,
+      "alt": "울산 북구 호계동 상가 창고 덕트와 마감 정리",
+      "caption": "울산 북구 호계동 상가 창고 덕트와 마감 정리",
+      "reviewed": true
+    },
+    {
+      "file": "08.jpg",
+      "order": 8,
+      "use": true,
+      "alt": "울산 북구 호계동 상가 창고 환기와 사용 동선 점검",
+      "caption": "울산 북구 호계동 상가 창고 환기와 사용 동선 점검",
+      "reviewed": true
+    },
+    {
+      "file": "09.jpg",
+      "order": 9,
+      "use": true,
+      "alt": "울산 북구 호계동 상가 창고 휴게실 완성 후 점검",
+      "caption": "울산 북구 호계동 상가 창고 휴게실 완성 후 점검",
+      "reviewed": true
+    },
+    {
+      "file": "10.jpg",
+      "order": 10,
+      "use": true,
+      "alt": "울산 북구 호계동 상가 창고 휴게실 최종 완료",
+      "caption": "울산 북구 호계동 상가 창고 휴게실 최종 완료",
+      "reviewed": true
+    }
+  ]
+}

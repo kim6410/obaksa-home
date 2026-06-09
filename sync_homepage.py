@@ -149,7 +149,7 @@ def load_blog_data() -> tuple[bool, BlogData, Path | None]:
             with candidate.open("r", encoding="utf-8") as f:
                 data = json.load(f)
             source_url = str(data.get("input_url") or data.get("url") or "").strip()
-            date_text = str(data.get("date", "")).strip()
+            date_text = parse_case_date(str(data.get("date", "")).strip())
             year = extract_year(date_text)
             slug = normalize_slug(str(data.get("slug", "")).strip(), date_text, str(data.get("title", "")).strip())
             return True, BlogData(
@@ -221,6 +221,8 @@ def parse_case_date(raw: str) -> str:
         return raw.replace(".", "-")
     if re.match(r"20\d{2}-\d{2}-\d{2}", raw):
         return raw
+    if any(token in raw for token in ("분 전", "시간 전", "일 전", "방금", "오늘")):
+        return datetime.now().strftime("%Y-%m-%d")
     return datetime.now().strftime("%Y-%m-%d")
 
 

@@ -215,34 +215,211 @@ def thumbnail_path_for(data: BlogData) -> str:
     return f"cases/{data.year or extract_year(data.date)}/{case_folder_slug(data)}/thumb.jpg"
 
 
+def _clean_alt_text(value: str) -> str:
+    """ALT 문구를 검색 친화적으로 다듬는다.
+
+    - 불필요한 "사진/이미지/모습" 표현 제거
+    - 공백 정리
+    - 너무 긴 문장은 60자 안쪽으로 정리
+    """
+    text = re.sub(r"\s+", " ", str(value or "")).strip()
+    text = re.sub(r"\s*(사진|이미지|모습)\s*", " ", text).strip()
+    text = re.sub(r"\s+", " ", text)
+    return text[:60].rstrip(" ,·-/.")
+
+
+def _is_generic_alt(value: str) -> bool:
+    text = _clean_alt_text(value)
+    if not text:
+        return True
+    generic_phrases = {
+        "현장 상태를 먼저 살펴본",
+        "문제 원인이 되는 부분을 자세히 확인한",
+        "필요한 부위를 보강하고 정리하는 과정",
+        "현장 상황에 맞춰 다시 고정하는 작업",
+        "틈새와 마감 상태를 함께 점검한",
+        "작업 후 흔들림이나 불안 요소가 없는지 확인했습니다",
+        "현장 최종 확인 후 안전하게 마무리한",
+        "시공 사례",
+        "작업 과정",
+        "대표",
+    }
+    if text in generic_phrases:
+        return True
+    if re.match(r"작업 과정\s*\d*", text):
+        return True
+    # 너무 짧은 ALT는 이미지 검색 문맥이 부족하므로 자동 보강한다.
+    return len(text) < 12
+
+
+def _extract_case_location(title: str) -> str:
+    title = re.sub(r"\s+", " ", title or "").strip()
+    # 예: 울산 북구 매곡동, 울산 남구 삼산동, 울산 울주군 범서읍
+    match = re.search(r"(울산\s*(?:중구|남구|동구|북구|울주군)(?:\s*[가-힣A-Za-z0-9]+(?:동|읍|면|리))?)", title)
+    if match:
+        return re.sub(r"\s+", " ", match.group(1)).strip()
+    match = re.search(r"((?:경주|양산|부산|대구|포항|하남|양주|남양주|구리)\s*[가-힣A-Za-z0-9]+(?:동|읍|면|리|구)?)", title)
+    if match:
+        return re.sub(r"\s+", " ", match.group(1)).strip()
+    return ""
+
+
+def _extract_case_place(title: str) -> str:
+    title = re.sub(r"\s+", " ", title or "").strip()
+    place_keywords = (
+        "월드메르디앙", "에일린의뜰", "무지개아파트", "대하그린파크", "라온호텔",
+        "현대파라다이스", "동산에이스빌", "골든하이츠빌", "교육원", "상가", "주택",
+    )
+    for keyword in place_keywords:
+        if keyword in title:
+            return keyword
+    match = re.search(r"([가-힣A-Za-z0-9]+(?:아파트|빌라|맨션|상가|주택|호텔|교육원))", title)
+    return match.group(1) if match else ""
+
+
+def _extract_case_work(title: str) -> str:
+    title = title or ""
+    work_keywords = [
+        "환풍기", "세면대", "수전", "해바라기 샤워기", "샤워기", "변기", "소변기",
+        "차단기", "누전차단기", "분전반", "전기", "조명", "콘센트",
+        "도어락", "문틀", "문", "걸레받이", "도배", "장판", "싱크대",
+        "누수", "배관", "방수", "곰팡이", "결로", "보일러", "타일",
+    ]
+    for keyword in work_keywords:
+        if keyword in title:
+            if keyword == "전기" and ("차단기" in title or "분전반" in title):
+                continue
+            return keyword
+    return "집수리"
+
+
+def _extract_case_issue(title: str) -> str:
+    title = title or ""
+    issue_keywords = [
+        "탄내", "타는 냄새", "소음", "진동", "누수", "막힘", "역류", "곰팡이",
+        "결로", "정전", "차단기 내려감", "고장", "파손", "부식", "떨어짐",
+        "흔들림", "악취", "물샘", "교체", "수리",
+    ]
+    for keyword in issue_keywords:
+        if keyword in title:
+            return keyword
+    return "문제"
+
+
+def _case_context_prefix(title: str, include_place: bool = False) -> str:
+    location = _extract_case_location(title)
+    place = _extract_case_place(title) if include_place else ""
+    prefix = " ".join(part for part in [location, place] if part).strip()
+    return prefix
+
+
 def seo_alt_base(title: str) -> str:
+    """대표 카드용 짧은 SEO 베이스 문구를 만든다."""
     text = re.sub(r"\s+", " ", (title or "")).strip()
     if " 원인과 " in text:
         text = text.split(" 원인과 ", 1)[0].strip()
     text = re.sub(r"\s+(후기|사례|현장|작업)$", "", text).strip()
-    if len(text) > 40:
-        text = text[:40].rstrip(" ,·-/")
-    return text
+    return _clean_alt_text(text[:46].rstrip(" ,·-/"))
+
+
+def seo_case_cover_alt(title: str) -> str:
+    """홈/목록 대표 이미지 ALT.
+
+    지역명 + 작업명 + 핵심 문제를 넣되, 대표 카드에서는 너무 길지 않게 유지한다.
+    """
+    prefix = _case_context_prefix(title, include_place=True)
+    work = _extract_case_work(title)
+    issue = _extract_case_issue(title)
+    if prefix:
+        return _clean_alt_text(f"{prefix} {work} {issue} 해결 사례")
+    return _clean_alt_text(f"오박사만능인테리어 {work} {issue} 해결 사례")
 
 
 def seo_case_image_alt(title: str, index: int) -> str:
-    suffixes = [
-        " 현장 점검",
-        " 분해 전 상태",
-        " 철거 중 배선 확인",
-        " 교체 전 커버 제거 과정",
-        " 부품 상태 확인",
-        " 교체 중 설치",
-        " 덕트 밀봉 마감 점검",
-        " 흡입력 시험 완료",
-        " 문제 해결 후 점검",
-        " 최종 완료 확인",
-        " 추가 상세 확인",
-    ]
-    base = seo_alt_base(title)
-    suffix = suffixes[min(index, len(suffixes) - 1)]
-    alt = f"{base}{suffix}" if base else suffix.strip()
-    return alt[:60].rstrip()
+    """상세 이미지용 SEO ALT를 생성한다.
+
+    원칙:
+    1. 같은 페이지 안에서 ALT 문장 반복을 줄인다.
+    2. 지역명은 일부 컷에만 넣고, 나머지는 증상/부품/작업 단계를 구체화한다.
+    3. 검색어는 넣되 "사진/이미지/모습" 같은 빈 단어는 쓰지 않는다.
+    4. 20~60자 범위에 들어오도록 정리한다.
+    """
+    title = re.sub(r"\s+", " ", title or "").strip()
+    prefix = _case_context_prefix(title, include_place=True)
+    short_prefix = _case_context_prefix(title, include_place=False)
+    work = _extract_case_work(title)
+    issue = _extract_case_issue(title)
+
+    if "환풍기" in work or "환풍기" in title:
+        issue_word = "탄내" if "탄내" in title else ("소음" if "소음" in title else issue)
+        templates = [
+            f"{prefix or short_prefix} 욕실 환풍기 {issue_word} 원인 점검",
+            "노후 환풍기 모터 과열 흔적 확인",
+            f"환풍기 {issue_word} 원인 확인을 위한 내부 배선 점검",
+            "노후 욕실 환풍기 철거 전 커버 분해",
+            "환풍기 내부 먼지와 부품 상태 확인",
+            "욕실 환풍기 신규 제품 설치 과정",
+            "환풍기 덕트 연결부 밀봉 마감 점검",
+            "교체 완료 후 환풍기 흡입력 테스트",
+            f"화장실 환풍기 {issue_word} 해결 후 정상 작동 확인",
+            f"{short_prefix or '욕실'} 환풍기 교체 최종 마감 점검",
+            "환풍기 교체 후 소음과 냄새 재점검",
+        ]
+    elif any(token in title for token in ("차단기", "분전반", "정전", "전기")):
+        templates = [
+            f"{prefix or short_prefix} 정전 원인 분전반 점검",
+            "누전차단기 내려감 원인 확인",
+            "분전반 내부 배선 체결 상태 점검",
+            "차단기 교체 전 회로 이상 여부 확인",
+            "노후 차단기와 배선 연결부 정리",
+            "전기 공급 복구 후 콘센트 전압 확인",
+            "차단기 교체 완료 후 정상 작동 점검",
+            f"{short_prefix or '현장'} 전기 수리 최종 안전 확인",
+        ]
+    elif any(token in title for token in ("누수", "배관", "수전", "물샘")):
+        templates = [
+            f"{prefix or short_prefix} 누수 원인 현장 점검",
+            "수전 연결부 물샘 원인 확인",
+            "노후 배관 부식과 누수 지점 확인",
+            "누수 부품 철거 전 상태 점검",
+            "새 부품 교체와 연결부 재정비",
+            "수압 테스트로 물샘 재발 여부 확인",
+            f"{short_prefix or '욕실'} 누수 수리 완료 후 마감 점검",
+        ]
+    elif any(token in title for token in ("세면대", "변기", "소변기", "도기")):
+        templates = [
+            f"{prefix or short_prefix} 욕실 도기 파손 상태 점검",
+            "세면대 고정 불량과 흔들림 원인 확인",
+            "노후 도기 철거 전 안전 점검",
+            "욕실 도기 교체 위치와 배관 확인",
+            "새 세면대 설치와 긴다리 고정 작업",
+            "배수 연결부 누수 테스트",
+            f"{short_prefix or '욕실'} 도기 교체 완료 후 안전 점검",
+        ]
+    elif any(token in title for token in ("문틀", "문", "도어락", "걸레받이")):
+        templates = [
+            f"{prefix or short_prefix} 문틀 손상 상태 점검",
+            "노후 문틀과 마감재 이격 확인",
+            "손상 부위 철거 전 상태 확인",
+            "문틀 보강과 수평 조정 작업",
+            "마감재 재시공과 틈새 정리",
+            f"{short_prefix or '현장'} 문틀 수리 완료 후 개폐 점검",
+        ]
+    else:
+        templates = [
+            f"{prefix or short_prefix} {work} {issue} 현장 점검",
+            f"{work} 문제 원인 확인",
+            f"노후 부품 철거 전 상태 점검",
+            f"{work} 교체와 보강 작업 과정",
+            f"마감 상태와 안전성 확인",
+            f"{short_prefix or '현장'} {work} 수리 완료 후 점검",
+        ]
+
+    template = templates[min(max(index, 0), len(templates) - 1)]
+    alt = _clean_alt_text(template)
+    if len(alt) < 20:
+        alt = _clean_alt_text(f"{short_prefix or '오박사만능인테리어'} {alt}")
+    return alt
 
 
 def parse_case_date(raw: str) -> str:
@@ -337,7 +514,7 @@ def build_case_feature_card(entry: CaseEntry, is_latest: bool = False) -> str:
         link_block.append(f'      <a href="{entry.instagram_url}" target="_blank" rel="noopener">Instagram</a>')
     return "\n".join([
         '<article class="case-feature-card">',
-        f'  <img src="{img}" alt="{seo_alt_base(entry.title)} 대표 이미지">',
+        f'  <img src="{img}" alt="{seo_case_cover_alt(entry.title)}">',
         "  <div>",
         f"    <h2>{entry.title}</h2>",
         f"    <p>{entry.summary}</p>",
@@ -749,19 +926,19 @@ def has_reviewed_image_manifest(entry: CaseEntry, blog: BlogData | None, images:
 
 
 def _contextual_alt(entry: CaseEntry | None, raw_alt: str, src: str = "") -> str:
-    raw_alt = re.sub(r"\s+", " ", str(raw_alt or "")).strip()
-    generic = {
-        "",
-        "현장 상태를 먼저 살펴본 사진입니다.",
-        "문제 원인이 되는 부분을 자세히 확인한 모습입니다.",
-        "필요한 부위를 보강하고 정리하는 과정입니다.",
-        "현장 상황에 맞춰 다시 고정하는 작업입니다.",
-        "틈새와 마감 상태를 함께 점검한 모습입니다.",
-        "작업 후 흔들림이나 불안 요소가 없는지 확인했습니다.",
-        "현장 최종 확인 후 안전하게 마무리한 모습입니다.",
-    }
+    """수동 ALT와 자동 ALT를 함께 살리는 최종 보정 함수.
+
+    - image_manifest.json에 사람이 검수한 ALT가 있으면 우선 존중한다.
+    - 비어 있거나 너무 일반적인 ALT만 자동 SEO ALT로 교체한다.
+    - 자동 ALT는 파일명 숫자 또는 이미지 순서를 이용해 단계별로 다르게 만든다.
+    """
+    cleaned_raw_alt = _clean_alt_text(raw_alt)
     if not entry:
-        return raw_alt or _image_filename(src) or "시공 사례 이미지"
+        return cleaned_raw_alt or _image_filename(src) or "오박사만능인테리어 시공 사례"
+
+    if cleaned_raw_alt and not _is_generic_alt(cleaned_raw_alt):
+        return cleaned_raw_alt
+
     name = _image_filename(src)
     number_match = re.search(r"(\d+)", name)
     number = int(number_match.group(1)) - 1 if number_match else 0
@@ -1211,7 +1388,7 @@ def build_latest_case_html(data: BlogData) -> str:
         f"    <p>{data.summary}</p>",
         '    <div class="ob-latest-case-card">',
         f'      <a class="ob-latest-case-img" href="{case_url}" aria-label="{data.title} 상세보기">',
-        f'        <img src="{thumb}" alt="{seo_alt_base(data.title)} 대표 현장 이미지" loading="lazy" />',
+        f'        <img src="{thumb}" alt="{seo_case_cover_alt(data.title)}" loading="lazy" />',
         "      </a>",
         '      <div class="ob-latest-case-text">',
         f"        <span>{data.category}</span>",
@@ -1234,7 +1411,7 @@ def build_case_highlights_preview(data: BlogData) -> str:
     thumb = thumbnail_path_for(data)
     return "\n".join([
         '<article class="case-feature-card">',
-        f'  <img src="{thumb}" alt="{data.title}">',
+        f'  <img src="{thumb}" alt="{seo_case_cover_alt(data.title)}">',
         "  <div>",
         f"    <h2>{data.title}</h2>",
         f"    <p>{data.summary}</p>",
@@ -1535,13 +1712,13 @@ def refresh_live_case_alt_texts() -> list[Path]:
             title_match = re.search(r'<title>([^<]+)</title>', text)
         if not title_match:
             continue
-        base_title = seo_alt_base(html.unescape(title_match.group(1)))
+        case_title = html.unescape(title_match.group(1))
         pattern = re.compile(r'(<img\b[^>]*\bsrc="[^"]+"[^>]*\balt=")[^"]*(")', re.I)
         img_index = 0
 
         def repl(match: re.Match[str]) -> str:
             nonlocal img_index
-            alt = seo_case_image_alt(base_title, img_index)
+            alt = seo_case_image_alt(case_title, img_index)
             img_index += 1
             return f"{match.group(1)}{alt}{match.group(2)}"
 
@@ -1560,10 +1737,10 @@ def refresh_live_case_alt_texts() -> list[Path]:
             m = re.search(r'<h2>([^<]+)</h2>\s*<p>([^<]+)</p>\s*<div class="ob-latest-case-card">.*?<img src="([^"]+)" alt="[^"]*" loading="lazy" />', text, re.S)
             if m:
                 title = html.unescape(m.group(1))
-                alt = f"{seo_alt_base(title)} 대표 현장 이미지"[:60].rstrip()
+                alt = seo_case_cover_alt(title)
                 updated = re.sub(r'(<div class="ob-latest-case-card">.*?<img src="[^"]+" alt=")[^"]*(" loading="lazy" />)', r"\1" + alt + r"\2", text, count=1, flags=re.S)
         else:
-            updated = re.sub(r'(<article class="case-feature-card">\s*<img src="[^"]+" alt=")[^"]*(">)', lambda m: f"{m.group(1)}{seo_alt_base(re.search(r'<h2>([^<]+)</h2>', m.group(0)).group(1) if re.search(r'<h2>([^<]+)</h2>', m.group(0)) else '')} 대표 이미지{m.group(2)}", text, flags=re.S)
+            updated = re.sub(r'(<article class="case-feature-card">\s*<img src="[^"]+" alt=")[^"]*(">)', lambda m: f"{m.group(1)}{seo_case_cover_alt(re.search(r'<h2>([^<]+)</h2>', m.group(0)).group(1) if re.search(r'<h2>([^<]+)</h2>', m.group(0)) else '')}{m.group(2)}", text, flags=re.S)
         if updated != text:
             html_path.write_text(updated, encoding="utf-8")
             updated_paths.append(html_path)

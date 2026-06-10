@@ -13,6 +13,25 @@ from datetime import datetime
 from pathlib import Path
 from typing import Iterable
 
+from alt_generator import (
+    HOME_ALT_SETTINGS,
+    IMAGE_REJECT_KEYWORDS,
+    MAX_DETAIL_IMAGES,
+    _clean_alt_text,
+    _contextual_alt,
+    _home_generate_alt_with_ollama,
+    _home_prepare_image_for_ollama,
+    build_image_items,
+    generate_home_image_manifest,
+    image_manifest_path,
+    load_image_manifest,
+    refresh_live_case_alt_texts,
+    seo_alt_base,
+    seo_case_cover_alt,
+    seo_case_image_alt,
+    write_image_review_todo,
+)
+
 
 ROOT = Path(__file__).resolve().parent
 SITE_BASE_URL = os.getenv("SITE_BASE_URL", "https://kim6410.github.io/obaksa-home")
@@ -2738,7 +2757,6 @@ def refresh_live_case_alt_texts() -> None:
             html_path.write_text(updated, encoding="utf-8")
 
     FORCE_REGENERATE_DETAIL_PATHS.clear()
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

@@ -25,7 +25,7 @@ HOME_ALT_SETTINGS = {
     "ollama_temperature": 0.45,
     "ollama_num_predict": 110,
     "ollama_json_format": True,
-    "timeout_seconds": int(os.getenv("HOME_ALT_TIMEOUT", "240")),
+    "timeout_seconds": int(os.getenv("HOME_ALT_TIMEOUT", "900")),
     "request_pause_seconds": float(os.getenv("HOME_ALT_PAUSE", "0.8")),
     "resize_before_ollama": True,
     "resize_max_px": 1024,
@@ -183,18 +183,27 @@ def _should_keep_ai_alt(raw_alt: str, business: str) -> bool:
         return False
     if _looks_like_filename_sentence(text):
         return False
+    if any(term in text for term in ("아파트", "타코", "메뉴판", "문틀", "문짝", "로고")):
+        return False
+    if " 및 " in text or text.startswith("및 ") or text.endswith(" 및"):
+        return False
     return True
 
 
 def _home_make_alt_prompt(entry: Any, blog: Any, image_order: int, total_images: int) -> str:
     title = getattr(entry, "title", "") or getattr(blog, "title", "") or "오박사만능인테리어 시공 현장"
     summary = getattr(blog, "summary", "") or getattr(entry, "summary", "") or ""
-    content = re.sub(r"\s+", " ", getattr(blog, "content", "") or "").strip()[:700]
+    content = re.sub(r"\s+", " ", getattr(blog, "content", "") or "").strip()[:1400]
     location = _extract_case_location(title) or HOME_ALT_SETTINGS["default_location"]
     business = HOME_ALT_SETTINGS["required_business"]
     site_context = HOME_ALT_SETTINGS["default_site_context"]
     return f"""
 이미지 ALT 생성용 프롬프트입니다.
+
+[사례 문맥]
+- 이 사례는 제목/요약/본문에 근거해서만 설명합니다.
+- 제목/요약/본문에 없는 공간 유형, 상호명, 메뉴판, 아파트 같은 단어를 추측해서 넣지 마세요.
+- 보이는 것만 설명하고, 확실하지 않으면 덜 구체적으로 작성하세요.
 
 [필수 포함]
 - 지역: {location}
@@ -213,6 +222,8 @@ def _home_make_alt_prompt(entry: Any, blog: Any, image_order: int, total_images:
 - 파일명 기반 문구 사용 금지
 - "{business}"는 자연스럽게 1회 포함
 - "사진", "이미지" 같은 단어 금지
+- 아파트/빌라/주택/상가 같은 공간 유형은 본문과 제목에 없으면 추측하지 말 것
+- 타코, 메뉴판, 아파트, 문틀 같은 단어는 실제로 보이는 경우에만 사용할 것
 """.strip()
 
 
@@ -565,6 +576,37 @@ def _apply_cli_settings(args: argparse.Namespace) -> None:
     HOME_ALT_SETTINGS["ollama_url"] = args.ollama_url
 
 
+def _load_case_blog_data(case_dir: Path) -> dict[str, str]:
+    md_path = case_dir / "index.md"
+    if not md_path.exists():
+        return {"title": case_dir.name, "summary": "", "content": ""}
+
+    text = md_path.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    title = case_dir.name
+    summary = ""
+    content_lines: list[str] = []
+    in_front_matter = False
+    front_matter_done = False
+    for line in lines:
+        if line.strip() == "---":
+            if not in_front_matter:
+                in_front_matter = True
+                continue
+            front_matter_done = True
+            continue
+        if in_front_matter and not front_matter_done:
+            if line.startswith("title:"):
+                title = line.split(":", 1)[1].strip().strip('"').strip("'")
+            elif line.startswith("description:"):
+                summary = line.split(":", 1)[1].strip().strip('"').strip("'")
+            continue
+        if front_matter_done:
+            content_lines.append(line)
+    content = "\n".join(content_lines).strip()
+    return {"title": title or case_dir.name, "summary": summary, "content": content}
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
     _apply_cli_settings(args)
@@ -578,10 +620,11 @@ def main(argv: list[str] | None = None) -> int:
         for image in images:
             print(image.name)
         return 0
+    blog_data = _load_case_blog_data(case_dir)
     manifest_path = generate_home_image_manifest(
-        type("Entry", (), {"title": case_dir.name, "image_folder": case_dir, "case_folder": case_dir})(),
+        type("Entry", (), {"title": blog_data["title"], "summary": blog_data["summary"], "content": blog_data["content"], "image_folder": case_dir, "case_folder": case_dir})(),
         images,
-        blog=None,
+        blog=type("Blog", (), {"title": blog_data["title"], "summary": blog_data["summary"], "content": blog_data["content"]})(),
         overwrite=args.overwrite,
     )
     print(str(manifest_path) if manifest_path else "manifest not created")

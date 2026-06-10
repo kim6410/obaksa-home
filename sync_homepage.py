@@ -5,8 +5,6 @@ import json
 import os
 import re
 import shutil
-import tempfile
-import time
 import unicodedata
 from dataclasses import dataclass
 from datetime import datetime
@@ -19,8 +17,6 @@ from alt_generator import (
     MAX_DETAIL_IMAGES,
     _clean_alt_text,
     _contextual_alt,
-    _home_generate_alt_with_ollama,
-    _home_prepare_image_for_ollama,
     build_image_items,
     generate_home_image_manifest,
     image_manifest_path,
@@ -31,7 +27,6 @@ from alt_generator import (
     seo_case_image_alt,
     write_image_review_todo,
 )
-
 
 ROOT = Path(__file__).resolve().parent
 SITE_BASE_URL = os.getenv("SITE_BASE_URL", "https://kim6410.github.io/obaksa-home")
@@ -67,35 +62,6 @@ APPLY_BACKUP_DIR = ROOT / "backups"
 CASE_DETAIL_TEMPLATE_PATH = ROOT / "templates" / "case-detail-template.html"
 FORCE_REGENERATE_DETAIL_PATHS: set[Path] = set()
 
-
-# ============================================================
-# 홈페이지 이미지 ALT 자동 생성 설정
-# - 네이버 블로그 도우미의 Ollama 비전 ALT 생성 로직을 홈페이지 사례 등록용으로 이식했다.
-# - 로컬 Ollama가 켜져 있으면 image_manifest.json을 자동 생성하고,
-#   꺼져 있으면 기존 SEO fallback/todo 흐름으로 안전하게 돌아간다.
-# ============================================================
-HOME_ALT_SETTINGS = {
-    "enabled": os.getenv("HOME_ALT_OLLAMA", "1") not in {"0", "false", "False", "no"},
-    "ollama_url": os.getenv("OLLAMA_URL", "http://127.0.0.1:11434/api/generate"),
-    "ollama_vision_model": os.getenv("OLLAMA_VISION_MODEL", "gemma3:4b"),
-    "ollama_use_gpu": True,
-    "ollama_num_gpu": -1,
-    "ollama_keep_alive": "30m",
-    "ollama_temperature": 0.45,
-    "ollama_num_predict": 110,
-    "ollama_json_format": True,
-    "timeout_seconds": int(os.getenv("HOME_ALT_TIMEOUT", "240")),
-    "request_pause_seconds": float(os.getenv("HOME_ALT_PAUSE", "0.8")),
-    "resize_before_ollama": True,
-    "resize_max_px": 1024,
-    "resize_quality": 85,
-    "required_business": "오박사만능인테리어",
-    "default_location": "울산",
-    "default_site_context": "생활밀착형 집수리 및 인테리어 시공 현장",
-    "auto_review": True,
-}
-
-
 @dataclass
 class BlogData:
     title: str = ""
@@ -111,7 +77,6 @@ class BlogData:
     image_plan: list[dict[str, object]] | None = None
     thumbnail: str = ""
     source_path: Path | None = None
-
 
 @dataclass
 class CaseEntry:
@@ -172,14 +137,12 @@ class CaseEntry:
             return self.case_folder / "thumb.jpg"
         return self.case_folder / f"{self.slug}.jpg"
 
-
 @dataclass
 class ImageItem:
     path: Path
     alt: str
     caption: str = ""
     reviewed: bool = False
-
 
 def load_blog_data() -> tuple[bool, BlogData, Path | None]:
     for candidate in BLOG_FETCH_CANDIDATES:
@@ -207,16 +170,13 @@ def load_blog_data() -> tuple[bool, BlogData, Path | None]:
             ), candidate
     return False, BlogData(), None
 
-
 def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
-
 
 def extract_year(date_text: str) -> str:
     if len(date_text) >= 4 and date_text[:4].isdigit():
         return date_text[:4]
     return datetime.now().strftime("%Y")
-
 
 def normalize_slug(existing_slug: str, date_text: str, title: str) -> str:
     if existing_slug:
@@ -234,231 +194,19 @@ def normalize_slug(existing_slug: str, date_text: str, title: str) -> str:
         return f"case-{year}-{cleaned}"
     return f"case-{year}-new-case"
 
-
 def case_folder_slug(data: BlogData) -> str:
     return normalize_slug(data.slug, data.date, data.title)
-
 
 def case_url_for(data: BlogData) -> str:
     slug = case_folder_slug(data)
     year = data.year or extract_year(data.date)
     return f"cases/{year}/{slug}/"
 
-
 def sitemap_url_for(data: BlogData) -> str:
     return f"{SITE_BASE_URL.rstrip('/')}/{case_url_for(data).lstrip('/')}"
 
-
 def thumbnail_path_for(data: BlogData) -> str:
     return f"cases/{data.year or extract_year(data.date)}/{case_folder_slug(data)}/thumb.jpg"
-
-
-def _clean_alt_text(value: str) -> str:
-    """ALT 문구를 검색 친화적으로 다듬는다.
-
-    - 불필요한 "사진/이미지/모습" 표현 제거
-    - 공백 정리
-    - 너무 긴 문장은 60자 안쪽으로 정리
-    """
-    text = re.sub(r"\s+", " ", str(value or "")).strip()
-    text = re.sub(r"\s*(사진|이미지|모습)\s*", " ", text).strip()
-    text = re.sub(r"\s+", " ", text)
-    return text[:60].rstrip(" ,·-/.")
-
-
-def _is_generic_alt(value: str) -> bool:
-    text = _clean_alt_text(value)
-    if not text:
-        return True
-    generic_phrases = {
-        "현장 상태를 먼저 살펴본",
-        "문제 원인이 되는 부분을 자세히 확인한",
-        "필요한 부위를 보강하고 정리하는 과정",
-        "현장 상황에 맞춰 다시 고정하는 작업",
-        "틈새와 마감 상태를 함께 점검한",
-        "작업 후 흔들림이나 불안 요소가 없는지 확인했습니다",
-        "현장 최종 확인 후 안전하게 마무리한",
-        "시공 사례",
-        "작업 과정",
-        "대표",
-    }
-    if text in generic_phrases:
-        return True
-    if re.match(r"작업 과정\s*\d*", text):
-        return True
-    # 너무 짧은 ALT는 이미지 검색 문맥이 부족하므로 자동 보강한다.
-    return len(text) < 12
-
-
-def _extract_case_location(title: str) -> str:
-    title = re.sub(r"\s+", " ", title or "").strip()
-    # 예: 울산 북구 매곡동, 울산 남구 삼산동, 울산 울주군 범서읍
-    match = re.search(r"(울산\s*(?:중구|남구|동구|북구|울주군)(?:\s*[가-힣A-Za-z0-9]+(?:동|읍|면|리))?)", title)
-    if match:
-        return re.sub(r"\s+", " ", match.group(1)).strip()
-    match = re.search(r"((?:경주|양산|부산|대구|포항|하남|양주|남양주|구리)\s*[가-힣A-Za-z0-9]+(?:동|읍|면|리|구)?)", title)
-    if match:
-        return re.sub(r"\s+", " ", match.group(1)).strip()
-    return ""
-
-
-def _extract_case_place(title: str) -> str:
-    title = re.sub(r"\s+", " ", title or "").strip()
-    place_keywords = (
-        "월드메르디앙", "에일린의뜰", "무지개아파트", "대하그린파크", "라온호텔",
-        "현대파라다이스", "동산에이스빌", "골든하이츠빌", "교육원", "상가", "주택",
-    )
-    for keyword in place_keywords:
-        if keyword in title:
-            return keyword
-    match = re.search(r"([가-힣A-Za-z0-9]+(?:아파트|빌라|맨션|상가|주택|호텔|교육원))", title)
-    return match.group(1) if match else ""
-
-
-def _extract_case_work(title: str) -> str:
-    title = title or ""
-    work_keywords = [
-        "환풍기", "세면대", "수전", "해바라기 샤워기", "샤워기", "변기", "소변기",
-        "차단기", "누전차단기", "분전반", "전기", "조명", "콘센트",
-        "도어락", "문틀", "문", "걸레받이", "도배", "장판", "싱크대",
-        "누수", "배관", "방수", "곰팡이", "결로", "보일러", "타일",
-    ]
-    for keyword in work_keywords:
-        if keyword in title:
-            if keyword == "전기" and ("차단기" in title or "분전반" in title):
-                continue
-            return keyword
-    return "집수리"
-
-
-def _extract_case_issue(title: str) -> str:
-    title = title or ""
-    issue_keywords = [
-        "탄내", "타는 냄새", "소음", "진동", "누수", "막힘", "역류", "곰팡이",
-        "결로", "정전", "차단기 내려감", "고장", "파손", "부식", "떨어짐",
-        "흔들림", "악취", "물샘", "교체", "수리",
-    ]
-    for keyword in issue_keywords:
-        if keyword in title:
-            return keyword
-    return "문제"
-
-
-def _case_context_prefix(title: str, include_place: bool = False) -> str:
-    location = _extract_case_location(title)
-    place = _extract_case_place(title) if include_place else ""
-    prefix = " ".join(part for part in [location, place] if part).strip()
-    return prefix
-
-
-def seo_alt_base(title: str) -> str:
-    """대표 카드용 짧은 SEO 베이스 문구를 만든다."""
-    text = re.sub(r"\s+", " ", (title or "")).strip()
-    if " 원인과 " in text:
-        text = text.split(" 원인과 ", 1)[0].strip()
-    text = re.sub(r"\s+(후기|사례|현장|작업)$", "", text).strip()
-    return _clean_alt_text(text[:46].rstrip(" ,·-/"))
-
-
-def seo_case_cover_alt(title: str) -> str:
-    """홈/목록 대표 이미지 ALT.
-
-    지역명 + 작업명 + 핵심 문제를 넣되, 대표 카드에서는 너무 길지 않게 유지한다.
-    """
-    prefix = _case_context_prefix(title, include_place=True)
-    work = _extract_case_work(title)
-    issue = _extract_case_issue(title)
-    if prefix:
-        return _clean_alt_text(f"{prefix} {work} {issue} 해결 사례")
-    return _clean_alt_text(f"오박사만능인테리어 {work} {issue} 해결 사례")
-
-
-def seo_case_image_alt(title: str, index: int) -> str:
-    """상세 이미지용 SEO ALT를 생성한다.
-
-    원칙:
-    1. 같은 페이지 안에서 ALT 문장 반복을 줄인다.
-    2. 지역명은 일부 컷에만 넣고, 나머지는 증상/부품/작업 단계를 구체화한다.
-    3. 검색어는 넣되 "사진/이미지/모습" 같은 빈 단어는 쓰지 않는다.
-    4. 20~60자 범위에 들어오도록 정리한다.
-    """
-    title = re.sub(r"\s+", " ", title or "").strip()
-    prefix = _case_context_prefix(title, include_place=True)
-    short_prefix = _case_context_prefix(title, include_place=False)
-    work = _extract_case_work(title)
-    issue = _extract_case_issue(title)
-
-    if "환풍기" in work or "환풍기" in title:
-        issue_word = "탄내" if "탄내" in title else ("소음" if "소음" in title else issue)
-        templates = [
-            f"{prefix or short_prefix} 욕실 환풍기 {issue_word} 원인 점검",
-            "노후 환풍기 모터 과열 흔적 확인",
-            f"환풍기 {issue_word} 원인 확인을 위한 내부 배선 점검",
-            "노후 욕실 환풍기 철거 전 커버 분해",
-            "환풍기 내부 먼지와 부품 상태 확인",
-            "욕실 환풍기 신규 제품 설치 과정",
-            "환풍기 덕트 연결부 밀봉 마감 점검",
-            "교체 완료 후 환풍기 흡입력 테스트",
-            f"화장실 환풍기 {issue_word} 해결 후 정상 작동 확인",
-            f"{short_prefix or '욕실'} 환풍기 교체 최종 마감 점검",
-            "환풍기 교체 후 소음과 냄새 재점검",
-        ]
-    elif any(token in title for token in ("차단기", "분전반", "정전", "전기")):
-        templates = [
-            f"{prefix or short_prefix} 정전 원인 분전반 점검",
-            "누전차단기 내려감 원인 확인",
-            "분전반 내부 배선 체결 상태 점검",
-            "차단기 교체 전 회로 이상 여부 확인",
-            "노후 차단기와 배선 연결부 정리",
-            "전기 공급 복구 후 콘센트 전압 확인",
-            "차단기 교체 완료 후 정상 작동 점검",
-            f"{short_prefix or '현장'} 전기 수리 최종 안전 확인",
-        ]
-    elif any(token in title for token in ("누수", "배관", "수전", "물샘")):
-        templates = [
-            f"{prefix or short_prefix} 누수 원인 현장 점검",
-            "수전 연결부 물샘 원인 확인",
-            "노후 배관 부식과 누수 지점 확인",
-            "누수 부품 철거 전 상태 점검",
-            "새 부품 교체와 연결부 재정비",
-            "수압 테스트로 물샘 재발 여부 확인",
-            f"{short_prefix or '욕실'} 누수 수리 완료 후 마감 점검",
-        ]
-    elif any(token in title for token in ("세면대", "변기", "소변기", "도기")):
-        templates = [
-            f"{prefix or short_prefix} 욕실 도기 파손 상태 점검",
-            "세면대 고정 불량과 흔들림 원인 확인",
-            "노후 도기 철거 전 안전 점검",
-            "욕실 도기 교체 위치와 배관 확인",
-            "새 세면대 설치와 긴다리 고정 작업",
-            "배수 연결부 누수 테스트",
-            f"{short_prefix or '욕실'} 도기 교체 완료 후 안전 점검",
-        ]
-    elif any(token in title for token in ("문틀", "문", "도어락", "걸레받이")):
-        templates = [
-            f"{prefix or short_prefix} 문틀 손상 상태 점검",
-            "노후 문틀과 마감재 이격 확인",
-            "손상 부위 철거 전 상태 확인",
-            "문틀 보강과 수평 조정 작업",
-            "마감재 재시공과 틈새 정리",
-            f"{short_prefix or '현장'} 문틀 수리 완료 후 개폐 점검",
-        ]
-    else:
-        templates = [
-            f"{prefix or short_prefix} {work} {issue} 현장 점검",
-            f"{work} 문제 원인 확인",
-            f"노후 부품 철거 전 상태 점검",
-            f"{work} 교체와 보강 작업 과정",
-            f"마감 상태와 안전성 확인",
-            f"{short_prefix or '현장'} {work} 수리 완료 후 점검",
-        ]
-
-    template = templates[min(max(index, 0), len(templates) - 1)]
-    alt = _clean_alt_text(template)
-    if len(alt) < 20:
-        alt = _clean_alt_text(f"{short_prefix or '오박사만능인테리어'} {alt}")
-    return alt
-
 
 def parse_case_date(raw: str) -> str:
     raw = (raw or "").strip()
@@ -471,7 +219,6 @@ def parse_case_date(raw: str) -> str:
     if any(token in raw for token in ("분 전", "시간 전", "일 전", "방금", "오늘")):
         return datetime.now().strftime("%Y-%m-%d")
     return datetime.now().strftime("%Y-%m-%d")
-
 
 def parse_case_entries_from_text(text: str) -> list[CaseEntry]:
     entries: list[CaseEntry] = []
@@ -507,7 +254,6 @@ def parse_case_entries_from_text(text: str) -> list[CaseEntry]:
 
     return entries
 
-
 def load_existing_cases() -> list[CaseEntry]:
     candidates = [ROOT / "cases.html", PREVIEW_DIR / "cases.preview.html"]
     for path in candidates:
@@ -516,7 +262,6 @@ def load_existing_cases() -> list[CaseEntry]:
             if entries:
                 return entries
     return []
-
 
 def merge_cases(existing: list[CaseEntry], new_case: CaseEntry) -> tuple[list[CaseEntry], bool, bool]:
     merged: dict[str, CaseEntry] = {}
@@ -544,7 +289,6 @@ def merge_cases(existing: list[CaseEntry], new_case: CaseEntry) -> tuple[list[Ca
     )
     return ordered, duplicate, replaced
 
-
 def build_case_feature_card(entry: CaseEntry, is_latest: bool = False) -> str:
     img = entry.highlight_image or entry.thumb or "/images/gallery/case_hero.jpg"
     link_block = [f'      <a href="{entry.case_url}">상세보기</a>']
@@ -563,7 +307,6 @@ def build_case_feature_card(entry: CaseEntry, is_latest: bool = False) -> str:
         "</article>",
     ])
 
-
 def build_case_row(entry: CaseEntry) -> str:
     return "\n".join([
         f'<div class="case-row" data-category="{entry.category}">',
@@ -577,10 +320,8 @@ def build_case_row(entry: CaseEntry) -> str:
         "</div>",
     ])
 
-
 def build_sitemap_entry(entry: CaseEntry) -> str:
     return f'  <url><loc>{entry.sitemap_url}</loc><lastmod>{entry.date}</lastmod></url>'
-
 
 def gather_case_images(entry: CaseEntry) -> list[Path]:
     if not entry.image_folder.exists():
@@ -595,7 +336,6 @@ def gather_case_images(entry: CaseEntry) -> list[Path]:
             continue
         images.append(path)
     return images[:MAX_DETAIL_IMAGES]
-
 
 def case_image_caption(entry: CaseEntry, index: int, total: int) -> str:
     if "차단기" in entry.title or "정전" in entry.title or entry.category == "전기수리":
@@ -624,7 +364,6 @@ def case_image_caption(entry: CaseEntry, index: int, total: int) -> str:
         return captions[index]
     return f"작업 과정 사진 {index + 1}"
 
-
 def _story_candidates(blog: BlogData) -> list[str]:
     source = blog.content or ""
     blocks = [re.sub(r"\s+", " ", line).strip() for line in source.splitlines()]
@@ -649,13 +388,11 @@ def _story_candidates(blog: BlogData) -> list[str]:
             candidates.append(line)
     return candidates
 
-
 def _pick_story_line(candidates: list[str], keywords: tuple[str, ...]) -> str:
     for line in candidates:
         if any(keyword in line for keyword in keywords):
             return line
     return ""
-
 
 def _trim_story_snippet(text: str, limit: int = 52) -> str:
     text = re.sub(r"\s+", " ", text).strip()
@@ -663,7 +400,6 @@ def _trim_story_snippet(text: str, limit: int = 52) -> str:
     if len(text) <= limit:
         return text
     return text[:limit].rstrip(" ,.·/:-") + "..."
-
 
 def build_case_story(blog: BlogData) -> str:
     title = blog.title or "현장 점검 사례"
@@ -684,7 +420,6 @@ def build_case_story(blog: BlogData) -> str:
             "<p>마무리 단계에서는 사용 중 불편이 남지 않도록 다시 점검했습니다. 고객님이 바로 안심하고 사용할 수 있는 상태인지 확인한 뒤 현장을 정리했습니다.</p>",
         ]
     return "\n        ".join(paragraphs)
-
 
 def build_summary_markdown_body(entry: CaseEntry, blog: BlogData, summary: str, image_items: list[ImageItem]) -> str:
     """사용자 요약문 중심으로 정리된 본문을 만든다.
@@ -731,7 +466,6 @@ def build_summary_markdown_body(entry: CaseEntry, blog: BlogData, summary: str, 
         "비슷한 증상이나 확인이 필요한 부분이 있다면 전화로 바로 상담할 수 있습니다.",
     ]
     return "\n".join(lines).strip() + "\n"
-
 
 def build_case_markdown(entry: CaseEntry, blog: BlogData | None, summary: str, images: list[Path]) -> str:
     blog = blog or BlogData(title=entry.title, date=entry.date, year=entry.year, slug=entry.slug, category=entry.category, summary=summary)
@@ -810,23 +544,18 @@ def parse_markdown_front_matter(markdown_text: str) -> tuple[dict[str, str], str
                 meta[key] = ""
     return meta, body
 
-
 def _html_escape(value: str) -> str:
     return html.escape(str(value or ""), quote=True)
 
-
 def _is_html_line(line: str) -> bool:
     return bool(re.match(r"^</?(p|div|section|article|figure|img|ul|ol|li|h[1-6]|hr|br|blockquote|table|a|span)\b", line.strip(), re.I))
-
 
 def _image_filename(src: str) -> str:
     src = (src or "").strip().split("?", 1)[0].split("#", 1)[0]
     return Path(src).name
 
-
 def _image_sources_in_markdown(markdown_text: str) -> set[str]:
     return {_image_filename(match.group(2)) for match in re.finditer(r"!\[(.*?)\]\((.*?)\)", markdown_text or "")}
-
 
 def is_curated_markdown_content(markdown_text: str) -> bool:
     """사용자가 정리한 Markdown 원고인지, 블로그 원문 덤프인지 구분한다.
@@ -840,103 +569,6 @@ def is_curated_markdown_content(markdown_text: str) -> bool:
         or re.search(r"!\[.*?\]\(.*?\)", text)
         or re.search(r"(?m)^![^\[\n].+?$", text)
     )
-
-
-def image_manifest_path(entry: CaseEntry) -> Path:
-    return entry.case_folder / "image_manifest.json"
-
-
-def load_image_manifest(entry: CaseEntry, blog: BlogData | None = None) -> list[dict[str, object]]:
-    if blog and blog.image_plan:
-        return list(blog.image_plan)
-    path = image_manifest_path(entry)
-    if not path.exists():
-        return []
-    try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        return []
-    if isinstance(raw, dict):
-        raw = raw.get("images") or raw.get("items") or []
-    return list(raw) if isinstance(raw, list) else []
-
-
-def write_image_review_todo(entry: CaseEntry, images: list[Path]) -> Path | None:
-    """Codex/사용자가 눈으로 보고 순서와 alt를 확정할 수 있는 TODO 파일을 만든다."""
-    if not images:
-        return None
-    todo_path = entry.case_folder / "image_manifest.todo.json"
-    if todo_path.exists() or image_manifest_path(entry).exists():
-        return todo_path
-    todo_path.parent.mkdir(parents=True, exist_ok=True)
-    payload = {
-        "note": "이미지를 눈으로 확인한 뒤 order/use/alt/caption/reviewed 값을 확정하고 파일명을 image_manifest.json으로 바꾸세요.",
-        "images": [
-            {
-                "file": image.name,
-                "order": idx + 1,
-                "use": idx < MAX_DETAIL_IMAGES,
-                "alt": _contextual_alt(entry, "", image.name),
-                "caption": _contextual_alt(entry, "", image.name),
-                "reviewed": False,
-            }
-            for idx, image in enumerate(images[:MAX_DETAIL_IMAGES])
-        ],
-    }
-    todo_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    return todo_path
-
-
-def build_image_items(entry: CaseEntry, images: list[Path], blog: BlogData | None = None) -> list[ImageItem]:
-    """이미지 순서와 alt를 만든다.
-
-    우선순위:
-    1. image_manifest.json 또는 blog_fetch_result.json의 image_plan
-    2. 파일명 순서 + 문맥형 자동 alt
-
-    실제 apply 품질은 1번을 권장한다. 자동 alt는 preview/초안용 안전망이다.
-    """
-    image_map = {image.name: image for image in images}
-    plan = load_image_manifest(entry, blog)
-    items: list[ImageItem] = []
-    if plan:
-        normalized_plan = []
-        for raw in plan:
-            if not isinstance(raw, dict):
-                continue
-            file_name = str(raw.get("file") or raw.get("name") or raw.get("src") or "").strip()
-            file_name = _image_filename(file_name)
-            if not file_name or file_name not in image_map:
-                continue
-            use = raw.get("use", True)
-            if str(use).lower() in {"false", "0", "no", "n"}:
-                continue
-            order = raw.get("order", 999)
-            try:
-                order_int = int(order)
-            except Exception:
-                order_int = 999
-            normalized_plan.append((order_int, raw, file_name))
-        for _, raw, file_name in sorted(normalized_plan, key=lambda item: item[0]):
-            path = image_map[file_name]
-            alt = str(raw.get("alt") or raw.get("caption") or "").strip()
-            caption = str(raw.get("caption") or alt).strip()
-            reviewed = bool(raw.get("reviewed") or raw.get("checked") or raw.get("confirmed"))
-            final_alt = _contextual_alt(entry, alt, path.name)
-            items.append(ImageItem(path=path, alt=final_alt, caption=caption or final_alt, reviewed=reviewed))
-        return items[:MAX_DETAIL_IMAGES]
-
-    write_image_review_todo(entry, images)
-    return [
-        ImageItem(
-            path=image,
-            alt=_contextual_alt(entry, "", image.name),
-            caption=_contextual_alt(entry, "", image.name),
-            reviewed=False,
-        )
-        for image in images[:MAX_DETAIL_IMAGES]
-    ]
-
 
 def has_reviewed_image_manifest(entry: CaseEntry, blog: BlogData | None, images: list[Path]) -> bool:
     plan = load_image_manifest(entry, blog)
@@ -966,27 +598,6 @@ def has_reviewed_image_manifest(entry: CaseEntry, blog: BlogData | None, images:
             return False
     return True
 
-
-def _contextual_alt(entry: CaseEntry | None, raw_alt: str, src: str = "") -> str:
-    """수동 ALT와 자동 ALT를 함께 살리는 최종 보정 함수.
-
-    - image_manifest.json에 사람이 검수한 ALT가 있으면 우선 존중한다.
-    - 비어 있거나 너무 일반적인 ALT만 자동 SEO ALT로 교체한다.
-    - 자동 ALT는 파일명 숫자 또는 이미지 순서를 이용해 단계별로 다르게 만든다.
-    """
-    cleaned_raw_alt = _clean_alt_text(raw_alt)
-    if not entry:
-        return cleaned_raw_alt or _image_filename(src) or "오박사만능인테리어 시공 사례"
-
-    if cleaned_raw_alt and not _is_generic_alt(cleaned_raw_alt):
-        return cleaned_raw_alt
-
-    name = _image_filename(src)
-    number_match = re.search(r"(\d+)", name)
-    number = int(number_match.group(1)) - 1 if number_match else 0
-    return seo_case_image_alt(entry.title or "오박사만능인테리어 시공 사례", max(number, 0))
-
-
 def normalize_markdown_image_placeholders(markdown_text: str, images: list[Path] | None = None) -> tuple[str, list[str]]:
     image_names = [f"./{image.name}" for image in (images or [])]
     errors: list[str] = []
@@ -1004,7 +615,6 @@ def normalize_markdown_image_placeholders(markdown_text: str, images: list[Path]
 
     normalized = re.sub(r"(?m)^!([^\[\n].+?)\s*$", replace_line, markdown_text or "")
     return normalized, errors
-
 
 def markdown_text_to_html(markdown_text: str, entry: CaseEntry | None = None) -> str:
     output: list[str] = []
@@ -1079,10 +689,8 @@ def markdown_text_to_html(markdown_text: str, entry: CaseEntry | None = None) ->
     flush_list()
     return "\n".join(output)
 
-
 def detail_image_rel_path(entry: CaseEntry, image_path: Path) -> str:
     return f"/cases/{entry.year}/{entry.slug}/{image_path.name}"
-
 
 def render_case_detail_template(
     entry: CaseEntry,
@@ -1179,7 +787,6 @@ def render_case_detail_template(
 def build_case_detail_html(entry: CaseEntry, images: list[Path], blog: BlogData | None = None, summary: str = "", markdown_body: str = "") -> str:
     return render_case_detail_template(entry, images, blog, summary, markdown_body)
 
-
 def gather_case_images_for_blog(entry: CaseEntry, blog: BlogData | None = None) -> list[Path]:
     if blog and blog.images:
         selected: list[Path] = []
@@ -1192,14 +799,12 @@ def gather_case_images_for_blog(entry: CaseEntry, blog: BlogData | None = None) 
             return selected[:MAX_DETAIL_IMAGES]
     return gather_case_images(entry)
 
-
 def collect_missing_case_details(cases: list[CaseEntry]) -> list[CaseEntry]:
     return [
         case
         for case in cases
         if case.case_url.endswith("/") and (not case.detail_path.exists() or not case.markdown_path.exists())
     ]
-
 
 def ensure_case_thumbnail(entry: CaseEntry, images: list[Path]) -> None:
     if not images:
@@ -1211,14 +816,12 @@ def ensure_case_thumbnail(entry: CaseEntry, images: list[Path]) -> None:
     first_image = images[0]
     shutil.copyfile(first_image, thumb_path)
 
-
 def write_case_markdown(entry: CaseEntry, blog: BlogData | None, summary: str, images: list[Path]) -> Path:
     markdown_path = entry.markdown_path
     markdown_path.parent.mkdir(parents=True, exist_ok=True)
     markdown_text = build_case_markdown(entry, blog, summary, images)
     markdown_path.write_text(markdown_text, encoding="utf-8")
     return markdown_path
-
 
 def write_missing_case_details(
     cases: list[CaseEntry],
@@ -1246,13 +849,11 @@ def write_missing_case_details(
         created.append(detail_path)
     return created
 
-
 def normalize_case_dir_input(case_dir_input: str) -> Path:
     case_dir = Path(str(case_dir_input).strip().strip('"').strip("'"))
     if not case_dir.is_absolute():
         case_dir = (ROOT / case_dir).resolve()
     return case_dir
-
 
 def load_case_image_plan(case_dir: Path) -> list[dict[str, object]]:
     manifest_path = case_dir / "image_manifest.json"
@@ -1265,7 +866,6 @@ def load_case_image_plan(case_dir: Path) -> list[dict[str, object]]:
     if isinstance(raw, dict):
         raw = raw.get("images") or raw.get("items") or []
     return list(raw) if isinstance(raw, list) else []
-
 
 def case_entry_from_markdown_meta(case_dir: Path, meta: dict[str, str]) -> CaseEntry:
     title = meta.get("title", "").strip() or case_dir.name
@@ -1289,7 +889,6 @@ def case_entry_from_markdown_meta(case_dir: Path, meta: dict[str, str]) -> CaseE
         instagram_url=instagram_url,
         highlight_image=thumb,
     )
-
 
 def rebuild_case_from_folder(case_dir_input: str) -> tuple[CaseEntry, BlogData, str, list[Path]]:
     case_dir = normalize_case_dir_input(case_dir_input)
@@ -1327,7 +926,6 @@ def rebuild_case_from_folder(case_dir_input: str) -> tuple[CaseEntry, BlogData, 
     entry.detail_path.write_text(detail_html, encoding="utf-8")
     return entry, blog, markdown_body, images
 
-
 def make_case_entry_from_blog(data: BlogData) -> CaseEntry:
     thumb = data.thumbnail or thumbnail_path_for(data)
     if thumb and not thumb.startswith("/"):
@@ -1346,7 +944,6 @@ def make_case_entry_from_blog(data: BlogData) -> CaseEntry:
         highlight_image=thumb,
     )
 
-
 def case_entry_to_dict(entry: CaseEntry) -> dict[str, str]:
     record = {
         "title": entry.title,
@@ -1364,7 +961,6 @@ def case_entry_to_dict(entry: CaseEntry) -> dict[str, str]:
     if entry.added_at:
         record["added_at"] = entry.added_at
     return record
-
 
 def load_cases_index() -> tuple[list[CaseEntry], str]:
     if CASES_INDEX_PATH.exists():
@@ -1403,7 +999,6 @@ def load_cases_index() -> tuple[list[CaseEntry], str]:
     existing = load_existing_cases()
     return existing, "cases.html fallback"
 
-
 def find_marker_span(text: str, start: str, end: str) -> tuple[bool, int, str]:
     s = text.find(start)
     e = text.find(end)
@@ -1412,7 +1007,6 @@ def find_marker_span(text: str, start: str, end: str) -> tuple[bool, int, str]:
     inner_start = s + len(start)
     inner = text[inner_start:e]
     return True, len(inner), inner
-
 
 def build_latest_case_html(data: BlogData) -> str:
     thumb = thumbnail_path_for(data)
@@ -1447,7 +1041,6 @@ def build_latest_case_html(data: BlogData) -> str:
     ]
     return "\n".join(parts)
 
-
 def build_case_highlights_preview(data: BlogData) -> str:
     case_url = case_url_for(data)
     thumb = thumbnail_path_for(data)
@@ -1464,7 +1057,6 @@ def build_case_highlights_preview(data: BlogData) -> str:
         "</article>",
     ])
 
-
 def build_case_list_preview(data: BlogData) -> str:
     case_url = case_url_for(data)
     return "\n".join([
@@ -1479,10 +1071,8 @@ def build_case_list_preview(data: BlogData) -> str:
         "</div>",
     ])
 
-
 def build_sitemap_url(data: BlogData) -> str:
     return sitemap_url_for(data)
-
 
 def replace_between_markers(text: str, start: str, end: str, replacement: str) -> tuple[str, bool]:
     start_index = text.find(start)
@@ -1491,7 +1081,6 @@ def replace_between_markers(text: str, start: str, end: str, replacement: str) -
         return text, False
     end_pos = end_index + len(end)
     return text[: start_index + len(start)] + "\n" + replacement + "\n" + text[end_index:end_pos] + text[end_pos:], True
-
 
 def render_index_preview(data: BlogData, latest_case: CaseEntry) -> str:
     source = read_text(ROOT / "index.html")
@@ -1510,7 +1099,6 @@ def render_index_preview(data: BlogData, latest_case: CaseEntry) -> str:
     ))
     return rendered
 
-
 def render_cases_preview(cases: list[CaseEntry]) -> str:
     source = read_text(ROOT / "cases.html")
     highlights = "\n".join(build_case_feature_card(entry, is_latest=(idx == 0)) for idx, entry in enumerate(cases[:2]))
@@ -1519,17 +1107,14 @@ def render_cases_preview(cases: list[CaseEntry]) -> str:
     rendered, _ = replace_between_markers(rendered, MARKERS["cases.html"][2], MARKERS["cases.html"][3], case_list)
     return rendered
 
-
 def render_sitemap_preview(cases: list[CaseEntry]) -> str:
     source = read_text(ROOT / "sitemap.xml")
     preview_entry = "\n".join(build_sitemap_entry(entry) for entry in cases)
     rendered, _ = replace_between_markers(source, *MARKERS["sitemap.xml"], preview_entry)
     return rendered
 
-
 def write_cases_index_file(cases: list[CaseEntry], out_path: Path) -> None:
     out_path.write_text(json.dumps([case_entry_to_dict(case) for case in cases], ensure_ascii=False, indent=2), encoding="utf-8")
-
 
 def backup_cases_index_if_needed(out_path: Path) -> tuple[bool, Path | None]:
     if not out_path.exists():
@@ -1540,7 +1125,6 @@ def backup_cases_index_if_needed(out_path: Path) -> tuple[bool, Path | None]:
     backup_path = backups_dir / backup_name
     backup_path.write_text(out_path.read_text(encoding="utf-8"), encoding="utf-8")
     return True, backup_path
-
 
 def validate_preview_outputs() -> tuple[bool, list[str]]:
     required = [
@@ -1577,7 +1161,6 @@ def validate_preview_outputs() -> tuple[bool, list[str]]:
 
     return (len(errors) == 0), errors
 
-
 def backup_and_apply_live_files() -> tuple[bool, Path | None, list[Path]]:
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     backup_dir = APPLY_BACKUP_DIR / f"apply_{timestamp}"
@@ -1600,7 +1183,6 @@ def backup_and_apply_live_files() -> tuple[bool, Path | None, list[Path]]:
 
     return True, backup_dir, backup_files
 
-
 def validate_blog_data_for_generation(data: BlogData, summary: str) -> list[str]:
     errors: list[str] = []
     required_text = {
@@ -1620,7 +1202,6 @@ def validate_blog_data_for_generation(data: BlogData, summary: str) -> list[str]
         errors.append("error: blog_fetch_result.json 필수값 누락 - thumbnail")
     return errors
 
-
 def preview_image_review_report(entry: CaseEntry, blog: BlogData | None, images: list[Path]) -> list[str]:
     items = build_image_items(entry, images, blog)
     manifest = image_manifest_path(entry)
@@ -1634,7 +1215,6 @@ def preview_image_review_report(entry: CaseEntry, blog: BlogData | None, images:
         lines.append(f"- {idx:02d}. {item.path.name} | alt={item.alt} | reviewed={'예' if item.reviewed else '아니오'}")
     return lines
 
-
 def parse_args() -> dict[str, object]:
     import argparse
 
@@ -1646,7 +1226,6 @@ def parse_args() -> dict[str, object]:
     parser.add_argument("--summary", default="", help="사용자가 직접 제공한 150~200자 요약문")
     args = parser.parse_args()
     return {"preview": bool(args.preview), "write_index": bool(args.write_index), "apply": bool(args.apply), "rebuild_case": str(args.rebuild_case).strip(), "summary": str(args.summary).strip()}
-
 
 def inject_cases_pagination(html_text: str) -> str:
     pager_html = """
@@ -1727,7 +1306,6 @@ document.addEventListener('DOMContentLoaded',function(){
         html_text = re.sub(r"<script>\s*document\.querySelectorAll\\\('\\.case-filter button'\\\).*?</script>", script_html, html_text, flags=re.S)
     return html_text
 
-
 def write_preview_files(data: BlogData, cases: list[CaseEntry]) -> list[Path]:
     PREVIEW_DIR.mkdir(parents=True, exist_ok=True)
     index_path = PREVIEW_DIR / "index.preview.html"
@@ -1739,56 +1317,6 @@ def write_preview_files(data: BlogData, cases: list[CaseEntry]) -> list[Path]:
     sitemap_path.write_text(render_sitemap_preview(cases), encoding="utf-8")
     index_json_path.write_text(json.dumps([case_entry_to_dict(case) for case in cases], ensure_ascii=False, indent=2), encoding="utf-8")
     return [index_json_path, index_path, cases_path, sitemap_path]
-
-
-def refresh_live_case_alt_texts() -> list[Path]:
-    updated_paths: list[Path] = []
-    case_paths = sorted(ROOT.glob("cases/20??/case-*/index.html"))
-    for html_path in case_paths:
-        try:
-            text = read_text(html_path)
-        except Exception:
-            continue
-        title_match = re.search(r'<h1>([^<]+)</h1>', text)
-        if not title_match:
-            title_match = re.search(r'<title>([^<]+)</title>', text)
-        if not title_match:
-            continue
-        case_title = html.unescape(title_match.group(1))
-        pattern = re.compile(r'(<img\b[^>]*\bsrc="[^"]+"[^>]*\balt=")[^"]*(")', re.I)
-        img_index = 0
-
-        def repl(match: re.Match[str]) -> str:
-            nonlocal img_index
-            alt = seo_case_image_alt(case_title, img_index)
-            img_index += 1
-            return f"{match.group(1)}{alt}{match.group(2)}"
-
-        updated = pattern.sub(repl, text)
-        if updated != text:
-            html_path.write_text(updated, encoding="utf-8")
-            updated_paths.append(html_path)
-
-    live_pages = [ROOT / "index.html", ROOT / "cases.html"]
-    for html_path in live_pages:
-        if not html_path.exists():
-            continue
-        text = read_text(html_path)
-        updated = text
-        if html_path.name == "index.html":
-            m = re.search(r'<h2>([^<]+)</h2>\s*<p>([^<]+)</p>\s*<div class="ob-latest-case-card">.*?<img src="([^"]+)" alt="[^"]*" loading="lazy" />', text, re.S)
-            if m:
-                title = html.unescape(m.group(1))
-                alt = seo_case_cover_alt(title)
-                updated = re.sub(r'(<div class="ob-latest-case-card">.*?<img src="[^"]+" alt=")[^"]*(" loading="lazy" />)', r"\1" + alt + r"\2", text, count=1, flags=re.S)
-        else:
-            updated = re.sub(r'(<article class="case-feature-card">\s*<img src="[^"]+" alt=")[^"]*(">)', lambda m: f"{m.group(1)}{seo_case_cover_alt(re.search(r'<h2>([^<]+)</h2>', m.group(0)).group(1) if re.search(r'<h2>([^<]+)</h2>', m.group(0)) else '')}{m.group(2)}", text, flags=re.S)
-        if updated != text:
-            html_path.write_text(updated, encoding="utf-8")
-            updated_paths.append(html_path)
-
-    return updated_paths
-
 
 def preview_marker_block(name: str, path: Path, markers: Iterable[str]) -> None:
     text = read_text(path)
@@ -1810,7 +1338,6 @@ def preview_marker_block(name: str, path: Path, markers: Iterable[str]) -> None:
         print(f"- {start2}: {start2 in text}")
         print(f"- {end2}: {end2 in text}")
         print(f"- span_length: {length2 if found2 else 0}")
-
 
 def main() -> int:
     args = parse_args()
@@ -1903,7 +1430,7 @@ def main() -> int:
         created_case_details = write_missing_case_details(merged_cases, overwrite_paths, data, chosen_summary)
         FORCE_REGENERATE_DETAIL_PATHS.add(new_case.detail_path)
         FORCE_REGENERATE_DETAIL_PATHS.update(created_case_details)
-        refresh_live_case_alt_texts()
+        refresh_live_case_alt_texts([new_case.detail_path, *created_case_details])
         print(f"backup path: {backup_path.as_posix() if backup_path else ''}")
         if backup_files:
             print("backup files:")
@@ -1943,7 +1470,6 @@ def main() -> int:
 
     return 0
 
-
 def main_rebuild_case(case_dir_input: str) -> int:
     try:
         entry, blog, markdown_body, images = rebuild_case_from_folder(case_dir_input)
@@ -1968,7 +1494,7 @@ def main_rebuild_case(case_dir_input: str) -> int:
     _normalize_folder_case_html_outputs()
     _ensure_case_build_bats()
     FORCE_REGENERATE_DETAIL_PATHS.add(entry.detail_path)
-    refresh_live_case_alt_texts()
+    refresh_live_case_alt_texts([entry.detail_path])
 
     print(f"mode: rebuild-case")
     print(f"case_dir: {normalize_case_dir_input(case_dir_input).as_posix()}")
@@ -1991,9 +1517,7 @@ def main_rebuild_case(case_dir_input: str) -> int:
     print("완료 메시지: case 재빌드 및 운영 파일 반영 완료")
     return 0
 
-
 _ORIGINAL_MAIN = main
-
 
 def _normalize_folder_case_html_outputs() -> None:
     replacements = (
@@ -2017,7 +1541,6 @@ def _normalize_folder_case_html_outputs() -> None:
             updated = updated.replace(old, new)
         if updated != text:
             html_path.write_text(updated, encoding="utf-8")
-
 
 def _ensure_case_build_bats() -> None:
     bat_template = """@echo off
@@ -2055,445 +1578,12 @@ exit /b %EXIT_CODE%
             continue
         bat_path.write_text(bat_template, encoding="utf-8")
 
-
 def main(*args, **kwargs):  # type: ignore[override]
     result = _ORIGINAL_MAIN(*args, **kwargs)
     if result == 0:
         _normalize_folder_case_html_outputs()
         _ensure_case_build_bats()
     return result
-
-
-ALT_MIN_LENGTH = 20
-ALT_MAX_LENGTH = 60
-ALT_STAGE_LABELS = [
-    "현장 점검",
-    "분해 전 상태",
-    "철거 중 배선 확인",
-    "교체 전 커버 제거",
-    "부품 상태 확인",
-    "교체 중 설치",
-    "덕트 밀봉 마감",
-    "흡입력 시험",
-    "문제 해결 후 점검",
-    "최종 완료 확인",
-]
-
-
-def _normalize_alt_spacing(text: str) -> str:
-    return re.sub(r"\s+", " ", str(text or "")).strip()
-
-
-def _trim_alt_noise(text: str) -> str:
-    text = _normalize_alt_spacing(text)
-    text = text.replace("사진", "").replace("이미지", "").replace("모습", "")
-    return _normalize_alt_spacing(text)
-
-
-def _alt_stage_label(index: int) -> str:
-    if index < 0:
-        index = 0
-    if index >= len(ALT_STAGE_LABELS):
-        return ALT_STAGE_LABELS[-1]
-    return ALT_STAGE_LABELS[index]
-
-
-def _fit_alt_length(title: str, alt: str, index: int = 0, include_place: bool = True) -> str:
-    alt = _trim_alt_noise(alt)
-    location = _extract_case_location(title)
-    place = _extract_case_place(title) if include_place else ""
-    work = _extract_case_work(title)
-    issue = _extract_case_issue(title)
-    stage = _alt_stage_label(index)
-
-    candidates = []
-    for parts in [
-        [location, place, work, issue, stage],
-        [location, work, issue, stage],
-        [location, work, stage],
-        [location, issue, stage],
-        [location, place, work, stage],
-        [location, work],
-        [location, stage],
-    ]:
-        candidate = _trim_alt_noise(_normalize_alt_spacing(" ".join(part for part in parts if part)))
-        if candidate and candidate not in candidates:
-            candidates.append(candidate)
-
-    if alt and alt not in candidates:
-        candidates.insert(0, alt)
-
-    for candidate in candidates:
-        if ALT_MIN_LENGTH <= len(candidate) <= ALT_MAX_LENGTH:
-            return candidate
-
-    for candidate in candidates:
-        if len(candidate) > ALT_MAX_LENGTH:
-            shortened = candidate
-            for token in [place, "현장", "점검", "최종", "완료", "확인", "문제 해결 후", "교체", "설치"]:
-                if token:
-                    shortened = shortened.replace(token, "")
-            shortened = _normalize_alt_spacing(shortened)
-            if len(shortened) > ALT_MAX_LENGTH:
-                shortened = shortened[:ALT_MAX_LENGTH].rstrip(" ,.-/")
-            if len(shortened) >= ALT_MIN_LENGTH:
-                return shortened
-
-    base = candidates[0] if candidates else _normalize_alt_spacing(f"{location or '울산'} {work or '집수리'} {stage}")
-    if len(base) < ALT_MIN_LENGTH:
-        base = _normalize_alt_spacing(f"{location or '울산'} {place or ''} {work or '집수리'} {stage}")
-    if len(base) > ALT_MAX_LENGTH:
-        base = base[:ALT_MAX_LENGTH].rstrip(" ,.-/")
-    return base
-
-
-def seo_case_cover_alt(title: str) -> str:
-    title = _normalize_alt_spacing(title)
-    base = _normalize_alt_spacing(
-        " ".join(
-            part
-            for part in [
-                _extract_case_location(title),
-                _extract_case_place(title),
-                _extract_case_work(title),
-                _extract_case_issue(title),
-                "문제 해결 완료",
-            ]
-            if part
-        )
-    )
-    return _fit_alt_length(title, base, 0, include_place=True)
-
-
-def seo_case_image_alt(title: str, index: int) -> str:
-    title = _normalize_alt_spacing(title)
-    base = _normalize_alt_spacing(
-        " ".join(
-            part
-            for part in [
-                _extract_case_location(title),
-                _extract_case_place(title),
-                _extract_case_work(title),
-                _extract_case_issue(title),
-                _alt_stage_label(index),
-            ]
-            if part
-        )
-    )
-    if not base:
-        base = _normalize_alt_spacing(f"울산 집수리 {_alt_stage_label(index)}")
-    return _fit_alt_length(title, base, index=index, include_place=True)
-
-
-
-def _home_alt_clean_text(text: str) -> str:
-    value = str(text or "").strip()
-    value = re.sub(r"^\s*```(?:json|JSON)?\s*", "", value)
-    value = re.sub(r"\s*```\s*$", "", value).strip()
-    json_match = re.search(r"\{.*?\}", value, flags=re.S)
-    if json_match:
-        try:
-            obj = json.loads(json_match.group(0))
-            if isinstance(obj, dict):
-                extracted = obj.get("alt") or obj.get("ALT") or obj.get("text") or obj.get("description")
-                if extracted:
-                    value = str(extracted).strip()
-        except Exception:
-            pass
-    value = re.sub(r"^\s*(ALT\s*[:：]|대체\s*텍스트\s*[:：]|alt\s*=)\s*", "", value, flags=re.I)
-    value = value.strip().strip('"\'`“”‘’')
-    lines = [line.strip() for line in value.splitlines() if line.strip()]
-    if lines:
-        value = lines[0]
-    value = re.sub(r"^\s*\d+[\).]\s*", "", value)
-    value = re.sub(r"[\"'`“”‘’]", "", value)
-    value = re.sub(r"[.!?。]+$", "", value)
-    value = re.sub(r"\s+", " ", value).strip()
-    if len(value) > 90:
-        value = value[:90].rstrip()
-    return value
-
-
-def _home_extract_field_loose(text: str, field: str) -> str:
-    value = str(text or "").strip()
-    if not value:
-        return ""
-    patterns = [
-        rf'["\']?{re.escape(field)}["\']?\s*[:：=]\s*["\']([^"\'\n\r}}]+)',
-        rf'["\']?{re.escape(field)}["\']?\s*[:：=]\s*(.+?)(?:\n|,\s*["\']?(?:analysis|alt|reason|caption|summary)["\']?\s*[:：=]|}}|$)',
-    ]
-    for pat in patterns:
-        m = re.search(pat, value, flags=re.I | re.S)
-        if m:
-            got = str(m.group(1) or "").strip().strip('"\'`“”‘’ ,')
-            got = re.sub(r"\s+", " ", got).strip()
-            if got:
-                return got
-    label_map = {
-        "alt": ["ALT", "대체텍스트", "대체 텍스트", "이미지 ALT", "alt"],
-        "analysis": ["analysis", "분석", "사진분석", "사진 분석", "상황", "설명"],
-    }
-    for label in label_map.get(field.lower(), []):
-        m = re.search(rf'{re.escape(label)}\s*[:：]\s*(.+?)(?:\n|$)', value, flags=re.I | re.S)
-        if m:
-            got = str(m.group(1) or "").strip().strip('"\'`“”‘’ ,')
-            got = re.sub(r"\s+", " ", got).strip()
-            if got:
-                return got
-    return ""
-
-
-def _home_parse_ollama_payload(text: str) -> dict[str, str]:
-    value = str(text or "").strip()
-    value = re.sub(r"^\s*```(?:json|JSON)?\s*", "", value)
-    value = re.sub(r"\s*```\s*$", "", value).strip()
-    json_match = re.search(r"\{.*\}", value, flags=re.S)
-    if json_match:
-        raw_json = json_match.group(0)
-        for candidate in [raw_json, re.sub(r",\s*([}\]])", r"\1", raw_json.replace("“", '"').replace("”", '"').replace("‘", "'").replace("’", "'"))]:
-            try:
-                obj = json.loads(candidate)
-                if isinstance(obj, dict):
-                    return {
-                        "alt": str(obj.get("alt") or obj.get("ALT") or obj.get("text") or obj.get("description") or "").strip(),
-                        "analysis": str(obj.get("analysis") or obj.get("reason") or obj.get("caption") or obj.get("summary") or "").strip(),
-                        "raw": value,
-                    }
-            except Exception:
-                pass
-    loose_alt = _home_extract_field_loose(value, "alt")
-    loose_analysis = _home_extract_field_loose(value, "analysis")
-    if not loose_alt:
-        for ln in [line.strip(" -•\t") for line in value.splitlines() if line.strip()]:
-            if ("오박사" in ln or "울산" in ln or "상가" in ln or "현장" in ln) and len(ln) >= 12:
-                loose_alt = ln
-                break
-    return {"alt": _home_alt_clean_text(loose_alt or value), "analysis": _home_alt_clean_text(loose_analysis), "raw": value}
-
-
-def _home_strip_business_noise(value: str, business: str = "") -> str:
-    value = str(value or "")
-    business = str(business or "").strip()
-    if business:
-        value = value.replace(business, " ")
-    value = re.sub(r"오박사만능(?:인(?:테(?:리(?:어)?)?)?)?", " ", value)
-    value = re.sub(r"\s+", " ", value).strip(" -,.·/")
-    value = re.sub(r"^(에서|의|이|가)\s*", "", value).strip()
-    return value
-
-
-def _home_looks_like_broken_alt(text: str) -> bool:
-    value = str(text or "")
-    if not value.strip():
-        return True
-    if re.search(r"KakaoTalk[_\s-]*\d", value, flags=re.I):
-        return True
-    if re.search(r"\{\s*[\"']?(analysis|alt)[\"']?\s*[:：]", value, flags=re.I):
-        return True
-    if value.count("{") or value.count("}"):
-        return True
-    if len(re.sub(r"\s+", "", value)) < 8:
-        return True
-    return False
-
-
-def _home_finalize_alt_suffix(alt: str, business: str = "", max_len: int = 68) -> str:
-    alt = re.sub(r"\s+", " ", str(alt or "")).strip()
-    business = str(business or "").strip()
-    if not alt or _home_looks_like_broken_alt(alt):
-        return ""
-    if not business:
-        return alt[:max_len].rstrip(" ,./-·")
-    suffix = f" - {business}"
-    alt = _home_strip_business_noise(alt, business)
-    alt = re.sub(r"^(에서\s*)?(진행하는|시공하는)\s*", "", alt).strip()
-    alt = re.sub(r"\b현장에서\s*,?\s*", "현장 ", alt).strip()
-    alt = re.sub(r"\s+", " ", alt).strip(" -,.·/")
-    if not alt:
-        return suffix.strip(" -")
-    max_body_len = max(18, max_len - len(suffix))
-    if len(alt) > max_body_len:
-        parts = [x.strip(" ,./-·") for x in re.split(r"[,，/]|\s+-\s+", alt) if x.strip(" ,./-·")]
-        preferred = ""
-        for part in parts:
-            if len(part) <= max_body_len and any(k in part for k in ["울산", "상가", "욕실", "환풍기", "콘센트", "배선", "시트지", "유리", "폐자재", "벽면", "누수", "수전", "문틀"]):
-                preferred = part
-                break
-        alt = preferred or re.sub(r"(에서|으로|하고|하며|중인|있는|진행하는|만들어|바꾸는|모습)$", "", alt[:max_body_len]).rstrip(" ,./-·")
-    alt = _home_strip_business_noise(alt, business)
-    return f"{alt}{suffix}"
-
-
-def _home_normalize_alt(raw_alt: str, title: str = "", business: str = "") -> str:
-    business = business or str(HOME_ALT_SETTINGS.get("required_business", "오박사만능인테리어"))
-    alt = _home_alt_clean_text(raw_alt)
-    alt = re.sub(r"(상가)\s+\1", r"\1", alt)
-    alt = re.sub(r"(창고)\s+\1", r"\1", alt)
-    alt = re.sub(r"\s+", " ", alt).strip()
-    finalized = _home_finalize_alt_suffix(alt, business=business, max_len=68)
-    if finalized:
-        return finalized
-    return seo_case_image_alt(title or "울산 집수리", 0)
-
-
-def _home_alt_from_analysis_fallback(analysis: str, entry: CaseEntry | None, order: int = 1) -> str:
-    title = entry.title if entry else ""
-    location = _extract_case_location(title) or str(HOME_ALT_SETTINGS.get("default_location", "울산"))
-    business = str(HOME_ALT_SETTINGS.get("required_business", "오박사만능인테리어"))
-    source = _home_alt_clean_text(analysis)
-    candidates = [
-        (("깨진 유리" in source or "유리 조각" in source), "깨진 유리 조각을 안전하게 정리한 현장"),
-        ((("유리" in source or "출입문" in source) and ("시트" in source or "필름" in source)), "유리문 시트지를 꼼꼼하게 정리한 현장"),
-        ((("시트" in source or "필름" in source) and ("제거" in source or "벗" in source)), "기존 시트지를 꼼꼼하게 제거하는 현장"),
-        ((("콘센트" in source) and ("조립" in source or "박스" in source)), "콘센트 박스를 정밀하게 조립하는 현장"),
-        ((("콘센트" in source or "전선" in source or "배선" in source)), "전기 배선을 안전하게 정리하는 현장"),
-        ((("벽지" in source or "도배" in source)), "기존 벽지를 꼼꼼하게 제거하는 현장"),
-        ((("바닥" in source and ("폐기물" in source or "폐자재" in source or "비닐" in source))), "바닥 폐자재를 깔끔하게 정리한 현장"),
-        ((("호스" in source or "자재" in source)), "호스와 자재를 정돈하며 준비하는 현장"),
-        ((("환풍기" in source or "덕트" in source)), "환풍기 부품 상태를 꼼꼼하게 점검한 현장"),
-        ((("수전" in source or "배관" in source or "누수" in source)), "누수 원인을 확인하며 배관을 점검한 현장"),
-    ]
-    label = ""
-    for cond, text in candidates:
-        if cond:
-            label = text
-            break
-    if not label:
-        fallback = ["시공 전 현장을 꼼꼼하게 점검한 모습", "자재와 작업 부위를 정돈하는 과정", "문제 부위를 확인하며 보수하는 현장", "마감 상태를 확인하는 작업 과정"]
-        label = fallback[(max(1, int(order or 1)) - 1) % len(fallback)]
-    return _home_finalize_alt_suffix(f"{location} {label}", business=business)
-
-
-def _home_make_alt_prompt(entry: CaseEntry, blog: BlogData | None, image_order: int, total_images: int) -> str:
-    title = entry.title or (blog.title if blog else "") or "오박사만능인테리어 시공 사례"
-    summary = (blog.summary if blog else "") or entry.summary or ""
-    content = re.sub(r"\s+", " ", (blog.content if blog else "") or "").strip()[:700]
-    location = _extract_case_location(title) or str(HOME_ALT_SETTINGS.get("default_location", "울산"))
-    business = str(HOME_ALT_SETTINGS.get("required_business", "오박사만능인테리어"))
-    site_context = str(HOME_ALT_SETTINGS.get("default_site_context", "생활밀착형 집수리 및 인테리어 시공 현장"))
-    return f"""
-너는 10년 차 온라인 마케터이자 홈페이지 SEO용 이미지 ALT 생성 전문가다.
-
-다음 시공 현장 사진을 분석해서 홈페이지 상세페이지에 들어갈 이미지 ALT를 딱 한 줄로 만들어라.
-
-[필수 포함 키워드]
-- 지역: {location}
-- 업체명: {business}
-
-[사진 분석 기준]
-- 본문보다 사진에 실제 보이는 사물, 자재, 공구, 작업자의 행동을 우선 설명한다.
-- 사진 속 가장 구체적인 사물 1개를 반드시 반영한다.
-- 같은 사례 안의 다른 사진과 같은 표현을 반복하지 않는다.
-- 사진에 없는 작업을 억지로 만들지 않는다.
-
-[홈페이지 사례 제목]
-{title}
-
-[요약]
-{summary}
-
-[본문 참고]
-{content}
-
-[이미지 순서]
-{image_order} / {total_images}
-
-[기본 현장 맥락]
-{site_context}
-
-[출력 규칙]
-- 반드시 JSON 한 개만 출력: {{"analysis":"...", "alt":"..."}}
-- analysis: 사진에 보이는 핵심 사물과 상황을 객관적으로 묘사.
-- alt: 30~55자 내외의 자연스럽고 구체적인 서술형 구.
-- 파일명은 절대 쓰지 않는다.
-- 업체명은 문장 맨 끝에 ' - {business}' 형태로 한 번만 붙인다.
-- 문장 앞에는 업체명을 쓰지 않는다.
-- '사진', '이미지' 같은 빈 단어는 쓰지 않는다.
-
-[좋은 예시]
-{{"analysis":"작업자가 파란 전선 롤을 두고 배선 위치를 확인 중", "alt":"울산 북구 상가 휴게실의 꼼꼼한 콘센트 전기 배선 작업 - 오박사만능인테리어"}}
-{{"analysis":"욕실 환풍기 커버를 분리하고 내부 먼지와 부품을 확인 중", "alt":"울산 욕실 환풍기 내부 부품을 꼼꼼하게 점검한 과정 - 오박사만능인테리어"}}
-{{"analysis":"바닥에 폐자재와 비닐봉투가 있고 잔재를 모아둔 상태", "alt":"울산 상가 바닥 폐자재를 깔끔하게 정리한 현장 - 오박사만능인테리어"}}
-""".strip()
-
-
-def _home_prepare_image_for_ollama(image_path: Path) -> tuple[Path, str]:
-    if not HOME_ALT_SETTINGS.get("resize_before_ollama", True):
-        return image_path, "원본 이미지 사용"
-    try:
-        from PIL import Image
-    except Exception:
-        return image_path, "Pillow 미설치: 원본 이미지 사용"
-    max_px = int(HOME_ALT_SETTINGS.get("resize_max_px", 1024))
-    quality = int(HOME_ALT_SETTINGS.get("resize_quality", 85))
-    try:
-        with Image.open(image_path) as img:
-            img = img.convert("RGB")
-            w, h = img.size
-            longest = max(w, h)
-            if longest <= max_px:
-                return image_path, f"원본 이미지 사용({w}x{h})"
-            scale = max_px / float(longest)
-            new_size = (max(1, int(w * scale)), max(1, int(h * scale)))
-            img = img.resize(new_size, Image.LANCZOS)
-            tmp_dir = Path(tempfile.gettempdir()) / "obaksa_home_alt_ollama_resized"
-            tmp_dir.mkdir(parents=True, exist_ok=True)
-            tmp_path = tmp_dir / f"{image_path.stem}_{new_size[0]}x{new_size[1]}.jpg"
-            img.save(tmp_path, "JPEG", quality=quality, optimize=True)
-            return tmp_path, f"리사이즈 완료 {w}x{h} → {new_size[0]}x{new_size[1]}"
-    except Exception as exc:
-        return image_path, f"리사이즈 실패: 원본 사용({exc})"
-
-
-def _home_generate_alt_with_ollama(image_path: Path, entry: CaseEntry, blog: BlogData | None, order: int, total: int) -> tuple[bool, str, str, str]:
-    if not HOME_ALT_SETTINGS.get("enabled", True):
-        return False, "", "", "HOME_ALT_OLLAMA 비활성화"
-    if not image_path.exists() or not image_path.is_file():
-        return False, "", "", f"이미지 파일 없음: {image_path.as_posix()}"
-    try:
-        import base64
-        import urllib.request
-        send_path, resize_note = _home_prepare_image_for_ollama(image_path)
-        image_b64 = base64.b64encode(send_path.read_bytes()).decode("utf-8")
-        options = {
-            "temperature": float(HOME_ALT_SETTINGS.get("ollama_temperature", 0.45)),
-            "num_predict": int(HOME_ALT_SETTINGS.get("ollama_num_predict", 110)),
-        }
-        if HOME_ALT_SETTINGS.get("ollama_use_gpu", True):
-            options["num_gpu"] = int(HOME_ALT_SETTINGS.get("ollama_num_gpu", -1))
-        payload = {
-            "model": HOME_ALT_SETTINGS.get("ollama_vision_model", "gemma3:4b"),
-            "prompt": _home_make_alt_prompt(entry, blog, order, total),
-            "images": [image_b64],
-            "stream": False,
-            "keep_alive": HOME_ALT_SETTINGS.get("ollama_keep_alive", "30m"),
-            "options": options,
-        }
-        if HOME_ALT_SETTINGS.get("ollama_json_format", True):
-            payload["format"] = "json"
-        req = urllib.request.Request(
-            str(HOME_ALT_SETTINGS.get("ollama_url", "http://127.0.0.1:11434/api/generate")),
-            data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
-        with urllib.request.urlopen(req, timeout=int(HOME_ALT_SETTINGS.get("timeout_seconds", 240))) as resp:
-            raw = resp.read().decode("utf-8", errors="ignore")
-        parsed = json.loads(raw)
-        response_text = parsed.get("response", "")
-        obj = _home_parse_ollama_payload(response_text)
-        analysis = _home_alt_clean_text(obj.get("analysis", ""))
-        raw_alt = _home_alt_clean_text(obj.get("alt", ""))
-        if not raw_alt or _home_looks_like_broken_alt(raw_alt):
-            alt = _home_alt_from_analysis_fallback(analysis, entry, order)
-            return True, alt, analysis, f"{resize_note} / ALT 추출 실패 방어: analysis 기반 대체 ALT 생성"
-        alt = _home_normalize_alt(raw_alt, title=entry.title, business=str(HOME_ALT_SETTINGS.get("required_business", "오박사만능인테리어")))
-        if not alt:
-            alt = _home_alt_from_analysis_fallback(analysis, entry, order)
-        return True, alt, analysis, f"{resize_note} / Ollama {HOME_ALT_SETTINGS.get('ollama_vision_model', 'gemma3:4b')} / AI 원문 우선"
-    except Exception as exc:
-        return False, "", "", f"Ollama 처리 예외: {exc}"
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

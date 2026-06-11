@@ -1,0 +1,71 @@
+ALT 이상 파일 정리
+
+[cases/2026/case-2026-04-29-faucet-leak-replacement-repair.html] case-2026-04-29-faucet-leak-replacement-repair.html
+- 문제 alt: 현장 확인 전 욕실 상태를 먼저 살펴본 사진입니다.
+  대안: 사진의 대상과 상태를 구체적으로 작성
+- 문제 alt: 보강 후 흔들림이 없는지 다시 점검한 사진입니다.
+  대안: 사진의 대상과 상태를 구체적으로 작성
+
+[cases/2026/case-2026-05-01-shashi-replacement-repair.html] case-2026-05-01-shashi-replacement-repair.html
+- 문제 alt: 울산 북구 천곡동 원동 현대아파트 샤시 교체 썸네일
+  대안: 썸네일 대신 장면 중심 설명으로 수정
+
+[cases/2026/case-2026-05-15-combi-rollscreen-install.html] case-2026-05-15-combi-rollscreen-install.html
+- 문제 alt: 울산 북구 상안동 쌍용아진아파트 콤비 롤스크린 썸네일
+  대안: 썸네일 대신 장면 중심 설명으로 수정
+
+[cases/2026/case-2026-05-24-switch-flicker-repair.html] case-2026-05-24-switch-flicker-repair.html
+- 문제 alt: 울산 북구 천곡동 삼성코아루 전등 깜빡임과 스위치 교체 썸네일
+  대안: 썸네일 대신 장면 중심 설명으로 수정
+
+[cases/2026/case-2026-05-25-daemun-sagging-repair.html] case-2026-05-25-daemun-sagging-repair.html
+- 문제 alt: 울산 중구 남외동 대문수리 후기 썸네일
+  대안: 썸네일 대신 장면 중심 설명으로 수정
+
+[cases/2026/case-2026-05-25-namoe-gate-door-door-frame.html] case-2026-05-25-namoe-gate-door-door-frame.html
+- 문제 alt: 현장 확인 전 욕실 상태를 먼저 살펴본 사진입니다.
+  대안: 사진의 대상과 상태를 구체적으로 작성
+- 문제 alt: 보강 후 흔들림이 없는지 다시 점검한 사진입니다.
+  대안: 사진의 대상과 상태를 구체적으로 작성
+
+[cases/2026/case-2026-06-04-himpel-fan-replacement.html] case-2026-06-04-himpel-fan-replacement.html
+- 문제 alt: 울산 북구 중산동 경동그린맨션 힘펠 환풍기 교체 썸네일
+  대안: 썸네일 대신 장면 중심 설명으로 수정
+
+[cases/2026/case-2026-06-05-aileen-shower-repair.html] case-2026-06-05-aileen-shower-repair.html
+- 문제 alt: 울산 북구 매곡동 에일린의뜰 욕실 수전 누수 교체 썸네일
+  대안: 썸네일 대신 장면 중심 설명으로 수정
+- 문제 alt: 욕실 수전 누수 교체 웹툰 썸네일
+  대안: 썸네일 대신 장면 중심 설명으로 수정
+
+[cases/2026/case-2026-06-05-sink-collapse.html] case-2026-06-05-sink-collapse.html
+- 문제 alt: 울산 북구 신천동 무지개아파트 세면대 붕괴 긴다리 세면대 재시공 썸네일
+  대안: 썸네일 대신 장면 중심 설명으로 수정
+- 문제 alt: 긴다리 세면대 설치 완료 정면 사진
+  대안: 정면/근접보다 대상과 행동을 구체적으로 작성
+- 문제 alt: 긴다리 세면대 설치 완료 근접 사진
+  대안: 확대 위치와 상태를 구체적으로 작성
+
+[cases/2026/case-2026-06-06-baeksan-leak.html] case-2026-06-06-baeksan-leak.html
+- 문제 alt: 울산 천장 누수 곰팡이 제거 도배 장판 복구 10컷 웹툰
+  대안: 웹툰 형식보다 이미지 내용 중심으로 수정
+
+[cases/2026/case-2026-06-06-door-repair.html] case-2026-06-06-door-repair.html
+- 문제 alt: 울산 북구 협성노블리스 현관문 방화문수리 썸네일
+  대안: 썸네일 대신 장면 중심 설명으로 수정
+- 문제 alt: 울산 북구 협성노블리스 방화문수리 10컷 웹툰
+  대안: 웹툰 형식보다 이미지 내용 중심으로 수정
+
+[cases/2026/case-2026-06-06-sink-collapse.html] case-2026-06-06-sink-collapse.html
+- 문제 alt: 울산 북구 신천동 무지개아파트 세면대 붕괴 긴다리 세면대 재시공 썸네일
+  대안: 썸네일 대신 장면 중심 설명으로 수정
+- 문제 alt: 긴다리 세면대 설치 완료 정면 사진
+  대안: 정면/근접보다 대상과 행동을 구체적으로 작성
+- 문제 alt: 긴다리 세면대 설치 완료 근접 사진
+  대안: 확대 위치와 상태를 구체적으로 작성
+
+[cases/2026/case-2026-06-07-led-module.html] case-2026-06-07-led-module.html
+- 문제 alt: 울산 북구 매곡동 에일린의뜰 LED 모듈 교체 웹툰 썸네일
+  대안: 썸네일 대신 장면 중심 설명으로 수정
+- 문제 alt: LED 모듈 교체 8컷 웹툰
+  대안: 웹툰 형식보다 이미지 내용 중심으로 수정
